@@ -31,7 +31,6 @@
       line-height: 1.4;
     }
 
-    /* ===== Header ===== */
     header {
       position: sticky;
       top: 0;
@@ -76,7 +75,6 @@
       box-shadow: 0 2px 8px color-mix(in srgb, var(--button) 30%, transparent);
     }
 
-    /* ===== Products Grid ===== */
     .products {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -91,7 +89,6 @@
       display: flex;
       flex-direction: column;
       box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-      transition: transform 0.2s ease;
     }
 
     .product img {
@@ -131,14 +128,8 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.2s;
     }
 
-    .add-btn:active {
-      opacity: 0.8;
-    }
-
-    /* ===== Cart ===== */
     .cart-item {
       display: flex;
       gap: 14px;
@@ -203,7 +194,6 @@
       text-align: center;
     }
 
-    /* ===== Total Bar ===== */
     .total-bar {
       position: fixed;
       bottom: 0;
@@ -239,64 +229,8 @@
       font-weight: 600;
       font-size: 15px;
       cursor: pointer;
-      box-shadow: 0 4px 14px color-mix(in srgb, var(--button) 35%, transparent);
     }
 
-    /* ===== Form ===== */
-    .form {
-      padding: 20px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .form input,
-    .form textarea {
-      width: 100%;
-      padding: 15px 16px;
-      border-radius: 14px;
-      border: 1.5px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 16px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .form input:focus,
-    .form textarea:focus {
-      border-color: var(--button);
-    }
-
-    .form textarea {
-      resize: none;
-      min-height: 90px;
-    }
-
-    .form button {
-      background: var(--button);
-      color: var(--button-text);
-      border: none;
-      padding: 16px;
-      border-radius: 14px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 6px;
-      box-shadow: 0 4px 14px color-mix(in srgb, var(--button) 30%, transparent);
-    }
-
-    .preview {
-      width: 100%;
-      max-height: 240px;
-      object-fit: contain;
-      border-radius: 16px;
-      display: none;
-      background: var(--secondary);
-      border: 1px dashed var(--border);
-    }
-
-    /* ===== Empty State ===== */
     .empty {
       text-align: center;
       padding: 90px 24px;
@@ -341,65 +275,30 @@
     </div>
   </div>
 
-  <!-- Добавление товара -->
-  <div id="add" class="page">
-    <div class="form">
-      <input type="text" id="name" placeholder="Название товара" autocomplete="off">
-      <input type="number" id="price" placeholder="Цена в рублях" inputmode="numeric">
-      <textarea id="description" placeholder="Описание (необязательно)"></textarea>
-      <input type="file" id="photo" accept="image/*">
-      <img id="photo-preview" class="preview">
-      <button id="add-product-btn">Добавить товар</button>
-    </div>
-  </div>
-
   <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    // ===== Данные =====
-    let products = JSON.parse(localStorage.getItem('shop_products') || '[]');
-    let cart = JSON.parse(localStorage.getItem('shop_cart') || '[]');
-
-    // Всегда берём товары из кода (игнорируем старый localStorage)
+    // ===== Товары (всегда из кода) =====
     let products = [
-        {
-          id: 1,
-          name: "Бюст Паук-Нуар",
-          price: 2990,
-          description: "Ебейший паук",
-          photo: "https://via.placeholder.com/400x400?text=Nike"
-        },
-         {
-          id: 2,
-          name: "Фигурка Power",
-          price: 1990,
-          description: "Сочная жопа",
-          photo: "https://via.placeholder.com/400x400?text=Nike"
-        },
-        {
-          id: 3,
-          name: "Фигурка Паук-Нуар",
-          price: 1990,
-          description: "ага",
-          photo: "https://via.placeholder.com/400x400?text=T-Shirt"
-        },
-        {
-          id: 4,
-          name: "Бюст какой то",
-          price: 2990,
-          description: "я дааааа",
-          photo: "https://via.placeholder.com/400x400?text=Nike"
-        }
-      ];
-      
-      let cart = JSON.parse (localStorage.getItem('shop_cart') || '[]')
-    }
+      {
+        id: 1,
+        name: "Бюст Паук-Нуар",
+        price: 8990,
+        description: "Коллекционный бюст",
+        photo: "https://via.placeholder.com/400x400?text=Spider-Noir"
+      },
+      {
+        id: 2,
+        name: "Фигурка Power",
+        price: 1990,
+        description: "Коллекционная фигурка",
+        photo: "https://via.placeholder.com/400x400?text=Power"
+      }
+    ];
 
-    function saveProducts() {
-      localStorage.setItem('shop_products', JSON.stringify(products));
-    }
+    let cart = JSON.parse(localStorage.getItem('shop_cart') || '[]');
 
     function saveCart() {
       localStorage.setItem('shop_cart', JSON.stringify(cart));
@@ -427,14 +326,9 @@
       });
     });
 
-    // ===== ONI Store =====
+    // ===== Витрина =====
     function renderProducts() {
       const list = document.getElementById('products-list');
-
-      if (products.length === 0) {
-        list.innerHTML = '<div class="empty">Товаров пока нет.<br>Добавьте первый товар</div>';
-        return;
-      }
 
       list.innerHTML = products.map(p => `
         <div class="product">
