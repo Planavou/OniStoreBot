@@ -545,61 +545,6 @@
       renderCart();
     });
 
-    // ===== + =====
-    let photoBase64 = null;
-
-    document.getElementById('photo').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        photoBase64 = ev.target.result;
-        const preview = document.getElementById('photo-preview');
-        preview.src = photoBase64;
-        preview.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    });
-
-    document.getElementById('add-product-btn').addEventListener('click', () => {
-      const name = document.getElementById('name').value.trim();
-      const price = parseInt(document.getElementById('price').value);
-      const description = document.getElementById('description').value.trim();
-
-      if (!name || !price) {
-        tg.showAlert('Заполните название и цену');
-        return;
-      }
-
-      if (!photoBase64) {
-        tg.showAlert('Пожалуйста, загрузите фото товара');
-        return;
-      }
-
-      const newProduct = {
-        id: Date.now(),
-        name,
-        price,
-        description,
-        photo: photoBase64
-      };
-
-      products.unshift(newProduct);
-      saveProducts();
-
-      // Очистка
-      document.getElementById('name').value = '';
-      document.getElementById('price').value = '';
-      document.getElementById('description').value = '';
-      document.getElementById('photo').value = '';
-      document.getElementById('photo-preview').style.display = 'none';
-      photoBase64 = null;
-
-      tg.showAlert('Товар успешно добавлен!');
-      document.querySelector('.tab[data-page="catalog"]').click();
-    });
-
     // ===== Запуск =====
     renderProducts();
     updateCartCount();
