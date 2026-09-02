@@ -368,14 +368,21 @@
       products = [
         {
           id: 1,
-          name: "Кроссовки Nike",
-          price: 8990,
+          name: "Бюст Паук-Нуар",
+          price: 2990,
+          description: "Удобные беговые кроссовки",
+          photo: "https://via.placeholder.com/400x400?text=Nike"
+        },
+         {
+          id: 2,
+          name: "Фигурка Power",
+          price: 1990,
           description: "Удобные беговые кроссовки",
           photo: "https://via.placeholder.com/400x400?text=Nike"
         },
         {
-          id: 2,
-          name: "Футболка",
+          id: 3,
+          name: "Фигурка Паук-Нуар",
           price: 1990,
           description: "Хлопок 100%",
           photo: "https://via.placeholder.com/400x400?text=T-Shirt"
@@ -415,7 +422,7 @@
       });
     });
 
-    // ===== Витрина =====
+    // ===== ONI Store =====
     function renderProducts() {
       const list = document.getElementById('products-list');
 
@@ -538,7 +545,7 @@
       renderCart();
     });
 
-    // ===== Добавление товара =====
+    // ===== + =====
     let photoBase64 = null;
 
     document.getElementById('photo').addEventListener('change', (e) => {
