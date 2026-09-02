@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -15,7 +15,7 @@
       --secondary: var(--tg-theme-secondary-bg-color, #f0f0f0);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+   * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
@@ -23,7 +23,7 @@
       padding-bottom: 80px;
     }
 
-    header {
+  header {
       padding: 16px;
       background: var(--secondary);
       position: sticky;
@@ -35,7 +35,7 @@
     }
     header h1 { font-size: 18px; }
 
-    .tabs {
+  .tabs {
       display: flex;
       gap: 8px;
     }
@@ -53,14 +53,14 @@
       border-color: var(--button);
     }
 
-    .products {
+  .products {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 12px;
       padding: 16px;
     }
 
-    .product {
+  .product {
       background: var(--secondary);
       border-radius: 16px;
       overflow: hidden;
@@ -91,7 +91,7 @@
       font-size: 13px;
     }
 
-    /* Корзина */
+  /* Корзина */
     .cart-item {
       display: flex;
       gap: 12px;
@@ -121,7 +121,7 @@
       font-size: 16px;
     }
 
-    .total {
+  .total {
       position: fixed;
       bottom: 0;
       left: 0;
@@ -142,7 +142,7 @@
       font-weight: 600;
     }
 
-    /* Форма добавления товара */
+  /* Форма добавления товара */
     .form {
       padding: 16px;
       display: flex;
@@ -177,7 +177,7 @@
       display: none;
     }
 
-    .empty {
+  .empty {
       text-align: center;
       padding: 60px 20px;
       color: var(--hint);
@@ -194,7 +194,7 @@
     </div>
   </header>
 
-  <!-- Витрина -->
+ <!-- Витрина -->
   <div id="catalog" class="page">
     <div class="products" id="products-list"></div>
   </div>
