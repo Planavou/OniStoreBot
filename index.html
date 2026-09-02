@@ -362,9 +362,8 @@
     let products = JSON.parse(localStorage.getItem('shop_products') || '[]');
     let cart = JSON.parse(localStorage.getItem('shop_cart') || '[]');
 
-    // Демо-товары
-    if (products.length === 0) {
-      products = [
+    // Всегда берём товары из кода (игнорируем старый localStorage)
+    let products = [
         {
           id: 1,
           name: "Бюст Паук-Нуар",
@@ -394,7 +393,8 @@
           photo: "https://via.placeholder.com/400x400?text=Nike"
         }
       ];
-      saveProducts();
+      
+      let cart = JSON.parse (localStorage.getItem('shop_cart') || '[]')
     }
 
     function saveProducts() {
