@@ -16,12 +16,7 @@
       --border: color-mix(in srgb, var(--hint) 25%, transparent);
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
@@ -42,19 +37,11 @@
       align-items: center;
       gap: 12px;
       border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(20px);
     }
 
-    header h1 {
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
+    header h1 { font-size: 18px; font-weight: 700; }
 
-    .tabs {
-      display: flex;
-      gap: 6px;
-    }
+    .tabs { display: flex; gap: 6px; }
 
     .tab {
       padding: 8px 14px;
@@ -65,14 +52,12 @@
       font-size: 13px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s ease;
     }
 
     .tab.active {
       background: var(--button);
       color: var(--button-text);
       border-color: var(--button);
-      box-shadow: 0 2px 8px color-mix(in srgb, var(--button) 30%, transparent);
     }
 
     .products {
@@ -88,7 +73,6 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.04);
     }
 
     .product img {
@@ -106,17 +90,8 @@
       gap: 6px;
     }
 
-    .product-name {
-      font-weight: 600;
-      font-size: 14px;
-      line-height: 1.3;
-    }
-
-    .product-price {
-      color: var(--button);
-      font-weight: 700;
-      font-size: 16px;
-    }
+    .product-name { font-weight: 600; font-size: 14px; }
+    .product-price { color: var(--button); font-weight: 700; font-size: 16px; }
 
     .add-btn {
       margin-top: 8px;
@@ -143,34 +118,13 @@
       height: 70px;
       object-fit: cover;
       border-radius: 14px;
-      background: #e5e5ea;
     }
 
-    .cart-info {
-      flex: 1;
-      min-width: 0;
-    }
+    .cart-info { flex: 1; min-width: 0; }
+    .cart-info .name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+    .cart-info .price { color: var(--button); font-weight: 600; }
 
-    .cart-info .name {
-      font-weight: 600;
-      font-size: 15px;
-      margin-bottom: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .cart-info .price {
-      color: var(--button);
-      font-weight: 600;
-      font-size: 15px;
-    }
-
-    .qty {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .qty { display: flex; align-items: center; gap: 12px; }
 
     .qty button {
       width: 34px;
@@ -180,18 +134,7 @@
       background: var(--button);
       color: white;
       font-size: 18px;
-      font-weight: 500;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .qty span {
-      font-weight: 600;
-      font-size: 16px;
-      min-width: 20px;
-      text-align: center;
     }
 
     .total-bar {
@@ -209,16 +152,8 @@
       border-top: 1px solid var(--border);
     }
 
-    .total-bar .label {
-      font-size: 13px;
-      color: var(--hint);
-      margin-bottom: 2px;
-    }
-
-    .total-bar .amount {
-      font-size: 22px;
-      font-weight: 700;
-    }
+    .total-bar .label { font-size: 13px; color: var(--hint); }
+    .total-bar .amount { font-size: 22px; font-weight: 700; }
 
     .checkout-btn {
       background: var(--button);
@@ -236,16 +171,10 @@
       padding: 90px 24px;
       color: var(--hint);
       font-size: 16px;
-      line-height: 1.5;
     }
 
-    .page {
-      display: none;
-    }
-
-    .page.active {
-      display: block;
-    }
+    .page { display: none; }
+    .page.active { display: block; }
   </style>
 </head>
 <body>
@@ -258,12 +187,10 @@
     </div>
   </header>
 
-  <!-- Витрина -->
   <div id="catalog" class="page active">
     <div class="products" id="products-list"></div>
   </div>
 
-  <!-- Корзина -->
   <div id="cart" class="page">
     <div id="cart-list"></div>
     <div class="total-bar" id="cart-total">
@@ -280,7 +207,11 @@
     tg.ready();
     tg.expand();
 
-    // ===== Товары (всегда из кода) =====
+    // ================== НАСТРОЙКИ ==================
+    const BOT_TOKEN = '8591437038:AAG8PFhkCNZcMgmUycYGWALAjpAmhA65pqY';
+    const CHANNEL = '@MagazinFigurokAnime';   // канал, куда будут приходить заказы
+    // =================================================
+
     let products = [
       {
         id: 1,
@@ -305,7 +236,7 @@
       updateCartCount();
     }
 
-    // ===== Навигация =====
+    // Навигация
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
@@ -315,24 +246,18 @@
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(page).classList.add('active');
 
-        const titles = {
-          catalog: 'Витрина',
-          cart: 'Корзина'
-        };
-        document.getElementById('page-title').textContent = titles[page];
+        document.getElementById('page-title').textContent = page === 'catalog' ? 'Витрина' : 'Корзина';
 
         if (page === 'catalog') renderProducts();
         if (page === 'cart') renderCart();
       });
     });
 
-    // ===== Витрина =====
     function renderProducts() {
       const list = document.getElementById('products-list');
-
       list.innerHTML = products.map(p => `
         <div class="product">
-          <img src="${p.photo}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/400x400?text=No+Photo'">
+          <img src="${p.photo}" alt="${p.name}">
           <div class="product-info">
             <div class="product-name">${p.name}</div>
             <div class="product-price">${p.price.toLocaleString('ru-RU')} ₽</div>
@@ -342,29 +267,20 @@
       `).join('');
 
       document.querySelectorAll('.add-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          addToCart(Number(btn.dataset.id));
-        });
+        btn.addEventListener('click', () => addToCart(Number(btn.dataset.id)));
       });
     }
 
-    // ===== Корзина =====
     function addToCart(id) {
       const product = products.find(p => p.id === id);
       if (!product) return;
 
       const existing = cart.find(item => item.id === id);
-      if (existing) {
-        existing.qty += 1;
-      } else {
-        cart.push({ ...product, qty: 1 });
-      }
+      if (existing) existing.qty += 1;
+      else cart.push({ ...product, qty: 1 });
 
       saveCart();
-      
-      if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
-      }
+      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 
       tg.showPopup({
         title: 'Добавлено',
@@ -376,12 +292,8 @@
     function changeQty(id, delta) {
       const item = cart.find(i => i.id === id);
       if (!item) return;
-
       item.qty += delta;
-      if (item.qty <= 0) {
-        cart = cart.filter(i => i.id !== id);
-      }
-
+      if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
       saveCart();
       renderCart();
     }
@@ -427,24 +339,77 @@
       document.getElementById('cart-count').textContent = count > 0 ? `(${count})` : '';
     }
 
-    // Оформление заказа
-    document.getElementById('checkout-btn').addEventListener('click', () => {
-      if (cart.length === 0) return;
+    // ===== Отправка заказа в канал =====
+    async function sendOrderToChannel() {
+      const user = tg.initDataUnsafe?.user;
+      const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
-      const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+      let message = `🛒 <b>Новый заказ!</b>\n\n`;
 
-      tg.showPopup({
-        title: 'Заказ оформлен!',
-        message: `Сумма: ${total.toLocaleString('ru-RU')} ₽\nМы свяжемся с вами в ближайшее время.`,
-        buttons: [{ type: 'ok' }]
+      if (user) {
+        message += `👤 Покупатель: <a href="tg://user?id=${user.id}">${user.first_name || ''} ${user.last_name || ''}</a>\n`;
+        if (user.username) message += `Юзернейм: @${user.username}\n`;
+        message += `ID: <code>${user.id}</code>\n\n`;
+      }
+
+      message += `<b>Товары:</b>\n`;
+      cart.forEach(item => {
+        message += `• ${item.name} × ${item.qty} = ${(item.price * item.qty).toLocaleString('ru-RU')} ₽\n`;
       });
 
-      cart = [];
-      saveCart();
-      renderCart();
+      message += `\n💰 <b>Итого: ${total.toLocaleString('ru-RU')} ₽</b>`;
+      message += `\n\n⏰ ${new Date().toLocaleString('ru-RU')}`;
+
+      try {
+        const response = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: CHANNEL,
+            text: message,
+            parse_mode: 'HTML',
+            disable_web_page_preview: true
+          })
+        });
+
+        const data = await response.json();
+        return data.ok;
+      } catch (e) {
+        console.error(e);
+        return false;
+      }
+    }
+
+    // Кнопка "Оформить"
+    document.getElementById('checkout-btn').addEventListener('click', async () => {
+      if (cart.length === 0) return;
+
+      // Блокируем кнопку на время отправки
+      const btn = document.getElementById('checkout-btn');
+      btn.disabled = true;
+      btn.textContent = 'Отправка...';
+
+      const success = await sendOrderToChannel();
+
+      btn.disabled = false;
+      btn.textContent = 'Оформить';
+
+      if (success) {
+        tg.showPopup({
+          title: 'Заказ отправлен!',
+          message: 'Информация о заказе отправлена. Мы свяжемся с вами для оплаты.',
+          buttons: [{ type: 'ok' }]
+        });
+
+        cart = [];
+        saveCart();
+        renderCart();
+      } else {
+        tg.showAlert('Не удалось отправить заказ. Попробуйте ещё раз.');
+      }
     });
 
-    // ===== Запуск =====
+    // Запуск
     renderProducts();
     updateCartCount();
   </script>
