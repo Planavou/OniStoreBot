@@ -15,9 +15,7 @@
       --secondary: var(--tg-theme-secondary-bg-color, #f2f2f7);
       --border: color-mix(in srgb, var(--hint) 25%, transparent);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
@@ -25,154 +23,77 @@
       padding-bottom: 100px;
       line-height: 1.4;
     }
-
     header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      position: sticky; top: 0; z-index: 100;
       background: var(--secondary);
       padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
       border-bottom: 1px solid var(--border);
     }
-
     header h1 { font-size: 18px; font-weight: 700; }
-
     .tabs { display: flex; gap: 6px; }
-
     .tab {
-      padding: 8px 14px;
-      border-radius: 20px;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
+      padding: 8px 14px; border-radius: 20px;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer;
     }
-
     .tab.active {
-      background: var(--button);
-      color: var(--button-text);
-      border-color: var(--button);
+      background: var(--button); color: var(--button-text); border-color: var(--button);
     }
-
     .products {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-      padding: 16px;
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 14px; padding: 16px;
     }
-
     .product {
-      background: var(--secondary);
-      border-radius: 18px;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      background: var(--secondary); border-radius: 18px;
+      overflow: hidden; display: flex; flex-direction: column;
     }
-
     .product img {
-      width: 100%;
-      height: 150px;
-      object-fit: cover;
-      background: #e5e5ea;
+      width: 100%; height: 150px; object-fit: cover; background: #e5e5ea;
     }
-
     .product-info {
-      padding: 12px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 6px;
     }
-
     .product-name { font-weight: 600; font-size: 14px; }
     .product-price { color: var(--button); font-weight: 700; font-size: 16px; }
-
     .add-btn {
-      margin-top: 8px;
-      background: var(--button);
-      color: var(--button-text);
-      border: none;
-      padding: 11px;
-      border-radius: 12px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
+      margin-top: 8px; background: var(--button); color: var(--button-text);
+      border: none; padding: 11px; border-radius: 12px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
     }
-
     .cart-item {
-      display: flex;
-      gap: 14px;
-      padding: 16px;
-      border-bottom: 1px solid var(--border);
-      align-items: center;
+      display: flex; gap: 14px; padding: 16px;
+      border-bottom: 1px solid var(--border); align-items: center;
     }
-
     .cart-item img {
-      width: 70px;
-      height: 70px;
-      object-fit: cover;
-      border-radius: 14px;
+      width: 70px; height: 70px; object-fit: cover; border-radius: 14px;
     }
-
     .cart-info { flex: 1; min-width: 0; }
     .cart-info .name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
     .cart-info .price { color: var(--button); font-weight: 600; }
-
     .qty { display: flex; align-items: center; gap: 12px; }
-
     .qty button {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      border: none;
-      background: var(--button);
-      color: white;
-      font-size: 18px;
-      cursor: pointer;
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: var(--button); color: white; font-size: 18px; cursor: pointer;
     }
-
     .total-bar {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--secondary);
-      padding: 16px;
-      display: none;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
-      z-index: 50;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--secondary); padding: 16px;
+      display: none; justify-content: space-between; align-items: center;
+      box-shadow: 0 -4px 24px rgba(0,0,0,0.08); z-index: 50;
       border-top: 1px solid var(--border);
     }
-
     .total-bar .label { font-size: 13px; color: var(--hint); }
     .total-bar .amount { font-size: 22px; font-weight: 700; }
-
     .checkout-btn {
-      background: var(--button);
-      color: var(--button-text);
-      border: none;
-      padding: 14px 26px;
-      border-radius: 14px;
-      font-weight: 600;
-      font-size: 15px;
-      cursor: pointer;
+      background: var(--button); color: var(--button-text);
+      border: none; padding: 14px 26px; border-radius: 14px;
+      font-weight: 600; font-size: 15px; cursor: pointer;
     }
-
     .empty {
-      text-align: center;
-      padding: 90px 24px;
-      color: var(--hint);
-      font-size: 16px;
+      text-align: center; padding: 90px 24px;
+      color: var(--hint); font-size: 16px;
     }
-
     .page { display: none; }
     .page.active { display: block; }
   </style>
@@ -209,7 +130,7 @@
 
     // ================== НАСТРОЙКИ ==================
     const BOT_TOKEN = '8591437038:AAG8PFhkCNZcMgmUycYGWALAjpAmhA65pqY';
-    const CHANNEL = '@MagazinFigurokAnime';   // канал, куда будут приходить заказы
+    const ADMIN_CHAT_ID = '1232069518';   // твой личный ID
     // =================================================
 
     let products = [
@@ -218,7 +139,7 @@
         name: "Бюст Паук-Нуар",
         price: 8990,
         description: "Коллекционный бюст",
-        photo: "https://disk.yandex.ru/i/-unFhkzmvAHkTA"
+        photo: "https://getfile.dokpub.com/yandex/get/https://disk.yandex.ru/i/-unFhkzmvAHkTA"
       },
       {
         id: 2,
@@ -241,13 +162,10 @@
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
         const page = btn.dataset.page;
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(page).classList.add('active');
-
         document.getElementById('page-title').textContent = page === 'catalog' ? 'Витрина' : 'Корзина';
-
         if (page === 'catalog') renderProducts();
         if (page === 'cart') renderCart();
       });
@@ -257,7 +175,7 @@
       const list = document.getElementById('products-list');
       list.innerHTML = products.map(p => `
         <div class="product">
-          <img src="${p.photo}" alt="${p.name}">
+          <img src="${p.photo}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/400x400?text=No+Photo'">
           <div class="product-info">
             <div class="product-name">${p.name}</div>
             <div class="product-price">${p.price.toLocaleString('ru-RU')} ₽</div>
@@ -265,7 +183,6 @@
           </div>
         </div>
       `).join('');
-
       document.querySelectorAll('.add-btn').forEach(btn => {
         btn.addEventListener('click', () => addToCart(Number(btn.dataset.id)));
       });
@@ -274,14 +191,11 @@
     function addToCart(id) {
       const product = products.find(p => p.id === id);
       if (!product) return;
-
       const existing = cart.find(item => item.id === id);
       if (existing) existing.qty += 1;
       else cart.push({ ...product, qty: 1 });
-
       saveCart();
       if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-
       tg.showPopup({
         title: 'Добавлено',
         message: `${product.name} добавлен в корзину`,
@@ -301,13 +215,11 @@
     function renderCart() {
       const list = document.getElementById('cart-list');
       const totalBar = document.getElementById('cart-total');
-
       if (cart.length === 0) {
         list.innerHTML = '<div class="empty">Корзина пуста</div>';
         totalBar.style.display = 'none';
         return;
       }
-
       list.innerHTML = cart.map(item => `
         <div class="cart-item">
           <img src="${item.photo}" alt="">
@@ -322,13 +234,11 @@
           </div>
         </div>
       `).join('');
-
       document.querySelectorAll('.qty-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           changeQty(Number(btn.dataset.id), Number(btn.dataset.delta));
         });
       });
-
       const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
       document.getElementById('total-price').textContent = total.toLocaleString('ru-RU') + ' ₽';
       totalBar.style.display = 'flex';
@@ -339,15 +249,15 @@
       document.getElementById('cart-count').textContent = count > 0 ? `(${count})` : '';
     }
 
-    // ===== Отправка заказа в канал =====
-    async function sendOrderToChannel() {
+    // Отправка заказа тебе в личку
+    async function sendOrderToAdmin() {
       const user = tg.initDataUnsafe?.user;
       const total = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
 
       let message = `🛒 <b>Новый заказ!</b>\n\n`;
 
       if (user) {
-        message += `👤 Покупатель: <a href="tg://user?id=${user.id}">${user.first_name || ''} ${user.last_name || ''}</a>\n`;
+        message += `👤 Покупатель: ${user.first_name || ''} ${user.last_name || ''}\n`;
         if (user.username) message += `Юзернейм: @${user.username}\n`;
         message += `ID: <code>${user.id}</code>\n\n`;
       }
@@ -365,13 +275,11 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            chat_id: CHANNEL,
+            chat_id: ADMIN_CHAT_ID,
             text: message,
-            parse_mode: 'HTML',
-            disable_web_page_preview: true
+            parse_mode: 'HTML'
           })
         });
-
         const data = await response.json();
         return data.ok;
       } catch (e) {
@@ -380,16 +288,14 @@
       }
     }
 
-    // Кнопка "Оформить"
     document.getElementById('checkout-btn').addEventListener('click', async () => {
       if (cart.length === 0) return;
 
-      // Блокируем кнопку на время отправки
       const btn = document.getElementById('checkout-btn');
       btn.disabled = true;
       btn.textContent = 'Отправка...';
 
-      const success = await sendOrderToChannel();
+      const success = await sendOrderToAdmin();
 
       btn.disabled = false;
       btn.textContent = 'Оформить';
@@ -397,19 +303,17 @@
       if (success) {
         tg.showPopup({
           title: 'Заказ отправлен!',
-          message: 'Информация о заказе отправлена. Мы свяжемся с вами для оплаты.',
+          message: 'Информация о заказе отправлена продавцу. Мы свяжемся с вами для оплаты.',
           buttons: [{ type: 'ok' }]
         });
-
         cart = [];
         saveCart();
         renderCart();
       } else {
-        tg.showAlert('Не удалось отправить заказ. Попробуйте ещё раз.');
+        tg.showAlert('Не удалось отправить заказ. Попробуйте ещё раз или напишите продавцу напрямую.');
       }
     });
 
-    // Запуск
     renderProducts();
     updateCartCount();
   </script>
