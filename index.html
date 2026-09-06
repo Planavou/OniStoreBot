@@ -46,14 +46,8 @@
     }
     body.product-open header { display: none; }
 
-    header h1 { font-size: 18px; font-weight: 700; }
-    .header-actions { display: flex; gap: 8px; align-items: center; }
-    .support-btn {
-      padding: 8px 12px; border-radius: 20px;
-      border: 1px solid var(--border); background: transparent;
-      color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer;
-    }
-    .tabs { display: flex; gap: 6px; }
+    header h1 { font-size: 18px; font-weight: 700; white-space: nowrap; }
+    .tabs { display: flex; gap: 6px; flex-shrink: 0; }
     .tab {
       padding: 8px 14px; border-radius: 20px;
       background: transparent; border: 1px solid var(--border);
@@ -98,6 +92,19 @@
       margin-top: 8px; background: var(--button); color: var(--button-text);
       border: none; padding: 11px; border-radius: 12px;
       font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+
+    .support-bottom {
+      margin: 8px 16px 24px;
+      width: calc(100% - 32px);
+      padding: 14px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     .product-detail { position: relative; }
@@ -291,12 +298,9 @@
 
   <header>
     <h1 id="page-title">Витрина</h1>
-    <div class="header-actions">
-      <button class="support-btn" id="support-btn" type="button">Поддержка</button>
-      <div class="tabs" id="main-tabs">
-        <button class="tab active" data-page="catalog">Товары</button>
-        <button class="tab" data-page="cart">Корзина <span id="cart-count"></span></button>
-      </div>
+    <div class="tabs" id="main-tabs">
+      <button class="tab active" data-page="catalog">Товары</button>
+      <button class="tab" data-page="cart">Корзина <span id="cart-count"></span></button>
     </div>
   </header>
 
@@ -314,6 +318,7 @@
       </div>
     </div>
     <div class="products" id="products-list"></div>
+    <button class="support-bottom" id="support-btn" type="button">Написать в поддержку</button>
   </div>
 
   <div id="product-page" class="page">
@@ -466,12 +471,26 @@
       return Math.floor(100000 + Math.random() * 900000);
     }
 
+    // Усиленная вибрация
     function hapticSuccess() {
-      if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+      try {
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+          Telegram.WebApp.HapticFeedback.impactOccurred('medium');
+          setTimeout(() => {
+            try { Telegram.WebApp.HapticFeedback.notificationOccurred('success'); } catch (e) {}
+          }, 40);
+        }
+        if (navigator.vibrate) navigator.vibrate([20, 30, 20]);
+      } catch (e) {}
     }
 
     function hapticLight() {
-      if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+      try {
+        if (window.Telegram?.WebApp?.HapticFeedback) {
+          Telegram.WebApp.HapticFeedback.impactOccurred('light');
+        }
+        if (navigator.vibrate) navigator.vibrate(15);
+      } catch (e) {}
     }
 
     function showPage(pageId) {
@@ -535,6 +554,7 @@
     });
 
     document.getElementById('support-btn').addEventListener('click', () => {
+      hapticLight();
       if (tg.openTelegramLink) tg.openTelegramLink(SUPPORT_LINK);
       else if (tg.openLink) tg.openLink(SUPPORT_LINK);
       else window.open(SUPPORT_LINK, '_blank');
@@ -646,6 +666,10 @@
     function addToCart(id) {
       const product = products.find(p => p.id === id);
       if (!product) return;
+
+      // Сначала вибрация — сразу по нажатию
+      hapticSuccess();
+
       const existing = cart.find(item => item.id === id);
       if (existing) existing.qty += 1;
       else cart.push({ 
@@ -656,7 +680,7 @@
         photo: product.photos[0]
       });
       saveCart();
-      hapticSuccess();
+
       tg.showPopup({ title: 'Добавлено', message: product.name + ' добавлен в корзину', buttons: [{ type: 'ok' }] });
     }
 
