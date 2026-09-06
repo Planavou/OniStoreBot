@@ -407,6 +407,10 @@
     const SUPPORT_LINK = 'https://t.me/MagazinFigurokAnime';
     const DELIVERY_PRICE = 500;
 
+    // Deep-link для шаринга товара
+    const BOT_USERNAME = 'IamOniStore_bot';
+    const APP_NAME = 'Shop';
+
     const PROMO_CODE = 'MUSLI';
     const PROMO_PERCENT = 50;
     const PROMO_USED_KEY = 'promo_used_MUSLI';
@@ -471,7 +475,6 @@
       return Math.floor(100000 + Math.random() * 900000);
     }
 
-    // Усиленная вибрация
     function hapticSuccess() {
       try {
         if (window.Telegram?.WebApp?.HapticFeedback) {
@@ -626,6 +629,18 @@
       showPage('product-page');
     }
 
+    function openFromStartParam() {
+      const param = tg.initDataUnsafe?.start_param;
+      if (!param) return;
+
+      if (param.startsWith('product_')) {
+        const id = Number(param.replace('product_', ''));
+        if (id && products.some(p => p.id === id)) {
+          openProduct(id);
+        }
+      }
+    }
+
     let startX = 0;
     document.querySelector('.gallery').addEventListener('touchstart', e => {
       startX = e.touches[0].clientX;
@@ -656,8 +671,14 @@
 
     document.getElementById('share-btn').addEventListener('click', () => {
       if (!currentProduct) return;
-      const text = encodeURIComponent(currentProduct.name + ' — ' + currentProduct.price + ' ₽\n' + SUPPORT_LINK);
-      const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(SUPPORT_LINK) + '&text=' + text;
+
+      const deepLink = `https://t.me/${BOT_USERNAME}/${APP_NAME}?startapp=product_${currentProduct.id}`;
+      const text = `${currentProduct.name} — ${currentProduct.price.toLocaleString('ru-RU')} ₽`;
+
+      const shareUrl =
+        'https://t.me/share/url?url=' + encodeURIComponent(deepLink) +
+        '&text=' + encodeURIComponent(text);
+
       if (tg.openTelegramLink) tg.openTelegramLink(shareUrl);
       else if (tg.openLink) tg.openLink(shareUrl);
       else window.open(shareUrl, '_blank');
@@ -667,7 +688,6 @@
       const product = products.find(p => p.id === id);
       if (!product) return;
 
-      // Сначала вибрация — сразу по нажатию
       hapticSuccess();
 
       const existing = cart.find(item => item.id === id);
@@ -993,6 +1013,7 @@
     renderProducts();
     updateCartCount();
     updateMainButton();
+    openFromStartParam();
   </script>
 </body>
 </html>
