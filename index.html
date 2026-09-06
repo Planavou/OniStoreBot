@@ -15,8 +15,8 @@
       --secondary: var(--tg-theme-secondary-bg-color, #f2f2f7);
       --border: color-mix(in srgb, var(--hint) 25%, transparent);
     }
-    * { 
-      box-sizing: border-box; margin: 0; padding: 0; 
+    * {
+      box-sizing: border-box; margin: 0; padding: 0;
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
@@ -32,30 +32,42 @@
     img { -webkit-user-drag: none; user-drag: none; display: block; }
 
     header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      position: sticky; top: 0; z-index: 100;
       background: var(--secondary);
       padding: 12px 16px;
       padding-top: calc(12px + env(safe-area-inset-top, 0px));
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
       border-bottom: 1px solid var(--border);
     }
     body.product-open header { display: none; }
-
     header h1 { font-size: 18px; font-weight: 700; white-space: nowrap; }
     .tabs { display: flex; gap: 6px; flex-shrink: 0; }
     .tab {
+      position: relative;
       padding: 8px 14px; border-radius: 20px;
       background: transparent; border: 1px solid var(--border);
       color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer;
     }
-    .tab.active {
-      background: var(--button); color: var(--button-text); border-color: var(--button);
+    .tab.active { background: var(--button); color: var(--button-text); border-color: var(--button); }
+    .tab-dot {
+      position: absolute; top: 4px; right: 6px;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #ff3b30; display: none;
     }
+    .tab-dot.show { display: block; }
+
+    .how-block {
+      margin: 12px 16px 0;
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--secondary);
+      border: 1px solid var(--border);
+    }
+    .how-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; }
+    .how-steps { display: flex; flex-direction: column; gap: 8px; }
+    .how-step { font-size: 13px; color: var(--hint); display: flex; gap: 8px; }
+    .how-step b { color: var(--text); min-width: 18px; }
+
     .filters { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
     .search-box {
       width: 100%; padding: 12px 16px; border-radius: 14px;
@@ -71,6 +83,7 @@
     .cat-btn.active {
       background: var(--button); color: var(--button-text); border-color: var(--button);
     }
+
     .products {
       display: grid; grid-template-columns: repeat(2, 1fr);
       gap: 14px; padding: 0 16px 16px;
@@ -78,24 +91,38 @@
     .product {
       background: var(--secondary); border-radius: 18px;
       overflow: hidden; display: flex; flex-direction: column; cursor: pointer;
+      position: relative;
     }
+    .product-badge {
+      position: absolute; top: 10px; left: 10px; z-index: 2;
+      background: rgba(0,0,0,0.65); color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 5px 8px; border-radius: 8px;
+      backdrop-filter: blur(4px);
+    }
+    .product-share {
+      position: absolute; top: 8px; right: 8px; z-index: 2;
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: rgba(0,0,0,0.45); color: #fff;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .product-share svg { width: 16px; height: 16px; fill: #fff; }
     .product-img-wrap {
       width: 100%; height: 150px; background: #d1d1d6; overflow: hidden;
     }
-    .product-img-wrap img {
-      width: 100%; height: 150px; object-fit: cover;
-    }
+    .product-img-wrap img { width: 100%; height: 150px; object-fit: cover; }
     .product-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
     .product-name { font-weight: 600; font-size: 14px; }
     .product-price { color: var(--button); font-weight: 700; font-size: 16px; }
     .add-btn {
       margin-top: 8px; background: var(--button); color: var(--button-text);
       border: none; padding: 11px; border-radius: 12px;
-      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-size: 13px; font-weight: 600; cursor: pointer;
     }
+    .add-btn.in-cart { opacity: 0.92; }
 
     .support-bottom {
-      margin: 8px 16px 24px;
+      margin: 8px 16px 8px;
       width: calc(100% - 32px);
       padding: 14px;
       border-radius: 14px;
@@ -106,19 +133,21 @@
       font-weight: 600;
       cursor: pointer;
     }
+    .support-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--hint);
+      margin: 0 16px 24px;
+    }
 
     .product-detail { position: relative; }
     .gallery {
       position: relative; width: 100%; height: 320px;
       overflow: hidden; background: #d1d1d6;
     }
-    .gallery-track {
-      display: flex; height: 100%; transition: transform 0.3s ease;
-    }
+    .gallery-track { display: flex; height: 100%; transition: transform 0.3s ease; }
     .gallery-slide { min-width: 100%; height: 100%; }
-    .gallery-slide img {
-      width: 100%; height: 100%; object-fit: cover;
-    }
+    .gallery-slide img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
     .gallery-dots {
       position: absolute; bottom: 12px; left: 0; right: 0;
       display: flex; justify-content: center; gap: 6px;
@@ -132,44 +161,38 @@
     .back-icon {
       position: fixed;
       top: calc(12px + env(safe-area-inset-top, 0px));
-      left: 12px;
-      z-index: 200;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(0, 0, 0, 0.45);
-      color: white;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
+      left: 12px; z-index: 200;
+      width: 40px; height: 40px; border-radius: 50%; border: none;
+      background: rgba(0, 0, 0, 0.45); color: white;
+      display: none; align-items: center; justify-content: center; cursor: pointer;
       backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
     }
     body.product-open .back-icon { display: flex; }
-    .back-icon:active {
-      transform: scale(0.94);
-      background: rgba(0, 0, 0, 0.6);
-    }
+    .back-icon:active { transform: scale(0.94); background: rgba(0,0,0,0.6); }
     .back-icon svg { width: 22px; height: 22px; fill: white; }
 
     .detail-content { padding: 20px 16px; }
+    .detail-badge {
+      display: inline-block;
+      background: color-mix(in srgb, var(--button) 15%, transparent);
+      color: var(--button);
+      font-size: 12px; font-weight: 700;
+      padding: 5px 10px; border-radius: 8px;
+      margin-bottom: 10px;
+    }
     .detail-name { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
     .detail-price { font-size: 24px; font-weight: 700; color: var(--button); margin-bottom: 16px; }
     .detail-desc { font-size: 15px; line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; }
     .detail-actions { display: flex; flex-direction: column; gap: 10px; }
+    .detail-add-btn, .share-btn {
+      width: 100%; padding: 14px; border-radius: 14px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+    }
     .detail-add-btn {
-      width: 100%;
-      padding: 14px; border-radius: 14px; border: none;
-      background: var(--button); color: var(--button-text); font-size: 15px; font-weight: 600; cursor: pointer;
+      border: none; background: var(--button); color: var(--button-text);
     }
     .share-btn {
-      width: 100%;
-      padding: 14px; border-radius: 14px;
-      border: 1.5px solid var(--border);
-      background: transparent; color: var(--text);
-      font-size: 15px; font-weight: 600; cursor: pointer;
+      border: 1.5px solid var(--border); background: transparent; color: var(--text);
     }
 
     .cart-top {
@@ -177,15 +200,8 @@
       padding: 12px 16px 0;
     }
     .clear-cart-btn {
-      border: none;
-      background: transparent;
-      color: #ff3b30;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 8px 4px;
-      position: relative;
-      z-index: 5;
+      border: none; background: transparent; color: #ff3b30;
+      font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px 4px; z-index: 5;
     }
     .cart-item {
       display: flex; gap: 14px; padding: 16px;
@@ -202,6 +218,14 @@
       width: 34px; height: 34px; border-radius: 50%; border: none;
       background: var(--button); color: white; font-size: 18px; cursor: pointer;
     }
+
+    .empty-wrap { text-align: center; padding: 70px 24px; }
+    .empty-wrap .empty-text { color: var(--hint); font-size: 16px; margin-bottom: 16px; }
+    .empty-wrap .to-catalog {
+      border: none; background: var(--button); color: var(--button-text);
+      padding: 12px 20px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;
+    }
+
     .delivery-block { padding: 16px; border-top: 1px solid var(--border); }
     .delivery-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
     .delivery-option {
@@ -234,29 +258,17 @@
     .ozon-fields input:focus { border-color: var(--button); }
 
     .map-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 14px;
-      border-radius: 14px;
-      border: none;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 14px; border-radius: 14px; border: none;
       background: linear-gradient(135deg, #fc3f1d, #ff6b4a);
-      color: white;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
+      color: white; font-size: 15px; font-weight: 600; cursor: pointer;
       box-shadow: 0 4px 14px rgba(252, 63, 29, 0.35);
     }
     .map-btn:active { transform: scale(0.98); opacity: 0.9; }
     .map-btn svg { width: 20px; height: 20px; fill: white; }
 
     .promo-block {
-      padding: 0 16px 16px;
-      display: none;
-      flex-direction: column;
-      gap: 8px;
+      padding: 0 16px 16px; display: none; flex-direction: column; gap: 8px;
     }
     .promo-block.show { display: flex; }
     .promo-row { display: flex; gap: 8px; }
@@ -274,6 +286,28 @@
     .promo-status.ok { color: #34c759; }
     .promo-status.err { color: #ff3b30; }
 
+    .summary-block {
+      margin: 0 16px 16px;
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--secondary);
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .summary-block.show { display: flex; }
+    .summary-row {
+      display: flex; justify-content: space-between;
+      font-size: 14px; color: var(--hint);
+    }
+    .summary-row.total {
+      margin-top: 4px; padding-top: 8px;
+      border-top: 1px solid var(--border);
+      color: var(--text); font-weight: 700; font-size: 16px;
+    }
+    .summary-row .val { color: var(--text); font-weight: 600; }
+    .summary-row.discount .val { color: #34c759; }
+
     .total-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: var(--secondary); padding: 16px;
@@ -289,7 +323,80 @@
       font-weight: 600; font-size: 15px; cursor: pointer;
     }
     .checkout-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .empty { text-align: center; padding: 90px 24px; color: var(--hint); font-size: 16px; }
+
+    .success-screen {
+      display: none; text-align: center; padding: 60px 24px;
+    }
+    .success-screen.show { display: block; }
+    .success-icon {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: color-mix(in srgb, #34c759 18%, transparent);
+      color: #34c759; font-size: 32px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .success-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .success-text { font-size: 14px; color: var(--hint); margin-bottom: 20px; line-height: 1.5; }
+    .success-btn {
+      border: none; background: var(--button); color: var(--button-text);
+      padding: 12px 20px; border-radius: 12px; font-weight: 600; cursor: pointer;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 90px;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(30,30,30,0.92);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .lightbox {
+      position: fixed; inset: 0; z-index: 400;
+      background: rgba(0,0,0,0.92);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .lightbox.show { display: flex; }
+    .lightbox img {
+      max-width: 100%; max-height: 100%;
+      object-fit: contain; border-radius: 8px;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: calc(12px + env(safe-area-inset-top, 0px));
+      right: 12px;
+      width: 40px; height: 40px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.15); color: #fff;
+      font-size: 22px; cursor: pointer;
+    }
+
+    .deep-hint {
+      margin: 10px 16px 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: color-mix(in srgb, var(--button) 12%, transparent);
+      color: var(--button);
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+    }
+    .deep-hint.show { display: block; }
+
     .page { display: none; }
     .page.active { display: block; }
   </style>
@@ -300,7 +407,7 @@
     <h1 id="page-title">Витрина</h1>
     <div class="tabs" id="main-tabs">
       <button class="tab active" data-page="catalog">Товары</button>
-      <button class="tab" data-page="cart">Корзина <span id="cart-count"></span></button>
+      <button class="tab" data-page="cart">Корзина <span id="cart-count"></span><span class="tab-dot" id="cart-dot"></span></button>
     </div>
   </header>
 
@@ -309,6 +416,15 @@
   </button>
 
   <div id="catalog" class="page active">
+    <div class="how-block">
+      <div class="how-title">Как купить</div>
+      <div class="how-steps">
+        <div class="how-step"><b>1</b> Выберите товар и добавьте в корзину</div>
+        <div class="how-step"><b>2</b> Укажите доставку (Ozon или самовывоз)</div>
+        <div class="how-step"><b>3</b> Оформите заказ — мы свяжемся по оплате</div>
+      </div>
+    </div>
+
     <div class="filters">
       <input type="text" class="search-box" id="search-input" placeholder="Поиск по названию...">
       <div class="categories">
@@ -319,15 +435,18 @@
     </div>
     <div class="products" id="products-list"></div>
     <button class="support-bottom" id="support-btn" type="button">Написать в поддержку</button>
+    <div class="support-note">Обычно отвечаем за 1–2 часа</div>
   </div>
 
   <div id="product-page" class="page">
+    <div class="deep-hint" id="deep-hint">Вы перешли по ссылке на этот товар</div>
     <div class="product-detail">
       <div class="gallery">
         <div class="gallery-track" id="gallery-track"></div>
         <div class="gallery-dots" id="gallery-dots"></div>
       </div>
       <div class="detail-content">
+        <div class="detail-badge" id="detail-badge" style="display:none;"></div>
         <div class="detail-name" id="detail-name"></div>
         <div class="detail-price" id="detail-price"></div>
         <div class="detail-desc" id="detail-desc"></div>
@@ -345,6 +464,13 @@
     </div>
     <div id="cart-list"></div>
 
+    <div class="success-screen" id="success-screen">
+      <div class="success-icon">✓</div>
+      <div class="success-title">Заказ оформлен</div>
+      <div class="success-text" id="success-text"></div>
+      <button class="success-btn" id="success-to-catalog" type="button">К товарам</button>
+    </div>
+
     <div class="promo-block" id="promo-block">
       <div class="promo-row">
         <input type="text" id="promo-input" placeholder="Промокод">
@@ -355,34 +481,36 @@
 
     <div class="delivery-block" id="delivery-block" style="display:none;">
       <div class="delivery-title">Способ получения</div>
-
       <label class="delivery-option" id="opt-ozon">
         <input type="radio" name="delivery" value="ozon">
         <div class="text">Доставка до пункта Ozon</div>
         <div class="price-tag">+500 ₽</div>
       </label>
-
       <label class="delivery-option" id="opt-pickup">
         <input type="radio" name="delivery" value="pickup">
         <div class="text">Самовывоз по г. Москва</div>
         <div class="price-tag">Бесплатно</div>
       </label>
-
       <div class="ozon-fields" id="ozon-fields">
         <div class="note">
           Обязательная информация для оформления заказа на Ozon.<br>
           Найдите пункт на карте, скопируйте адрес и вставьте ниже.
         </div>
-
         <button class="map-btn" id="open-map-btn" type="button">
           <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
           Найти пункт на карте
         </button>
-
         <input type="text" id="recipient-name" placeholder="Имя получателя *">
-        <input type="tel" id="recipient-phone" placeholder="Номер телефона *">
+        <input type="tel" id="recipient-phone" placeholder="+7 (___) ___-__-__" inputmode="tel">
         <input type="text" id="ozon-address" placeholder="Адрес пункта выдачи Ozon *">
       </div>
+    </div>
+
+    <div class="summary-block" id="summary-block">
+      <div class="summary-row"><span>Товары</span><span class="val" id="sum-products">0 ₽</span></div>
+      <div class="summary-row discount" id="sum-discount-row" style="display:none;"><span>Скидка Musli</span><span class="val" id="sum-discount">−0 ₽</span></div>
+      <div class="summary-row"><span>Доставка</span><span class="val" id="sum-delivery">0 ₽</span></div>
+      <div class="summary-row total"><span>Итого</span><span class="val" id="sum-total">0 ₽</span></div>
     </div>
 
     <div class="total-bar" id="cart-total">
@@ -392,6 +520,12 @@
       </div>
       <button class="checkout-btn" id="checkout-btn" disabled>Оформить</button>
     </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightbox-close" type="button">×</button>
+    <img id="lightbox-img" src="" alt="">
   </div>
 
   <script>
@@ -406,19 +540,17 @@
     const ADMIN_CHAT_ID = '1232069518';
     const SUPPORT_LINK = 'https://t.me/MagazinFigurokAnime';
     const DELIVERY_PRICE = 500;
-
-    // Deep-link для шаринга товара
     const BOT_USERNAME = 'IamOniStore_bot';
     const APP_NAME = 'Shop';
 
     const PROMO_CODE = 'MUSLI';
     const PROMO_PERCENT = 50;
     const PROMO_USED_KEY = 'promo_used_MUSLI';
+    const CONTACT_KEY = 'shop_contact';
 
     const POWER1 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/7d1e0b69d92b4aa88bc77cb7df718e11_bananalab-pro_1K.jpg";
     const POWER2 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/54d6cfe4e15c433caedbd636a95f3c37_bananalab-pro_1K.jpg";
     const POWER_GIF = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Azerama%20gif.gif";
-
     const PH1 = "https://via.placeholder.com/400x400/2c2c2e/ffffff?text=Photo+1";
     const PH2 = "https://via.placeholder.com/400x400/3a3a3c/ffffff?text=Photo+2";
     const PH3 = "https://via.placeholder.com/400x400/48484a/ffffff?text=Photo+3";
@@ -429,14 +561,16 @@
         name: "Бюст Паук-Нуар",
         price: 1490,
         category: "busts",
+        badge: null,
         description: "Коллекционный бюст Паук-Нуар.\nВысокое качество исполнения.\nОтличный подарок для фанатов.",
         photos: [PH1, PH2, PH3]
       },
       {
         id: 2,
-        name: "Фигурка Power под покрас / Человек-бензопила / Chainsaw Man",
+        name: "Фигурка Power / Человек-бензопила / Chainsaw Man",
         price: 1490,
         category: "figures",
+        badge: "Под покрас",
         description: "Фигурка Power (под покрас).\nВселенная: Человек-бензопила / Chainsaw Man.\nДетализированная проработка.\nМатериал: ПВХ.",
         photos: [POWER1, POWER2, POWER_GIF]
       }
@@ -445,7 +579,7 @@
     let cart = JSON.parse(localStorage.getItem('shop_cart') || '[]');
     cart = cart.map(item => {
       const p = products.find(x => x.id === item.id);
-      if (p) item.price = p.price;
+      if (p) { item.price = p.price; item.name = p.name; }
       return item;
     }).filter(item => products.some(p => p.id === item.id));
     localStorage.setItem('shop_cart', JSON.stringify(cart));
@@ -456,19 +590,19 @@
     let searchQuery = '';
     let deliveryMethod = null;
     let appliedPromo = false;
+    let toastTimer = null;
 
-    function isPromoUsed() {
-      return localStorage.getItem(PROMO_USED_KEY) === '1';
-    }
-
-    function markPromoUsed() {
-      localStorage.setItem(PROMO_USED_KEY, '1');
-    }
+    function isPromoUsed() { return localStorage.getItem(PROMO_USED_KEY) === '1'; }
+    function markPromoUsed() { localStorage.setItem(PROMO_USED_KEY, '1'); }
 
     function saveCart() {
       localStorage.setItem('shop_cart', JSON.stringify(cart));
       updateCartCount();
       updateMainButton();
+      if (document.getElementById('catalog').classList.contains('active')) renderProducts();
+      if (document.getElementById('product-page').classList.contains('active') && currentProduct) {
+        updateDetailAddBtn();
+      }
     }
 
     function generateOrderNumber() {
@@ -477,30 +611,52 @@
 
     function hapticSuccess() {
       try {
-        if (window.Telegram?.WebApp?.HapticFeedback) {
-          Telegram.WebApp.HapticFeedback.impactOccurred('medium');
-          setTimeout(() => {
-            try { Telegram.WebApp.HapticFeedback.notificationOccurred('success'); } catch (e) {}
-          }, 40);
+        if (tg.HapticFeedback) {
+          tg.HapticFeedback.impactOccurred('medium');
+          setTimeout(() => { try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){} }, 40);
         }
         if (navigator.vibrate) navigator.vibrate([20, 30, 20]);
-      } catch (e) {}
+      } catch(e) {}
     }
-
     function hapticLight() {
       try {
-        if (window.Telegram?.WebApp?.HapticFeedback) {
-          Telegram.WebApp.HapticFeedback.impactOccurred('light');
-        }
+        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         if (navigator.vibrate) navigator.vibrate(15);
-      } catch (e) {}
+      } catch(e) {}
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+    }
+
+    function getCartQty(id) {
+      const item = cart.find(i => i.id === id);
+      return item ? item.qty : 0;
+    }
+
+    function addBtnLabel(id) {
+      const q = getCartQty(id);
+      return q > 0 ? `В корзине (${q})` : 'В корзину';
+    }
+
+    function shareProduct(product) {
+      if (!product) return;
+      const deepLink = `https://t.me/\( {BOT_USERNAME}/ \){APP_NAME}?startapp=product_${product.id}`;
+      const text = `${product.name} — ${product.price.toLocaleString('ru-RU')} ₽`;
+      const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(deepLink) + '&text=' + encodeURIComponent(text);
+      if (tg.openTelegramLink) tg.openTelegramLink(shareUrl);
+      else if (tg.openLink) tg.openLink(shareUrl);
+      else window.open(shareUrl, '_blank');
     }
 
     function showPage(pageId) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(pageId).classList.add('active');
       document.body.classList.toggle('product-open', pageId === 'product-page');
-
       const titles = { catalog: 'Витрина', cart: 'Корзина', 'product-page': 'Товар' };
       document.getElementById('page-title').textContent = titles[pageId] || 'Магазин';
       document.getElementById('main-tabs').style.display = pageId === 'product-page' ? 'none' : 'flex';
@@ -508,15 +664,21 @@
       updateMainButton();
     }
 
+    function goCatalog() {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.querySelector('.tab[data-page="catalog"]').classList.add('active');
+      showPage('catalog');
+      renderProducts();
+    }
+
     function updateMainButton() {
       if (!tg.MainButton) return;
       const activePage = document.querySelector('.page.active')?.id;
-
       if (activePage === 'product-page' && currentProduct) {
-        tg.MainButton.setText('В корзину');
+        tg.MainButton.setText(addBtnLabel(currentProduct.id));
         tg.MainButton.show();
         tg.MainButton.onClick(mainButtonHandler);
-      } else if (activePage === 'cart' && cart.length > 0) {
+      } else if (activePage === 'cart' && cart.length > 0 && !document.getElementById('success-screen').classList.contains('show')) {
         tg.MainButton.setText('Оформить заказ');
         if (!document.getElementById('checkout-btn').disabled) tg.MainButton.show();
         else tg.MainButton.hide();
@@ -534,11 +696,15 @@
 
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => {
+        hapticLight();
         document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         showPage(btn.dataset.page);
         if (btn.dataset.page === 'catalog') renderProducts();
-        if (btn.dataset.page === 'cart') renderCart();
+        if (btn.dataset.page === 'cart') {
+          document.getElementById('success-screen').classList.remove('show');
+          renderCart();
+        }
       });
     });
 
@@ -566,7 +732,7 @@
     function getFilteredProducts() {
       return products.filter(p => {
         const matchCategory = currentCategory === 'all' || p.category === currentCategory;
-        const matchSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery);
+        const matchSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery) || (p.badge || '').toLowerCase().includes(searchQuery);
         return matchCategory && matchSearch;
       });
     }
@@ -575,27 +741,28 @@
       const list = document.getElementById('products-list');
       const filtered = getFilteredProducts();
       if (filtered.length === 0) {
-        list.innerHTML = '<div class="empty">Ничего не найдено</div>';
+        list.innerHTML = '<div class="empty-wrap"><div class="empty-text">Ничего не найдено</div></div>';
         return;
       }
-
       list.innerHTML = filtered.map(p => `
         <div class="product" data-id="${p.id}">
-          <div class="product-img-wrap">
-            <img src="${p.photos[0]}" alt="">
-          </div>
+          \( {p.badge ? `<div class="product-badge"> \){p.badge}</div>` : ''}
+          <button class="product-share" data-share="${p.id}" type="button" aria-label="Поделиться">
+            <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+          </button>
+          <div class="product-img-wrap"><img src="${p.photos[0]}" alt=""></div>
           <div class="product-info">
             <div class="product-name">${p.name}</div>
             <div class="product-price">${p.price.toLocaleString('ru-RU')} ₽</div>
-            <button class="add-btn" data-id="${p.id}">В корзину</button>
+            <button class="add-btn \( {getCartQty(p.id) ? 'in-cart' : ''}" data-id=" \){p.id}">${addBtnLabel(p.id)}</button>
           </div>
         </div>
       `).join('');
 
       document.querySelectorAll('.product').forEach(card => {
         card.addEventListener('click', (e) => {
-          if (e.target.classList.contains('add-btn')) return;
-          openProduct(Number(card.dataset.id));
+          if (e.target.closest('.add-btn') || e.target.closest('.product-share')) return;
+          openProduct(Number(card.dataset.id), false);
         });
       });
       document.querySelectorAll('.add-btn').forEach(btn => {
@@ -604,25 +771,59 @@
           addToCart(Number(btn.dataset.id));
         });
       });
+      document.querySelectorAll('.product-share').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const p = products.find(x => x.id === Number(btn.dataset.share));
+          shareProduct(p);
+        });
+      });
     }
 
-    function openProduct(id) {
+    function updateDetailAddBtn() {
+      if (!currentProduct) return;
+      const btn = document.getElementById('detail-add-btn');
+      btn.textContent = addBtnLabel(currentProduct.id);
+    }
+
+    function openProduct(id, fromDeepLink) {
       currentProduct = products.find(p => p.id === id);
       if (!currentProduct) return;
       currentSlide = 0;
 
+      const badgeEl = document.getElementById('detail-badge');
+      if (currentProduct.badge) {
+        badgeEl.style.display = 'inline-block';
+        badgeEl.textContent = currentProduct.badge;
+      } else {
+        badgeEl.style.display = 'none';
+      }
+
       document.getElementById('detail-name').textContent = currentProduct.name;
       document.getElementById('detail-price').textContent = currentProduct.price.toLocaleString('ru-RU') + ' ₽';
       document.getElementById('detail-desc').textContent = currentProduct.description;
+      updateDetailAddBtn();
+
+      const hint = document.getElementById('deep-hint');
+      if (fromDeepLink) {
+        hint.classList.add('show');
+        setTimeout(() => hint.classList.remove('show'), 3500);
+      } else {
+        hint.classList.remove('show');
+      }
 
       const track = document.getElementById('gallery-track');
-      track.innerHTML = currentProduct.photos.map(src => 
-        `<div class="gallery-slide"><img src="${src}" alt=""></div>`
+      track.innerHTML = currentProduct.photos.map(src =>
+        `<div class="gallery-slide"><img src="\( {src}" alt="" data-full=" \){src}"></div>`
       ).join('');
       track.style.transform = 'translateX(0)';
 
+      document.querySelectorAll('#gallery-track img').forEach(img => {
+        img.addEventListener('click', () => openLightbox(img.dataset.full));
+      });
+
       const dots = document.getElementById('gallery-dots');
-      dots.innerHTML = currentProduct.photos.map((_, i) => 
+      dots.innerHTML = currentProduct.photos.map((_, i) =>
         `<span class="${i === 0 ? 'active' : ''}"></span>`
       ).join('');
 
@@ -632,20 +833,27 @@
     function openFromStartParam() {
       const param = tg.initDataUnsafe?.start_param;
       if (!param) return;
-
       if (param.startsWith('product_')) {
         const id = Number(param.replace('product_', ''));
-        if (id && products.some(p => p.id === id)) {
-          openProduct(id);
-        }
+        if (id && products.some(p => p.id === id)) openProduct(id, true);
       }
     }
+
+    function openLightbox(src) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox').classList.add('show');
+    }
+    document.getElementById('lightbox-close').addEventListener('click', () => {
+      document.getElementById('lightbox').classList.remove('show');
+    });
+    document.getElementById('lightbox').addEventListener('click', (e) => {
+      if (e.target.id === 'lightbox') document.getElementById('lightbox').classList.remove('show');
+    });
 
     let startX = 0;
     document.querySelector('.gallery').addEventListener('touchstart', e => {
       startX = e.touches[0].clientX;
     }, { passive: true });
-
     document.querySelector('.gallery').addEventListener('touchend', e => {
       if (!currentProduct) return;
       const diff = startX - e.changedTouches[0].clientX;
@@ -659,49 +867,21 @@
       }
     }, { passive: true });
 
-    document.getElementById('back-btn').addEventListener('click', () => {
-      showPage('catalog');
-      document.querySelector('.tab[data-page="catalog"]').classList.add('active');
-      document.querySelector('.tab[data-page="cart"]').classList.remove('active');
-    });
-
+    document.getElementById('back-btn').addEventListener('click', goCatalog);
     document.getElementById('detail-add-btn').addEventListener('click', () => {
       if (currentProduct) addToCart(currentProduct.id);
     });
-
-    document.getElementById('share-btn').addEventListener('click', () => {
-      if (!currentProduct) return;
-
-      const deepLink = `https://t.me/${BOT_USERNAME}/${APP_NAME}?startapp=product_${currentProduct.id}`;
-      const text = `${currentProduct.name} — ${currentProduct.price.toLocaleString('ru-RU')} ₽`;
-
-      const shareUrl =
-        'https://t.me/share/url?url=' + encodeURIComponent(deepLink) +
-        '&text=' + encodeURIComponent(text);
-
-      if (tg.openTelegramLink) tg.openTelegramLink(shareUrl);
-      else if (tg.openLink) tg.openLink(shareUrl);
-      else window.open(shareUrl, '_blank');
-    });
+    document.getElementById('share-btn').addEventListener('click', () => shareProduct(currentProduct));
 
     function addToCart(id) {
       const product = products.find(p => p.id === id);
       if (!product) return;
-
       hapticSuccess();
-
       const existing = cart.find(item => item.id === id);
       if (existing) existing.qty += 1;
-      else cart.push({ 
-        id: product.id, 
-        name: product.name, 
-        price: product.price, 
-        qty: 1, 
-        photo: product.photos[0]
-      });
+      else cart.push({ id: product.id, name: product.name, price: product.price, qty: 1, photo: product.photos[0] });
       saveCart();
-
-      tg.showPopup({ title: 'Добавлено', message: product.name + ' добавлен в корзину', buttons: [{ type: 'ok' }] });
+      showToast('Добавлено ✓');
     }
 
     function changeQty(id, delta) {
@@ -726,17 +906,14 @@
       saveCart();
       renderCart();
       hapticSuccess();
+      showToast('Корзина очищена');
     }
 
     document.getElementById('clear-cart-btn').addEventListener('click', () => {
       if (cart.length === 0) return;
       if (tg.showConfirm) {
-        tg.showConfirm('Очистить корзину? Все товары будут удалены.', (confirmed) => {
-          if (confirmed) doClearCart();
-        });
-      } else {
-        doClearCart();
-      }
+        tg.showConfirm('Очистить корзину? Все товары будут удалены.', (ok) => { if (ok) doClearCart(); });
+      } else doClearCart();
     });
 
     function updateDeliveryUI() {
@@ -766,41 +943,66 @@
 
     document.getElementById('open-map-btn').addEventListener('click', () => {
       const url = 'https://yandex.ru/maps/?text=' + encodeURIComponent('пункт выдачи Ozon');
-      if (window.Telegram && Telegram.WebApp && Telegram.WebApp.openLink) {
-        Telegram.WebApp.openLink(url);
-      } else {
-        window.open(url, '_blank');
-      }
+      if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
     });
+
+    // Маска телефона
+    function formatPhone(value) {
+      let digits = value.replace(/\D/g, '');
+      if (digits.startsWith('8')) digits = '7' + digits.slice(1);
+      if (!digits.startsWith('7')) digits = '7' + digits;
+      digits = digits.slice(0, 11);
+      let r = '+7';
+      if (digits.length > 1) r += ' (' + digits.slice(1, 4);
+      if (digits.length >= 4) r += ') ' + digits.slice(4, 7);
+      if (digits.length >= 7) r += '-' + digits.slice(7, 9);
+      if (digits.length >= 9) r += '-' + digits.slice(9, 11);
+      return r;
+    }
+
+    const phoneInput = document.getElementById('recipient-phone');
+    phoneInput.addEventListener('input', () => {
+      const pos = phoneInput.selectionStart;
+      phoneInput.value = formatPhone(phoneInput.value);
+      checkCheckoutReady();
+      saveContact();
+    });
+
+    function saveContact() {
+      localStorage.setItem(CONTACT_KEY, JSON.stringify({
+        name: document.getElementById('recipient-name').value.trim(),
+        phone: document.getElementById('recipient-phone').value.trim()
+      }));
+    }
+    function loadContact() {
+      try {
+        const c = JSON.parse(localStorage.getItem(CONTACT_KEY) || '{}');
+        if (c.name) document.getElementById('recipient-name').value = c.name;
+        if (c.phone) document.getElementById('recipient-phone').value = c.phone;
+      } catch(e) {}
+    }
+
+    document.getElementById('recipient-name').addEventListener('input', () => {
+      checkCheckoutReady();
+      saveContact();
+    });
+    document.getElementById('ozon-address').addEventListener('input', checkCheckoutReady);
 
     document.getElementById('promo-apply').addEventListener('click', () => {
       const code = document.getElementById('promo-input').value.trim().toUpperCase();
       const status = document.getElementById('promo-status');
-
       if (!code) {
-        status.textContent = 'Введите промокод';
-        status.className = 'promo-status err';
-        appliedPromo = false;
-        updateTotal();
-        return;
+        status.textContent = 'Введите промокод'; status.className = 'promo-status err';
+        appliedPromo = false; updateTotal(); return;
       }
-
       if (code !== PROMO_CODE) {
-        appliedPromo = false;
-        status.textContent = 'Промокод не найден';
-        status.className = 'promo-status err';
-        updateTotal();
-        return;
+        appliedPromo = false; status.textContent = 'Промокод не найден'; status.className = 'promo-status err';
+        updateTotal(); return;
       }
-
       if (isPromoUsed()) {
-        appliedPromo = false;
-        status.textContent = 'Промокод уже был использован';
-        status.className = 'promo-status err';
-        updateTotal();
-        return;
+        appliedPromo = false; status.textContent = 'Промокод уже был использован'; status.className = 'promo-status err';
+        updateTotal(); return;
       }
-
       appliedPromo = true;
       status.textContent = 'Промокод Musli применён: −50%';
       status.className = 'promo-status ok';
@@ -808,28 +1010,19 @@
       updateTotal();
     });
 
-    ['recipient-name', 'recipient-phone', 'ozon-address'].forEach(id => {
-      document.getElementById(id).addEventListener('input', checkCheckoutReady);
-    });
-
     function checkCheckoutReady() {
       const btn = document.getElementById('checkout-btn');
       if (!deliveryMethod) { btn.disabled = true; updateMainButton(); return; }
       if (deliveryMethod === 'ozon') {
         const name = document.getElementById('recipient-name').value.trim();
-        const phone = document.getElementById('recipient-phone').value.trim();
+        const phoneDigits = document.getElementById('recipient-phone').value.replace(/\D/g, '');
         const address = document.getElementById('ozon-address').value.trim();
-        btn.disabled = !(name.length >= 2 && phone.length >= 10 && address.length >= 5);
-      } else {
-        btn.disabled = false;
-      }
+        btn.disabled = !(name.length >= 2 && phoneDigits.length >= 11 && address.length >= 5);
+      } else btn.disabled = false;
       updateMainButton();
     }
 
-    function getDeliveryPrice() {
-      return deliveryMethod === 'ozon' ? DELIVERY_PRICE : 0;
-    }
-
+    function getDeliveryPrice() { return deliveryMethod === 'ozon' ? DELIVERY_PRICE : 0; }
     function getDiscount(productsTotal) {
       if (!appliedPromo) return 0;
       return Math.floor(productsTotal * PROMO_PERCENT / 100);
@@ -838,8 +1031,19 @@
     function updateTotal() {
       const productsTotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
       const discount = getDiscount(productsTotal);
-      const total = Math.max(0, productsTotal - discount + getDeliveryPrice());
+      const delivery = getDeliveryPrice();
+      const total = Math.max(0, productsTotal - discount + delivery);
+
       document.getElementById('total-price').textContent = total.toLocaleString('ru-RU') + ' ₽';
+      document.getElementById('sum-products').textContent = productsTotal.toLocaleString('ru-RU') + ' ₽';
+      document.getElementById('sum-delivery').textContent = delivery ? (delivery.toLocaleString('ru-RU') + ' ₽') : 'Бесплатно';
+      document.getElementById('sum-total').textContent = total.toLocaleString('ru-RU') + ' ₽';
+
+      const dRow = document.getElementById('sum-discount-row');
+      if (discount > 0) {
+        dRow.style.display = 'flex';
+        document.getElementById('sum-discount').textContent = '−' + discount.toLocaleString('ru-RU') + ' ₽';
+      } else dRow.style.display = 'none';
     }
 
     function renderCart() {
@@ -848,13 +1052,32 @@
       const deliveryBlock = document.getElementById('delivery-block');
       const promoBlock = document.getElementById('promo-block');
       const cartTop = document.getElementById('cart-top');
+      const summary = document.getElementById('summary-block');
+      const success = document.getElementById('success-screen');
 
-      if (cart.length === 0) {
-        list.innerHTML = '<div class="empty">Корзина пуста</div>';
+      if (success.classList.contains('show')) {
+        list.innerHTML = '';
         totalBar.style.display = 'none';
         deliveryBlock.style.display = 'none';
         promoBlock.classList.remove('show');
         cartTop.style.display = 'none';
+        summary.classList.remove('show');
+        updateMainButton();
+        return;
+      }
+
+      if (cart.length === 0) {
+        list.innerHTML = `
+          <div class="empty-wrap">
+            <div class="empty-text">Корзина пуста</div>
+            <button class="to-catalog" id="empty-to-catalog" type="button">К товарам</button>
+          </div>`;
+        document.getElementById('empty-to-catalog').addEventListener('click', goCatalog);
+        totalBar.style.display = 'none';
+        deliveryBlock.style.display = 'none';
+        promoBlock.classList.remove('show');
+        cartTop.style.display = 'none';
+        summary.classList.remove('show');
         updateMainButton();
         return;
       }
@@ -881,6 +1104,7 @@
       cartTop.style.display = 'flex';
       promoBlock.classList.add('show');
       deliveryBlock.style.display = 'block';
+      summary.classList.add('show');
       totalBar.style.display = 'flex';
       updateTotal();
       checkCheckoutReady();
@@ -889,6 +1113,7 @@
     function updateCartCount() {
       const count = cart.reduce((s, i) => s + i.qty, 0);
       document.getElementById('cart-count').textContent = count > 0 ? `(${count})` : '';
+      document.getElementById('cart-dot').classList.toggle('show', count > 0);
     }
 
     async function sendMessage(chatId, text) {
@@ -923,50 +1148,38 @@
       cart.forEach(item => {
         adminMsg += `• ${item.name} × ${item.qty} = ${(item.price * item.qty).toLocaleString('ru-RU')} ₽\n`;
       });
-      if (discount > 0) {
-        adminMsg += `\n🏷 Промокод: <b>Musli</b> (−50% / −${discount.toLocaleString('ru-RU')} ₽)`;
-      }
+      if (discount > 0) adminMsg += `\n🏷 Промокод: <b>Musli</b> (−50% / −${discount.toLocaleString('ru-RU')} ₽)`;
       adminMsg += `\n📦 <b>Доставка:</b> ${deliveryMethod === 'ozon' ? 'Ozon (+500 ₽)' : 'Самовывоз по г. Москва'}`;
       if (deliveryMethod === 'ozon') {
-        adminMsg += `\n👤 Получатель: ${name}`;
-        adminMsg += `\n📞 Телефон: ${phone}`;
-        adminMsg += `\n📍 Адрес пункта: ${address}`;
+        adminMsg += `\n👤 Получатель: ${name}\n📞 Телефон: ${phone}\n📍 Адрес пункта: ${address}`;
       }
-      adminMsg += `\n\n💰 <b>Итого: ${total.toLocaleString('ru-RU')} ₽</b>`;
-      adminMsg += `\n\n⏰ ${new Date().toLocaleString('ru-RU')}`;
+      adminMsg += `\n\n💰 <b>Итого: ${total.toLocaleString('ru-RU')} ₽</b>\n\n⏰ ${new Date().toLocaleString('ru-RU')}`;
 
       let clientMsg = `✅ <b>Ваш заказ №${orderNumber} принят!</b>\n\n`;
-      clientMsg += `<b>Состав заказа:</b>\n`;
       cart.forEach(item => {
         clientMsg += `• ${item.name} × ${item.qty} = ${(item.price * item.qty).toLocaleString('ru-RU')} ₽\n`;
       });
-      if (discount > 0) {
-        clientMsg += `\n🏷 Скидка Musli (−50%): −${discount.toLocaleString('ru-RU')} ₽`;
-      }
+      if (discount > 0) clientMsg += `\n🏷 Скидка Musli (−50%): −${discount.toLocaleString('ru-RU')} ₽`;
       clientMsg += `\n📦 Доставка: ${deliveryMethod === 'ozon' ? 'до пункта Ozon (+500 ₽)' : 'Самовывоз по г. Москва'}`;
-      if (deliveryMethod === 'ozon') {
-        clientMsg += `\n👤 Получатель: ${name}\n📞 Телефон: ${phone}\n📍 Пункт: ${address}`;
-      }
-      clientMsg += `\n\n💰 <b>Итого: ${total.toLocaleString('ru-RU')} ₽</b>\n\n`;
-      clientMsg += `Мы скоро свяжемся с вами для оплаты.\n\nЕсли возникнут вопросы — пишите сюда:\n${SUPPORT_LINK}`;
+      if (deliveryMethod === 'ozon') clientMsg += `\n👤 ${name}\n📞 ${phone}\n📍 ${address}`;
+      clientMsg += `\n\n💰 <b>Итого: ${total.toLocaleString('ru-RU')} ₽</b>\n\nМы скоро свяжемся с вами для оплаты.\n\nВопросы: ${SUPPORT_LINK}`;
 
       const adminOk = await sendMessage(ADMIN_CHAT_ID, adminMsg);
       if (user?.id) await sendMessage(user.id, clientMsg);
-      return { adminOk, orderNumber, usedPromo: discount > 0 };
+      return { adminOk, orderNumber, usedPromo: discount > 0, total };
     }
 
     document.getElementById('checkout-btn').addEventListener('click', async () => {
       if (cart.length === 0 || !deliveryMethod) return;
       if (deliveryMethod === 'ozon') {
         const name = document.getElementById('recipient-name').value.trim();
-        const phone = document.getElementById('recipient-phone').value.trim();
+        const phoneDigits = document.getElementById('recipient-phone').value.replace(/\D/g, '');
         const address = document.getElementById('ozon-address').value.trim();
-        if (name.length < 2 || phone.length < 10 || address.length < 5) {
+        if (name.length < 2 || phoneDigits.length < 11 || address.length < 5) {
           tg.showAlert('Заполните все обязательные поля');
           return;
         }
       }
-
       if (appliedPromo && isPromoUsed()) {
         tg.showAlert('Промокод Musli уже был использован');
         appliedPromo = false;
@@ -986,30 +1199,34 @@
       if (result.adminOk) {
         if (result.usedPromo) markPromoUsed();
         hapticSuccess();
+        saveContact();
 
-        tg.showPopup({
-          title: 'Заказ оформлен!',
-          message: `Номер заказа: ${result.orderNumber}\n\nМы свяжемся с вами для оплаты.`,
-          buttons: [{ type: 'ok' }]
-        });
         cart = [];
         deliveryMethod = null;
         appliedPromo = false;
         document.getElementById('promo-input').value = '';
         document.getElementById('promo-status').textContent = '';
         document.getElementById('promo-status').className = 'promo-status';
-        document.getElementById('recipient-name').value = '';
-        document.getElementById('recipient-phone').value = '';
         document.getElementById('ozon-address').value = '';
         document.querySelectorAll('input[name="delivery"]').forEach(r => r.checked = false);
         document.getElementById('ozon-fields').classList.remove('show');
         saveCart();
+
+        document.getElementById('success-text').innerHTML =
+          `Номер заказа: <b>${result.orderNumber}</b><br>Мы свяжемся с вами для оплаты.<br>Обычно отвечаем за 1–2 часа.`;
+        document.getElementById('success-screen').classList.add('show');
         renderCart();
       } else {
         tg.showAlert('Не удалось оформить заказ.');
       }
     });
 
+    document.getElementById('success-to-catalog').addEventListener('click', () => {
+      document.getElementById('success-screen').classList.remove('show');
+      goCatalog();
+    });
+
+    loadContact();
     renderProducts();
     updateCartCount();
     updateMainButton();
