@@ -18,9 +18,16 @@
     * {
       box-sizing: border-box; margin: 0; padding: 0;
       -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none;
+    }
+    body, .page, header, .product, .gallery, .cart-item, button, .tab, .cat-btn {
       -webkit-user-select: none;
       user-select: none;
+      -webkit-touch-callout: none;
+    }
+    input, textarea {
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      -webkit-touch-callout: default !important;
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
@@ -111,7 +118,7 @@
     }
     .gallery-slide { min-width: 100%; height: 100%; }
     .gallery-slide img {
-      width: 100%; height: 100%; object-fit: cover;
+      width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;
     }
     .gallery-dots {
       position: absolute; bottom: 12px; left: 0; right: 0;
@@ -285,6 +292,26 @@
     .empty { text-align: center; padding: 90px 24px; color: var(--hint); font-size: 16px; }
     .page { display: none; }
     .page.active { display: block; }
+
+    .lightbox {
+      position: fixed; inset: 0; z-index: 400;
+      background: rgba(0,0,0,0.94);
+      display: none; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .lightbox.show { display: flex; }
+    .lightbox img {
+      max-width: 100%; max-height: 100%;
+      object-fit: contain; border-radius: 8px;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: calc(12px + env(safe-area-inset-top, 0px));
+      right: 12px;
+      width: 40px; height: 40px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.18); color: #fff;
+      font-size: 22px; cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -361,7 +388,7 @@
       <div class="ozon-fields" id="ozon-fields">
         <div class="note">
           Обязательная информация для оформления заказа на Ozon.<br>
-          Найдите пункт на карте, скопируйте адрес и вставьте ниже.
+          Найдите пункт на карте, скопируйте адрес, затем зажмите поле адреса и выберите «Вставить».
         </div>
         <button class="map-btn" id="open-map-btn" type="button">
           <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -369,7 +396,7 @@
         </button>
         <input type="text" id="recipient-name" placeholder="Имя получателя *">
         <input type="tel" id="recipient-phone" placeholder="Номер телефона *">
-        <input type="text" id="ozon-address" placeholder="Адрес пункта выдачи Ozon *">
+        <input type="text" id="ozon-address" placeholder="Адрес пункта выдачи Ozon *" autocomplete="street-address">
       </div>
     </div>
 
@@ -382,13 +409,24 @@
     </div>
   </div>
 
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightbox-close" type="button">×</button>
+    <img id="lightbox-img" src="" alt="">
+  </div>
+
   <script>
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
 
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('dragstart', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
+    // Блокируем только не-поля (чтобы «Вставить» на input работало)
+    document.addEventListener('contextmenu', e => {
+      if (e.target.closest('input, textarea')) return;
+      e.preventDefault();
+    });
+    document.addEventListener('dragstart', e => {
+      if (e.target.tagName === 'IMG') e.preventDefault();
+    });
 
     const BOT_TOKEN = '8907075604:AAGVWlsqBNSsCywKgykrTFhcoP9DuV8jy7A';
     const ADMIN_CHAT_ID = '1232069518';
@@ -419,7 +457,7 @@
       },
       {
         id: 2,
-        name: "Фигурка Power под покрас / Человек-бензопила / Chainsaw Man",
+        name: "Фигурка Power / Человек-бензопила / Chainsaw Man",
         price: 1490,
         category: "figures",
         description: "Фигурка Power (под покрас).\nВселенная: Человек-бензопила / Chainsaw Man.\nДетализированная проработка.\nМатериал: ПВХ.",
@@ -430,7 +468,7 @@
     let cart = JSON.parse(localStorage.getItem('shop_cart') || '[]');
     cart = cart.map(item => {
       const p = products.find(x => x.id === item.id);
-      if (p) item.price = p.price;
+      if (p) { item.price = p.price; item.name = p.name; }
       return item;
     }).filter(item => products.some(p => p.id === item.id));
     localStorage.setItem('shop_cart', JSON.stringify(cart));
@@ -475,7 +513,6 @@
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(pageId).classList.add('active');
       document.body.classList.toggle('product-open', pageId === 'product-page');
-
       const titles = { catalog: 'Витрина', cart: 'Корзина', 'product-page': 'Товар' };
       document.getElementById('page-title').textContent = titles[pageId] || 'Магазин';
       document.getElementById('main-tabs').style.display = pageId === 'product-page' ? 'none' : 'flex';
@@ -576,6 +613,17 @@
       });
     }
 
+    function openLightbox(src) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox').classList.add('show');
+    }
+    document.getElementById('lightbox-close').addEventListener('click', () => {
+      document.getElementById('lightbox').classList.remove('show');
+    });
+    document.getElementById('lightbox').addEventListener('click', (e) => {
+      if (e.target.id === 'lightbox') document.getElementById('lightbox').classList.remove('show');
+    });
+
     function openProduct(id) {
       currentProduct = products.find(p => p.id === id);
       if (!currentProduct) return;
@@ -585,9 +633,14 @@
       document.getElementById('detail-desc').textContent = currentProduct.description;
       const track = document.getElementById('gallery-track');
       track.innerHTML = currentProduct.photos.map(src =>
-        `<div class="gallery-slide"><img src="${src}" alt=""></div>`
+        `<div class="gallery-slide"><img src="\( {src}" alt="" data-full=" \){src}"></div>`
       ).join('');
       track.style.transform = 'translateX(0)';
+
+      document.querySelectorAll('#gallery-track img').forEach(img => {
+        img.addEventListener('click', () => openLightbox(img.dataset.full || img.src));
+      });
+
       const dots = document.getElementById('gallery-dots');
       dots.innerHTML = currentProduct.photos.map((_, i) =>
         `<span class="${i === 0 ? 'active' : ''}"></span>`
@@ -605,8 +658,13 @@
     }
 
     let startX = 0;
+    let moved = false;
     document.querySelector('.gallery').addEventListener('touchstart', e => {
       startX = e.touches[0].clientX;
+      moved = false;
+    }, { passive: true });
+    document.querySelector('.gallery').addEventListener('touchmove', e => {
+      if (Math.abs(e.touches[0].clientX - startX) > 10) moved = true;
     }, { passive: true });
     document.querySelector('.gallery').addEventListener('touchend', e => {
       if (!currentProduct) return;
@@ -920,7 +978,6 @@
       }
     });
 
-    // Старт: всегда витрина + карточки
     document.body.classList.remove('product-open');
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('catalog').classList.add('active');
