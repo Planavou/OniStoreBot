@@ -15,14 +15,9 @@
       --secondary: var(--tg-theme-secondary-bg-color, #f2f2f7);
       --border: color-mix(in srgb, var(--hint) 25%, transparent);
     }
-    * {
-      box-sizing: border-box; margin: 0; padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body, .page, header, .product, .gallery, .cart-item, button, .tab, .cat-btn {
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-touch-callout: none;
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
     }
     input, textarea {
       -webkit-user-select: text !important;
@@ -31,12 +26,10 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      padding-bottom: 140px;
-      line-height: 1.4;
+      background: var(--bg); color: var(--text);
+      padding-bottom: 140px; line-height: 1.4;
     }
-    img { -webkit-user-drag: none; user-drag: none; display: block; }
+    img { -webkit-user-drag: none; display: block; max-width: 100%; }
 
     header {
       position: sticky; top: 0; z-index: 100;
@@ -54,9 +47,8 @@
       background: transparent; border: 1px solid var(--border);
       color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer;
     }
-    .tab.active {
-      background: var(--button); color: var(--button-text); border-color: var(--button);
-    }
+    .tab.active { background: var(--button); color: var(--button-text); border-color: var(--button); }
+
     .filters { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
     .search-box {
       width: 100%; padding: 12px 16px; border-radius: 14px;
@@ -69,22 +61,18 @@
       background: transparent; color: var(--text); font-size: 13px;
       font-weight: 500; white-space: nowrap; cursor: pointer;
     }
-    .cat-btn.active {
-      background: var(--button); color: var(--button-text); border-color: var(--button);
-    }
-    .products {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 14px; padding: 0 16px 16px;
-    }
+    .cat-btn.active { background: var(--button); color: var(--button-text); border-color: var(--button); }
+
+    .products { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 0 16px 16px; }
     .product {
       background: var(--secondary); border-radius: 18px;
       overflow: hidden; display: flex; flex-direction: column; cursor: pointer;
     }
     .product-img-wrap {
-      width: 100%; height: 150px; background: #d1d1d6; overflow: hidden;
+      width: 100%; height: 150px; background: #d1d1d6; overflow: hidden; position: relative;
     }
     .product-img-wrap img {
-      width: 100%; height: 150px; object-fit: cover;
+      width: 100%; height: 150px; object-fit: cover; background: #d1d1d6;
     }
     .product-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
     .product-name { font-weight: 600; font-size: 14px; }
@@ -96,33 +84,27 @@
     }
 
     .support-bottom {
-      margin: 8px 16px 24px;
-      width: calc(100% - 32px);
-      padding: 14px;
-      border-radius: 14px;
-      border: 1.5px solid var(--border);
-      background: transparent;
-      color: var(--text);
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
+      margin: 8px 16px 24px; width: calc(100% - 32px); padding: 14px;
+      border-radius: 14px; border: 1.5px solid var(--border);
+      background: transparent; color: var(--text);
+      font-size: 15px; font-weight: 600; cursor: pointer;
     }
 
-    .product-detail { position: relative; }
     .gallery {
       position: relative; width: 100%; height: 320px;
       overflow: hidden; background: #d1d1d6;
     }
-    .gallery-track {
-      display: flex; height: 100%; transition: transform 0.3s ease;
+    .gallery-track { display: flex; height: 100%; width: 100%; transition: transform 0.3s ease; }
+    .gallery-slide {
+      min-width: 100%; width: 100%; height: 100%;
+      flex-shrink: 0; background: #d1d1d6;
     }
-    .gallery-slide { min-width: 100%; height: 100%; }
     .gallery-slide img {
-      width: 100%; height: 100%; object-fit: cover; cursor: zoom-in;
+      width: 100%; height: 100%; object-fit: cover; background: #d1d1d6;
     }
     .gallery-dots {
       position: absolute; bottom: 12px; left: 0; right: 0;
-      display: flex; justify-content: center; gap: 6px;
+      display: flex; justify-content: center; gap: 6px; pointer-events: none;
     }
     .gallery-dots span {
       width: 8px; height: 8px; border-radius: 50%;
@@ -133,25 +115,13 @@
     .back-icon {
       position: fixed;
       top: calc(12px + env(safe-area-inset-top, 0px));
-      left: 12px;
-      z-index: 200;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(0, 0, 0, 0.45);
-      color: white;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
+      left: 12px; z-index: 200;
+      width: 40px; height: 40px; border-radius: 50%; border: none;
+      background: rgba(0,0,0,0.45); color: white;
+      display: none; align-items: center; justify-content: center; cursor: pointer;
       backdrop-filter: blur(6px);
     }
     body.product-open .back-icon { display: flex; }
-    .back-icon:active {
-      transform: scale(0.94);
-      background: rgba(0, 0, 0, 0.6);
-    }
     .back-icon svg { width: 22px; height: 22px; fill: white; }
 
     .detail-content { padding: 20px 16px; }
@@ -159,33 +129,17 @@
     .detail-price { font-size: 24px; font-weight: 700; color: var(--button); margin-bottom: 16px; }
     .detail-desc { font-size: 15px; line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; }
     .detail-actions { display: flex; flex-direction: column; gap: 10px; }
-    .detail-add-btn {
-      width: 100%;
-      padding: 14px; border-radius: 14px; border: none;
-      background: var(--button); color: var(--button-text); font-size: 15px; font-weight: 600; cursor: pointer;
-    }
-    .share-btn {
-      width: 100%;
-      padding: 14px; border-radius: 14px;
-      border: 1.5px solid var(--border);
-      background: transparent; color: var(--text);
+    .detail-add-btn, .share-btn {
+      width: 100%; padding: 14px; border-radius: 14px;
       font-size: 15px; font-weight: 600; cursor: pointer;
     }
+    .detail-add-btn { border: none; background: var(--button); color: var(--button-text); }
+    .share-btn { border: 1.5px solid var(--border); background: transparent; color: var(--text); }
 
-    .cart-top {
-      display: flex; justify-content: flex-end; align-items: center;
-      padding: 12px 16px 0;
-    }
+    .cart-top { display: flex; justify-content: flex-end; padding: 12px 16px 0; }
     .clear-cart-btn {
-      border: none;
-      background: transparent;
-      color: #ff3b30;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 8px 4px;
-      position: relative;
-      z-index: 5;
+      border: none; background: transparent; color: #ff3b30;
+      font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px 4px;
     }
     .cart-item {
       display: flex; gap: 14px; padding: 16px;
@@ -202,6 +156,7 @@
       width: 34px; height: 34px; border-radius: 50%; border: none;
       background: var(--button); color: white; font-size: 18px; cursor: pointer;
     }
+
     .delivery-block { padding: 16px; border-top: 1px solid var(--border); }
     .delivery-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
     .delivery-option {
@@ -217,9 +172,7 @@
     .delivery-option .text { flex: 1; font-size: 14px; }
     .delivery-option .price-tag { font-weight: 600; color: var(--button); font-size: 14px; }
 
-    .ozon-fields {
-      margin-top: 14px; display: none; flex-direction: column; gap: 12px;
-    }
+    .ozon-fields { margin-top: 14px; display: none; flex-direction: column; gap: 12px; }
     .ozon-fields.show { display: flex; }
     .ozon-fields .note {
       font-size: 13px; color: var(--hint); line-height: 1.45;
@@ -234,30 +187,15 @@
     .ozon-fields input:focus { border-color: var(--button); }
 
     .map-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: 100%;
-      padding: 14px;
-      border-radius: 14px;
-      border: none;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 14px; border-radius: 14px; border: none;
       background: linear-gradient(135deg, #fc3f1d, #ff6b4a);
-      color: white;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
+      color: white; font-size: 15px; font-weight: 600; cursor: pointer;
       box-shadow: 0 4px 14px rgba(252, 63, 29, 0.35);
     }
-    .map-btn:active { transform: scale(0.98); opacity: 0.9; }
     .map-btn svg { width: 20px; height: 20px; fill: white; }
 
-    .promo-block {
-      padding: 0 16px 16px;
-      display: none;
-      flex-direction: column;
-      gap: 8px;
-    }
+    .promo-block { padding: 0 16px 16px; display: none; flex-direction: column; gap: 8px; }
     .promo-block.show { display: flex; }
     .promo-row { display: flex; gap: 8px; }
     .promo-row input {
@@ -294,23 +232,25 @@
     .page.active { display: block; }
 
     .lightbox {
-      position: fixed; inset: 0; z-index: 400;
-      background: rgba(0,0,0,0.94);
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.95);
       display: none; align-items: center; justify-content: center;
       padding: 16px;
     }
     .lightbox.show { display: flex; }
     .lightbox img {
-      max-width: 100%; max-height: 100%;
+      max-width: 100%; max-height: 90vh;
+      width: auto; height: auto;
       object-fit: contain; border-radius: 8px;
+      background: transparent;
     }
     .lightbox-close {
       position: absolute;
       top: calc(12px + env(safe-area-inset-top, 0px));
       right: 12px;
       width: 40px; height: 40px; border-radius: 50%; border: none;
-      background: rgba(255,255,255,0.18); color: #fff;
-      font-size: 22px; cursor: pointer;
+      background: rgba(255,255,255,0.2); color: #fff;
+      font-size: 22px; cursor: pointer; z-index: 2;
     }
   </style>
 </head>
@@ -343,7 +283,7 @@
 
   <div id="product-page" class="page">
     <div class="product-detail">
-      <div class="gallery">
+      <div class="gallery" id="gallery">
         <div class="gallery-track" id="gallery-track"></div>
         <div class="gallery-dots" id="gallery-dots"></div>
       </div>
@@ -364,7 +304,6 @@
       <button class="clear-cart-btn" id="clear-cart-btn" type="button">Очистить корзину</button>
     </div>
     <div id="cart-list"></div>
-
     <div class="promo-block" id="promo-block">
       <div class="promo-row">
         <input type="text" id="promo-input" placeholder="Промокод">
@@ -372,7 +311,6 @@
       </div>
       <div class="promo-status" id="promo-status"></div>
     </div>
-
     <div class="delivery-block" id="delivery-block" style="display:none;">
       <div class="delivery-title">Способ получения</div>
       <label class="delivery-option" id="opt-ozon">
@@ -388,7 +326,7 @@
       <div class="ozon-fields" id="ozon-fields">
         <div class="note">
           Обязательная информация для оформления заказа на Ozon.<br>
-          Найдите пункт на карте, скопируйте адрес, затем зажмите поле адреса и выберите «Вставить».
+          Найдите пункт на карте, скопируйте адрес, зажмите поле и выберите «Вставить».
         </div>
         <button class="map-btn" id="open-map-btn" type="button">
           <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
@@ -399,7 +337,6 @@
         <input type="text" id="ozon-address" placeholder="Адрес пункта выдачи Ozon *" autocomplete="street-address">
       </div>
     </div>
-
     <div class="total-bar" id="cart-total">
       <div>
         <div class="label">Итого</div>
@@ -411,7 +348,7 @@
 
   <div class="lightbox" id="lightbox">
     <button class="lightbox-close" id="lightbox-close" type="button">×</button>
-    <img id="lightbox-img" src="" alt="">
+    <img id="lightbox-img" alt="">
   </div>
 
   <script>
@@ -419,7 +356,6 @@
     tg.ready();
     tg.expand();
 
-    // Блокируем только не-поля (чтобы «Вставить» на input работало)
     document.addEventListener('contextmenu', e => {
       if (e.target.closest('input, textarea')) return;
       e.preventDefault();
@@ -434,17 +370,19 @@
     const DELIVERY_PRICE = 500;
     const BOT_USERNAME = 'IamOniStore_bot';
     const APP_NAME = 'Shop';
-
     const PROMO_CODE = 'MUSLI';
     const PROMO_PERCENT = 50;
     const PROMO_USED_KEY = 'promo_used_MUSLI';
+    const FALLBACK_IMG = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect fill="#d1d1d6" width="100%" height="100%"/><text x="50%" y="50%" fill="#888" font-size="18" text-anchor="middle" dy=".3em">Нет фото</text></svg>');
 
     const POWER1 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/7d1e0b69d92b4aa88bc77cb7df718e11_bananalab-pro_1K.jpg";
     const POWER2 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/54d6cfe4e15c433caedbd636a95f3c37_bananalab-pro_1K.jpg";
     const POWER_GIF = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Azerama%20gif.gif";
-    const PH1 = "https://via.placeholder.com/400x400/2c2c2e/ffffff?text=Photo+1";
-    const PH2 = "https://via.placeholder.com/400x400/3a3a3c/ffffff?text=Photo+2";
-    const PH3 = "https://via.placeholder.com/400x400/48484a/ffffff?text=Photo+3";
+
+    // Для бюста — те же raw github, если загрузишь фото. Пока запасной SVG.
+    const BUST1 = FALLBACK_IMG;
+    const BUST2 = FALLBACK_IMG;
+    const BUST3 = FALLBACK_IMG;
 
     let products = [
       {
@@ -453,7 +391,7 @@
         price: 1490,
         category: "busts",
         description: "Коллекционный бюст Паук-Нуар.\nВысокое качество исполнения.\nОтличный подарок для фанатов.",
-        photos: [PH1, PH2, PH3]
+        photos: [BUST1, BUST2, BUST3]
       },
       {
         id: 2,
@@ -468,7 +406,11 @@
     let cart = JSON.parse(localStorage.getItem('shop_cart') || '[]');
     cart = cart.map(item => {
       const p = products.find(x => x.id === item.id);
-      if (p) { item.price = p.price; item.name = p.name; }
+      if (p) {
+        item.price = p.price;
+        item.name = p.name;
+        item.photo = p.photos[0];
+      }
       return item;
     }).filter(item => products.some(p => p.id === item.id));
     localStorage.setItem('shop_cart', JSON.stringify(cart));
@@ -509,6 +451,11 @@
       } catch(e) {}
     }
 
+    function imgTag(src, extraClass) {
+      const safe = (src || FALLBACK_IMG).replace(/"/g, '&quot;');
+      return `<img class="\( {extraClass || ''}" src=" \){safe}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">`;
+    }
+
     function showPage(pageId) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
       document.getElementById(pageId).classList.add('active');
@@ -532,9 +479,7 @@
         if (!document.getElementById('checkout-btn').disabled) tg.MainButton.show();
         else tg.MainButton.hide();
         tg.MainButton.onClick(mainButtonHandler);
-      } else {
-        tg.MainButton.hide();
-      }
+      } else tg.MainButton.hide();
     }
 
     function mainButtonHandler() {
@@ -590,7 +535,7 @@
       }
       list.innerHTML = filtered.map(p => `
         <div class="product" data-id="${p.id}">
-          <div class="product-img-wrap"><img src="${p.photos[0]}" alt=""></div>
+          <div class="product-img-wrap">${imgTag(p.photos[0])}</div>
           <div class="product-info">
             <div class="product-name">${p.name}</div>
             <div class="product-price">${p.price.toLocaleString('ru-RU')} ₽</div>
@@ -601,7 +546,7 @@
 
       document.querySelectorAll('.product').forEach(card => {
         card.addEventListener('click', (e) => {
-          if (e.target.classList.contains('add-btn')) return;
+          if (e.target.closest('.add-btn')) return;
           openProduct(Number(card.dataset.id));
         });
       });
@@ -614,37 +559,66 @@
     }
 
     function openLightbox(src) {
-      document.getElementById('lightbox-img').src = src;
+      if (!src) return;
+      const img = document.getElementById('lightbox-img');
+      img.onerror = function() { this.onerror = null; this.src = FALLBACK_IMG; };
+      img.src = src;
       document.getElementById('lightbox').classList.add('show');
     }
     document.getElementById('lightbox-close').addEventListener('click', () => {
       document.getElementById('lightbox').classList.remove('show');
     });
     document.getElementById('lightbox').addEventListener('click', (e) => {
-      if (e.target.id === 'lightbox') document.getElementById('lightbox').classList.remove('show');
+      if (e.target.id === 'lightbox' || e.target.id === 'lightbox-img') {
+        document.getElementById('lightbox').classList.remove('show');
+      }
     });
 
     function openProduct(id) {
       currentProduct = products.find(p => p.id === id);
       if (!currentProduct) return;
       currentSlide = 0;
+
       document.getElementById('detail-name').textContent = currentProduct.name;
       document.getElementById('detail-price').textContent = currentProduct.price.toLocaleString('ru-RU') + ' ₽';
       document.getElementById('detail-desc').textContent = currentProduct.description;
+
       const track = document.getElementById('gallery-track');
-      track.innerHTML = currentProduct.photos.map(src =>
-        `<div class="gallery-slide"><img src="\( {src}" alt="" data-full=" \){src}"></div>`
+      track.innerHTML = currentProduct.photos.map((src, i) =>
+        `<div class="gallery-slide" data-index="\( {i}"> \){imgTag(src)}</div>`
       ).join('');
       track.style.transform = 'translateX(0)';
 
-      document.querySelectorAll('#gallery-track img').forEach(img => {
-        img.addEventListener('click', () => openLightbox(img.dataset.full || img.src));
+      // Zoom: тап без свайпа
+      track.querySelectorAll('.gallery-slide').forEach(slide => {
+        let sx = 0, sy = 0, moved = false;
+        slide.addEventListener('touchstart', e => {
+          sx = e.touches[0].clientX;
+          sy = e.touches[0].clientY;
+          moved = false;
+        }, { passive: true });
+        slide.addEventListener('touchmove', e => {
+          if (Math.abs(e.touches[0].clientX - sx) > 12 || Math.abs(e.touches[0].clientY - sy) > 12) moved = true;
+        }, { passive: true });
+        slide.addEventListener('touchend', () => {
+          if (!moved && currentProduct) {
+            const idx = Number(slide.dataset.index);
+            openLightbox(currentProduct.photos[idx]);
+          }
+        }, { passive: true });
+        slide.addEventListener('click', () => {
+          if (currentProduct) {
+            const idx = Number(slide.dataset.index);
+            openLightbox(currentProduct.photos[idx]);
+          }
+        });
       });
 
       const dots = document.getElementById('gallery-dots');
       dots.innerHTML = currentProduct.photos.map((_, i) =>
         `<span class="${i === 0 ? 'active' : ''}"></span>`
       ).join('');
+
       showPage('product-page');
     }
 
@@ -657,19 +631,16 @@
       }
     }
 
-    let startX = 0;
-    let moved = false;
-    document.querySelector('.gallery').addEventListener('touchstart', e => {
-      startX = e.touches[0].clientX;
-      moved = false;
+    // Свайп галереи
+    let gStartX = 0;
+    const galleryEl = document.getElementById('gallery');
+    galleryEl.addEventListener('touchstart', e => {
+      gStartX = e.touches[0].clientX;
     }, { passive: true });
-    document.querySelector('.gallery').addEventListener('touchmove', e => {
-      if (Math.abs(e.touches[0].clientX - startX) > 10) moved = true;
-    }, { passive: true });
-    document.querySelector('.gallery').addEventListener('touchend', e => {
+    galleryEl.addEventListener('touchend', e => {
       if (!currentProduct) return;
-      const diff = startX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 40) {
+      const diff = gStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 45) {
         if (diff > 0 && currentSlide < currentProduct.photos.length - 1) currentSlide++;
         else if (diff < 0 && currentSlide > 0) currentSlide--;
         document.getElementById('gallery-track').style.transform = `translateX(-${currentSlide * 100}%)`;
@@ -842,7 +813,7 @@
 
       list.innerHTML = cart.map(item => `
         <div class="cart-item">
-          <img src="${item.photo}" alt="">
+          ${imgTag(item.photo)}
           <div class="cart-info">
             <div class="name">${item.name}</div>
             <div class="price">${item.price.toLocaleString('ru-RU')} ₽</div>
