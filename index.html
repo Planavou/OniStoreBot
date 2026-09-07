@@ -412,28 +412,29 @@
     const PROMO_PERCENT = 50;
     const PROMO_USED_KEY = 'promo_used_MUSLI';
 
+    const ROGUE1 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/d56768d222334cd1adeeff18eed825ca_img_1K.png";
+    const ROGUE2 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/76073bc7f5ab4fd998ac5cf721a5fb5e_bananalab-pro_1K.jpg";
+    const ROGUE_GIF = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Rogue.gif";
+
     const POWER1 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/7d1e0b69d92b4aa88bc77cb7df718e11_bananalab-pro_1K.jpg";
     const POWER2 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/54d6cfe4e15c433caedbd636a95f3c37_bananalab-pro_1K.jpg";
     const POWER_GIF = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Azerama%20gif.gif";
-    const PH1 = "https://via.placeholder.com/400x400/2c2c2e/ffffff?text=Photo+1";
-    const PH2 = "https://via.placeholder.com/400x400/3a3a3c/ffffff?text=Photo+2";
-    const PH3 = "https://via.placeholder.com/400x400/48484a/ffffff?text=Photo+3";
 
     let products = [
       {
         id: 1,
-        name: "Бюст Паук-Нуар",
+        name: "Бюст Rogue / Люди Икс / X-Men",
         price: 1490,
         category: "busts",
-        description: "Коллекционный бюст Паук-Нуар.\nВысокое качество исполнения.\nОтличный подарок для фанатов.",
-        photos: [PH1, PH2, PH3]
+        description: "Rogue (Роуг) — мутант из вселенной Marvel / Люди Икс.\nСпособна поглощать силу, память и энергию при касании.\nОдин из самых узнаваемых персонажей X-Men.\n\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.",
+        photos: [ROGUE1, ROGUE2, ROGUE_GIF]
       },
       {
         id: 2,
         name: "Фигурка Power / Человек-бензопила / Chainsaw Man",
         price: 1490,
         category: "figures",
-        description: "Фигурка Power (под покрас).\nВселенная: Человек-бензопила / Chainsaw Man.\nДетализированная проработка.\nМатериал: ПВХ.",
+        description: "Power (Пауэр) — демон крови из аниме и манги Chainsaw Man.\nИмпульсивная, харизматичная и опасная — одна из ключевых героинь истории.\n\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.",
         photos: [POWER1, POWER2, POWER_GIF]
       }
     ];
@@ -441,7 +442,11 @@
     let cart = JSON.parse(localStorage.getItem('shop_cart') || '[]');
     cart = cart.map(item => {
       const p = products.find(x => x.id === item.id);
-      if (p) { item.price = p.price; item.name = p.name; }
+      if (p) {
+        item.price = p.price;
+        item.name = p.name;
+        item.photo = p.photos[0];
+      }
       return item;
     }).filter(item => products.some(p => p.id === item.id));
     localStorage.setItem('shop_cart', JSON.stringify(cart));
