@@ -424,6 +424,7 @@
       {
         id: 1,
         name: "Бюст Rogue / Люди Икс / X-Men",
+        shareName: "Бюст Rogue (X-Men)",
         price: 1490,
         category: "busts",
         description: "Rogue (Роуг) — мутант из вселенной Marvel / Люди Икс.\nСпособна поглощать силу, память и энергию при касании.\nОдин из самых узнаваемых персонажей X-Men.\n\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.",
@@ -432,6 +433,7 @@
       {
         id: 2,
         name: "Фигурка Power / Человек-бензопила / Chainsaw Man",
+        shareName: "Фигурка Power (Chainsaw Man)",
         price: 1490,
         category: "figures",
         description: "Power (Пауэр) — демон крови из аниме и манги Chainsaw Man.\nИмпульсивная, харизматичная и опасная — одна из ключевых героинь истории.\n\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.",
@@ -647,15 +649,44 @@
       if (currentProduct) addToCart(currentProduct.id);
     });
 
-    document.getElementById('share-btn').addEventListener('click', () => {
+    function shareProduct() {
       if (!currentProduct) return;
-      const deepLink = `https://t.me/\( {BOT_USERNAME}/ \){APP_NAME}?startapp=product_${currentProduct.id}`;
-      const text = `${currentProduct.name} — ${currentProduct.price.toLocaleString('ru-RU')} ₽`;
+      hapticLight();
+
+      const id = Number(currentProduct.id);
+      const deepLink = 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=product_' + id;
+      const title = currentProduct.shareName || currentProduct.name;
+      const text = title + ' — ' + currentProduct.price.toLocaleString('ru-RU') + ' ₽';
       const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(deepLink) + '&text=' + encodeURIComponent(text);
-      if (tg.openTelegramLink) tg.openTelegramLink(shareUrl);
-      else if (tg.openLink) tg.openLink(shareUrl);
-      else window.open(shareUrl, '_blank');
-    });
+
+      try {
+        if (typeof tg.openTelegramLink === 'function') {
+          tg.openTelegramLink(shareUrl);
+          return;
+        }
+        if (typeof tg.openLink === 'function') {
+          tg.openLink(shareUrl);
+          return;
+        }
+        window.open(shareUrl, '_blank');
+      } catch (e) {
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(deepLink).then(() => {
+              tg.showAlert('Ссылка скопирована:\n' + deepLink);
+            }).catch(() => {
+              tg.showAlert('Ссылка на товар:\n' + deepLink);
+            });
+          } else {
+            tg.showAlert('Ссылка на товар:\n' + deepLink);
+          }
+        } catch (e2) {
+          tg.showAlert('Ссылка: ' + deepLink);
+        }
+      }
+    }
+
+    document.getElementById('share-btn').addEventListener('click', shareProduct);
 
     function addToCart(id) {
       const product = products.find(p => p.id === id);
