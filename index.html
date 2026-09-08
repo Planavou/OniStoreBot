@@ -91,6 +91,24 @@
     }
     body.product-open .back-icon { display: flex; }
     .back-icon svg { width: 22px; height: 22px; fill: white; }
+
+    /* Кнопка корзины на карточке товара */
+    .cart-fab {
+      position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; z-index: 200;
+      width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(0,0,0,0.45);
+      color: white; display: none; align-items: center; justify-content: center; cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+    body.product-open .cart-fab { display: flex; }
+    .cart-fab svg { width: 22px; height: 22px; fill: white; }
+    .cart-fab-badge {
+      position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px;
+      padding: 0 4px; border-radius: 9px; background: #ff3b30; color: #fff;
+      font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
+      display: none;
+    }
+    .cart-fab-badge.show { display: block; }
+
     .detail-content { padding: 20px 16px; }
     .detail-name { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
     .detail-price { font-size: 24px; font-weight: 700; color: var(--button); margin-bottom: 8px; }
@@ -197,9 +215,17 @@
       <button class="tab" data-page="cart" type="button">Корзина <span id="cart-count"></span></button>
     </div>
   </header>
+
   <button class="back-icon" id="back-btn" type="button" aria-label="Назад">
     <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
   </button>
+
+  <!-- Корзина на карточке товара -->
+  <button class="cart-fab" id="cart-fab" type="button" aria-label="Корзина">
+    <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+    <span class="cart-fab-badge" id="cart-fab-badge">0</span>
+  </button>
+
   <div id="catalog" class="page active">
     <div class="filters">
       <input type="text" class="search-box" id="search-input" placeholder="Поиск по названию...">
@@ -212,6 +238,7 @@
     <div class="products" id="products-list"></div>
     <button class="support-bottom" id="support-btn" type="button">Написать в поддержку</button>
   </div>
+
   <div id="product-page" class="page">
     <div class="product-detail">
       <div class="gallery">
@@ -230,6 +257,7 @@
       </div>
     </div>
   </div>
+
   <div id="cart" class="page">
     <div class="cart-top" id="cart-top" style="display:none;">
       <button class="clear-cart-btn" id="clear-cart-btn" type="button">Очистить корзину</button>
@@ -283,11 +311,11 @@
     tg.expand();
     try { tg.enableClosingConfirmation(); } catch (e) {}
 
-    document.addEventListener('contextmenu', e => {
+    document.addEventListener('contextmenu', function (e) {
       if (e.target.closest('input, textarea')) return;
       e.preventDefault();
     });
-    document.addEventListener('dragstart', e => {
+    document.addEventListener('dragstart', function (e) {
       if (e.target.tagName === 'IMG') e.preventDefault();
     });
 
@@ -301,47 +329,59 @@
     const PROMO_USED_KEY = 'promo_used_MUSLI';
     const MAKE_TIME_MSG = 'Товара нет в наличии.\n\nСрок изготовления: 1–3 дня.\nМожно оформить заказ — сделаем под вас.';
 
-    const ROGUE1 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/d56768d222334cd1adeeff18eed825ca_img_1K.png";
-    const ROGUE2 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/76073bc7f5ab4fd998ac5cf721a5fb5e_bananalab-pro_1K.jpg";
-    const ROGUE_GIF = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Rogue.gif";
-    const POWER1 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/7d1e0b69d92b4aa88bc77cb7df718e11_bananalab-pro_1K.jpg";
-    const POWER2 = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/54d6cfe4e15c433caedbd636a95f3c37_bananalab-pro_1K.jpg";
-    const POWER_GIF = "https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Azerama%20gif.gif";
+    const ROGUE1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/d56768d222334cd1adeeff18eed825ca_img_1K.png';
+    const ROGUE2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/76073bc7f5ab4fd998ac5cf721a5fb5e_bananalab-pro_1K.jpg';
+    const ROGUE_GIF = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Rogue.gif';
+    const POWER1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/7d1e0b69d92b4aa88bc77cb7df718e11_bananalab-pro_1K.jpg';
+    const POWER2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/54d6cfe4e15c433caedbd636a95f3c37_bananalab-pro_1K.jpg';
+    const POWER_GIF = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Azerama%20gif.gif';
 
-    let products = [
+    var products = [
       {
         id: 1,
-        name: "Бюст Rogue / Люди Икс / X-Men",
-        shareName: "Бюст Rogue (X-Men)",
+        name: 'Бюст Rogue / Люди Икс / X-Men',
+        shareName: 'Бюст Rogue (X-Men)',
         price: 1490,
         stock: 2,
-        category: "busts",
-        description: "Rogue (Роуг) — мутант из вселенной Marvel / Люди Икс.\nСпособна поглощать силу, память и энергию при касании.\nОдин из самых узнаваемых персонажей X-Men.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.",
+        category: 'busts',
+        description: 'Rogue (Роуг) — мутант из вселенной Marvel / Люди Икс.\nСпособна поглощать силу, память и энергию при касании.\nОдин из самых узнаваемых персонажей X-Men.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.',
         photos: [ROGUE1, ROGUE2, ROGUE_GIF]
       },
       {
         id: 2,
-        name: "Фигурка Power / Человек-бензопила / Chainsaw Man",
-        shareName: "Фигурка Power (Chainsaw Man)",
+        name: 'Фигурка Power / Человек-бензопила / Chainsaw Man',
+        shareName: 'Фигурка Power (Chainsaw Man)',
         price: 1490,
         stock: 0,
-        category: "figures",
-        description: "Power (Пауэр) — демон крови из аниме и манги Chainsaw Man.\nИмпульсивная, харизматичная и опасная — одна из ключевых героинь истории.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.",
+        category: 'figures',
+        description: 'Power (Пауэр) — демон крови из аниме и манги Chainsaw Man.\nИмпульсивная, харизматичная и опасная — одна из ключевых героинь истории.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.',
         photos: [POWER1, POWER2, POWER_GIF]
       }
     ];
 
-    let cart = JSON.parse(localStorage.getItem('shop_cart') || '[]');
-    cart = cart.map(item => {
-      const p = products.find(x => x.id === item.id);
-      if (p) { item.price = p.price; item.name = p.name; item.photo = p.photos[0]; }
+    var cart = [];
+    try {
+      cart = JSON.parse(localStorage.getItem('shop_cart') || '[]');
+    } catch (e) { cart = []; }
+    cart = cart.map(function (item) {
+      var p = products.find(function (x) { return x.id === item.id; });
+      if (p) {
+        item.price = p.price;
+        item.name = p.name;
+        item.photo = p.photos[0];
+      }
       return item;
-    }).filter(item => products.some(p => p.id === item.id));
+    }).filter(function (item) {
+      return products.some(function (p) { return p.id === item.id; });
+    });
     localStorage.setItem('shop_cart', JSON.stringify(cart));
 
-    let currentProduct = null, currentSlide = 0, currentCategory = 'all', searchQuery = '';
-    let deliveryMethod = null, appliedPromo = false;
-    let pageHistory = [];
+    var currentProduct = null;
+    var currentSlide = 0;
+    var currentCategory = 'all';
+    var searchQuery = '';
+    var deliveryMethod = null;
+    var appliedPromo = false;
 
     function isPromoUsed() { return localStorage.getItem(PROMO_USED_KEY) === '1'; }
     function markPromoUsed() { localStorage.setItem(PROMO_USED_KEY, '1'); }
@@ -351,13 +391,19 @@
       updateMainButton();
     }
     function generateOrderNumber() { return Math.floor(100000 + Math.random() * 900000); }
+
     function stockLabel(stock) {
-      if (stock > 0) return { text: 'В наличии: ' + stock + ' шт.', out: false };
+      var n = Number(stock);
+      if (n > 0) {
+        return { text: 'В наличии: ' + n + ' шт.', out: false };
+      }
       return { text: 'Под заказ · 1–3 дня', out: true };
     }
+
     function needsMakeTime(productId, nextQty) {
-      const p = products.find(x => x.id === productId);
-      return p ? nextQty > p.stock : false;
+      var p = products.find(function (x) { return x.id === productId; });
+      if (!p) return false;
+      return nextQty > Number(p.stock);
     }
 
     function hapticSuccess() {
@@ -369,42 +415,25 @@
           setTimeout(function () {
             try { tg.HapticFeedback.notificationOccurred('success'); } catch (e3) {}
           }, 30);
-          setTimeout(function () {
-            try { tg.HapticFeedback.impactOccurred('light'); } catch (e4) {}
-          }, 80);
         }
       } catch (e) {}
-      try {
-        if (navigator.vibrate) {
-          navigator.vibrate([40, 30, 40]);
-        }
-      } catch (e) {}
+      try { if (navigator.vibrate) navigator.vibrate([40, 30, 40]); } catch (e) {}
     }
     function hapticLight() {
       try {
         if (tg.HapticFeedback) {
-          try { tg.HapticFeedback.impactOccurred('light'); } catch (e1) {
-            try { tg.HapticFeedback.selectionChanged(); } catch (e2) {}
-          }
+          try { tg.HapticFeedback.impactOccurred('light'); } catch (e1) {}
         }
       } catch (e) {}
-      try {
-        if (navigator.vibrate) navigator.vibrate(20);
-      } catch (e) {}
+      try { if (navigator.vibrate) navigator.vibrate(20); } catch (e) {}
     }
 
     function goBackInApp() {
-      const active = document.querySelector('.page.active')?.id;
-      if (active === 'product-page') {
-        showPage('catalog', true);
-        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
-        document.querySelector('.tab[data-page="catalog"]').classList.add('active');
-        renderProducts();
-        return;
-      }
-      if (active === 'cart') {
-        showPage('catalog', true);
-        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      var active = document.querySelector('.page.active');
+      active = active ? active.id : '';
+      if (active === 'product-page' || active === 'cart') {
+        showPage('catalog');
+        document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
         document.querySelector('.tab[data-page="catalog"]').classList.add('active');
         renderProducts();
         return;
@@ -413,166 +442,198 @@
     }
 
     function updateBackButton() {
-      const active = document.querySelector('.page.active')?.id;
       if (!tg.BackButton) return;
-      if (active === 'product-page' || active === 'cart') {
-        tg.BackButton.show();
-      } else {
-        tg.BackButton.hide();
-      }
+      var active = document.querySelector('.page.active');
+      active = active ? active.id : '';
+      if (active === 'product-page' || active === 'cart') tg.BackButton.show();
+      else tg.BackButton.hide();
     }
 
     if (tg.BackButton) {
       tg.BackButton.onClick(goBackInApp);
     }
 
-    function showPage(pageId, fromBack) {
-      if (!fromBack) {
-        const prev = document.querySelector('.page.active')?.id;
-        if (prev && prev !== pageId) pageHistory.push(prev);
-      }
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
       document.getElementById(pageId).classList.add('active');
       document.body.classList.toggle('product-open', pageId === 'product-page');
-      document.getElementById('page-title').textContent =
-        ({ catalog: 'Витрина', cart: 'Корзина', 'product-page': 'Товар' })[pageId] || 'Магазин';
+      var titles = { catalog: 'Витрина', cart: 'Корзина', 'product-page': 'Товар' };
+      document.getElementById('page-title').textContent = titles[pageId] || 'Магазин';
       document.getElementById('main-tabs').style.display = pageId === 'product-page' ? 'none' : 'flex';
       window.scrollTo(0, 0);
       updateMainButton();
       updateBackButton();
+      updateCartFabBadge();
     }
 
     function updateMainButton() {
       if (!tg.MainButton) return;
-      const activePage = document.querySelector('.page.active')?.id;
+      var activePage = document.querySelector('.page.active');
+      activePage = activePage ? activePage.id : '';
       if (activePage === 'product-page' && currentProduct) {
-        tg.MainButton.setText('В корзину'); tg.MainButton.show(); tg.MainButton.onClick(mainButtonHandler);
+        tg.MainButton.setText('В корзину');
+        tg.MainButton.show();
+        tg.MainButton.onClick(mainButtonHandler);
       } else if (activePage === 'cart' && cart.length > 0) {
         tg.MainButton.setText('Оформить заказ');
-        if (!document.getElementById('checkout-btn').disabled) tg.MainButton.show(); else tg.MainButton.hide();
+        if (!document.getElementById('checkout-btn').disabled) tg.MainButton.show();
+        else tg.MainButton.hide();
         tg.MainButton.onClick(mainButtonHandler);
-      } else tg.MainButton.hide();
+      } else {
+        tg.MainButton.hide();
+      }
     }
     function mainButtonHandler() {
-      const activePage = document.querySelector('.page.active')?.id;
+      var activePage = document.querySelector('.page.active');
+      activePage = activePage ? activePage.id : '';
       if (activePage === 'product-page' && currentProduct) addToCart(currentProduct.id);
       else if (activePage === 'cart') document.getElementById('checkout-btn').click();
     }
 
-    document.querySelectorAll('.tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
         showPage(btn.dataset.page);
         if (btn.dataset.page === 'catalog') renderProducts();
         if (btn.dataset.page === 'cart') renderCart();
       });
     });
-    document.querySelectorAll('.cat-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.cat-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.cat-btn').forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
         currentCategory = btn.dataset.category;
         renderProducts();
       });
     });
-    document.getElementById('search-input').addEventListener('input', e => {
+    document.getElementById('search-input').addEventListener('input', function (e) {
       searchQuery = e.target.value.toLowerCase().trim();
       renderProducts();
     });
-    document.getElementById('support-btn').addEventListener('click', () => {
+    document.getElementById('support-btn').addEventListener('click', function () {
       if (tg.openTelegramLink) tg.openTelegramLink(SUPPORT_LINK);
       else if (tg.openLink) tg.openLink(SUPPORT_LINK);
       else window.open(SUPPORT_LINK, '_blank');
     });
 
+    document.getElementById('cart-fab').addEventListener('click', function () {
+      hapticLight();
+      showPage('cart');
+      document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
+      document.querySelector('.tab[data-page="cart"]').classList.add('active');
+      renderCart();
+    });
+
     function getFilteredProducts() {
-      return products.filter(p => {
-        const matchCategory = currentCategory === 'all' || p.category === currentCategory;
-        const matchSearch = !searchQuery || p.name.toLowerCase().includes(searchQuery);
+      return products.filter(function (p) {
+        var matchCategory = currentCategory === 'all' || p.category === currentCategory;
+        var matchSearch = !searchQuery || p.name.toLowerCase().indexOf(searchQuery) !== -1;
         return matchCategory && matchSearch;
       });
     }
 
     function renderProducts() {
-      const list = document.getElementById('products-list');
-      const filtered = getFilteredProducts();
-      if (!filtered.length) { list.innerHTML = '<div class="empty">Ничего не найдено</div>'; return; }
-      list.innerHTML = filtered.map(p => {
-        const s = stockLabel(p.stock);
-        return `<div class="product" data-id="${p.id}">
-          <div class="product-img-wrap"><img src="${p.photos[0]}" alt=""></div>
-          <div class="product-info">
-            <div class="product-name">${p.name}</div>
-            <div class="product-price">${p.price.toLocaleString('ru-RU')} ₽</div>
-            <div class="product-stock \( {s.out ? 'out' : ''}"> \){s.text}</div>
-            <button class="add-btn" data-id="${p.id}" type="button">В корзину</button>
-          </div></div>`;
-      }).join('');
-      document.querySelectorAll('.product').forEach(card => {
-        card.addEventListener('click', e => {
+      var list = document.getElementById('products-list');
+      var filtered = getFilteredProducts();
+      if (!filtered.length) {
+        list.innerHTML = '<div class="empty">Ничего не найдено</div>';
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < filtered.length; i++) {
+        var p = filtered[i];
+        var s = stockLabel(p.stock);
+        var stockClass = s.out ? 'product-stock out' : 'product-stock';
+        html += '<div class="product" data-id="' + p.id + '">';
+        html += '<div class="product-img-wrap"><img src="' + p.photos[0] + '" alt=""></div>';
+        html += '<div class="product-info">';
+        html += '<div class="product-name">' + p.name + '</div>';
+        html += '<div class="product-price">' + p.price.toLocaleString('ru-RU') + ' ₽</div>';
+        html += '<div class="' + stockClass + '">' + s.text + '</div>';
+        html += '<button class="add-btn" data-id="' + p.id + '" type="button">В корзину</button>';
+        html += '</div></div>';
+      }
+      list.innerHTML = html;
+
+      document.querySelectorAll('.product').forEach(function (card) {
+        card.addEventListener('click', function (e) {
           if (e.target.classList.contains('add-btn')) return;
           openProduct(Number(card.dataset.id));
         });
       });
-      document.querySelectorAll('.add-btn').forEach(btn => {
-        btn.addEventListener('click', e => { e.stopPropagation(); addToCart(Number(btn.dataset.id)); });
+      document.querySelectorAll('.add-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          addToCart(Number(btn.dataset.id));
+        });
       });
     }
 
     function openProduct(id) {
-      currentProduct = products.find(p => p.id === id);
+      currentProduct = products.find(function (p) { return p.id === id; });
       if (!currentProduct) return;
       currentSlide = 0;
       document.getElementById('detail-name').textContent = currentProduct.name;
       document.getElementById('detail-price').textContent = currentProduct.price.toLocaleString('ru-RU') + ' ₽';
-      const s = stockLabel(currentProduct.stock);
-      const stockEl = document.getElementById('detail-stock');
+      var s = stockLabel(currentProduct.stock);
+      var stockEl = document.getElementById('detail-stock');
       stockEl.textContent = s.text;
-      stockEl.className = 'detail-stock' + (s.out ? ' out' : '');
+      stockEl.className = s.out ? 'detail-stock out' : 'detail-stock';
       document.getElementById('detail-desc').textContent = currentProduct.description;
-      document.getElementById('gallery-track').innerHTML = currentProduct.photos.map(src =>
-        `<div class="gallery-slide"><img src="${src}" alt=""></div>`
-      ).join('');
+
+      var trackHtml = '';
+      for (var i = 0; i < currentProduct.photos.length; i++) {
+        trackHtml += '<div class="gallery-slide"><img src="' + currentProduct.photos[i] + '" alt=""></div>';
+      }
+      document.getElementById('gallery-track').innerHTML = trackHtml;
       document.getElementById('gallery-track').style.transform = 'translateX(0)';
-      document.getElementById('gallery-dots').innerHTML = currentProduct.photos.map((_, i) =>
-        `<span class="${i === 0 ? 'active' : ''}"></span>`
-      ).join('');
+
+      var dotsHtml = '';
+      for (var d = 0; d < currentProduct.photos.length; d++) {
+        dotsHtml += '<span class="' + (d === 0 ? 'active' : '') + '"></span>';
+      }
+      document.getElementById('gallery-dots').innerHTML = dotsHtml;
       showPage('product-page');
     }
 
     function openFromStartParam() {
-      const param = tg.initDataUnsafe?.start_param;
-      if (param && param.startsWith('product_')) {
-        const id = Number(param.replace('product_', ''));
-        if (id && products.some(p => p.id === id)) openProduct(id);
+      var param = tg.initDataUnsafe && tg.initDataUnsafe.start_param;
+      if (param && param.indexOf('product_') === 0) {
+        var id = Number(param.replace('product_', ''));
+        if (id && products.some(function (p) { return p.id === id; })) openProduct(id);
       }
     }
 
-    let startX = 0;
-    document.querySelector('.gallery').addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
-    document.querySelector('.gallery').addEventListener('touchend', e => {
+    var startX = 0;
+    document.querySelector('.gallery').addEventListener('touchstart', function (e) {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+    document.querySelector('.gallery').addEventListener('touchend', function (e) {
       if (!currentProduct) return;
-      const diff = startX - e.changedTouches[0].clientX;
+      var diff = startX - e.changedTouches[0].clientX;
       if (Math.abs(diff) > 40) {
         if (diff > 0 && currentSlide < currentProduct.photos.length - 1) currentSlide++;
         else if (diff < 0 && currentSlide > 0) currentSlide--;
-        document.getElementById('gallery-track').style.transform = `translateX(-${currentSlide * 100}%)`;
-        document.querySelectorAll('#gallery-dots span').forEach((dot, i) => dot.classList.toggle('active', i === currentSlide));
+        document.getElementById('gallery-track').style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
+        document.querySelectorAll('#gallery-dots span').forEach(function (dot, i) {
+          if (i === currentSlide) dot.classList.add('active');
+          else dot.classList.remove('active');
+        });
       }
     }, { passive: true });
 
     document.getElementById('back-btn').addEventListener('click', goBackInApp);
-    document.getElementById('detail-add-btn').addEventListener('click', () => {
+    document.getElementById('detail-add-btn').addEventListener('click', function () {
       if (currentProduct) addToCart(currentProduct.id);
     });
 
     function shareProduct() {
       if (!currentProduct) return;
       hapticLight();
-      const deepLink = 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=product_' + Number(currentProduct.id);
-      const text = (currentProduct.shareName || currentProduct.name) + ' — ' + currentProduct.price.toLocaleString('ru-RU') + ' ₽';
-      const shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(deepLink) + '&text=' + encodeURIComponent(text);
+      var deepLink = 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=product_' + Number(currentProduct.id);
+      var text = (currentProduct.shareName || currentProduct.name) + ' — ' + currentProduct.price.toLocaleString('ru-RU') + ' ₽';
+      var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(deepLink) + '&text=' + encodeURIComponent(text);
       try {
         if (tg.openTelegramLink) tg.openTelegramLink(shareUrl);
         else if (tg.openLink) tg.openLink(shareUrl);
@@ -584,25 +645,42 @@
     document.getElementById('share-btn').addEventListener('click', shareProduct);
 
     function doAddToCart(product) {
-      const existing = cart.find(item => item.id === product.id);
+      var existing = cart.find(function (item) { return item.id === product.id; });
       if (existing) existing.qty += 1;
-      else cart.push({ id: product.id, name: product.name, price: product.price, qty: 1, photo: product.photos[0] });
+      else cart.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        qty: 1,
+        photo: product.photos[0]
+      });
       saveCart();
+      updateCartFabBadge();
       hapticSuccess();
-      tg.showPopup({ title: 'Добавлено', message: product.name + ' добавлен в корзину', buttons: [{ type: 'ok' }] });
+      tg.showPopup({
+        title: 'Добавлено',
+        message: product.name + ' добавлен в корзину',
+        buttons: [{ type: 'ok' }]
+      });
     }
 
     function addToCart(id) {
-      const product = products.find(p => p.id === id);
+      var product = products.find(function (p) { return p.id === id; });
       if (!product) return;
-      const existing = cart.find(item => item.id === id);
-      const nextQty = (existing ? existing.qty : 0) + 1;
+      var existing = cart.find(function (item) { return item.id === id; });
+      var nextQty = (existing ? existing.qty : 0) + 1;
       if (needsMakeTime(id, nextQty)) {
         if (tg.showPopup) {
           tg.showPopup({
-            title: 'Под заказ', message: MAKE_TIME_MSG,
-            buttons: [{ id: 'cancel', type: 'cancel' }, { id: 'ok', type: 'default', text: 'В корзину' }]
-          }, btnId => { if (btnId === 'ok' || btnId === 'default') doAddToCart(product); });
+            title: 'Под заказ',
+            message: MAKE_TIME_MSG,
+            buttons: [
+              { id: 'cancel', type: 'cancel' },
+              { id: 'ok', type: 'default', text: 'В корзину' }
+            ]
+          }, function (btnId) {
+            if (btnId === 'ok' || btnId === 'default') doAddToCart(product);
+          });
         } else doAddToCart(product);
         return;
       }
@@ -610,84 +688,143 @@
     }
 
     function changeQty(id, delta) {
-      const item = cart.find(i => i.id === id);
+      var item = cart.find(function (i) { return i.id === id; });
       if (!item) return;
       if (delta > 0 && needsMakeTime(id, item.qty + 1)) {
         if (tg.showPopup) {
           tg.showPopup({
-            title: 'Под заказ', message: MAKE_TIME_MSG,
-            buttons: [{ id: 'cancel', type: 'cancel' }, { id: 'ok', type: 'default', text: 'Добавить' }]
-          }, btnId => {
+            title: 'Под заказ',
+            message: MAKE_TIME_MSG,
+            buttons: [
+              { id: 'cancel', type: 'cancel' },
+              { id: 'ok', type: 'default', text: 'Добавить' }
+            ]
+          }, function (btnId) {
             if (btnId === 'ok' || btnId === 'default') {
-              item.qty += 1; saveCart(); hapticLight(); renderCart();
+              item.qty += 1;
+              saveCart();
+              hapticLight();
+              renderCart();
+              updateCartFabBadge();
             }
           });
-        } else { item.qty += 1; saveCart(); hapticLight(); renderCart(); }
+        } else {
+          item.qty += 1;
+          saveCart();
+          hapticLight();
+          renderCart();
+          updateCartFabBadge();
+        }
         return;
       }
       item.qty += delta;
-      if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
-      saveCart(); hapticLight(); renderCart();
+      if (item.qty <= 0) {
+        cart = cart.filter(function (i) { return i.id !== id; });
+      }
+      saveCart();
+      hapticLight();
+      renderCart();
+      updateCartFabBadge();
     }
 
     function doClearCart() {
-      cart = []; appliedPromo = false;
+      cart = [];
+      appliedPromo = false;
       document.getElementById('promo-input').value = '';
       document.getElementById('promo-status').textContent = '';
       document.getElementById('promo-status').className = 'promo-status';
       deliveryMethod = null;
-      document.querySelectorAll('input[name="delivery"]').forEach(r => r.checked = false);
+      document.querySelectorAll('input[name="delivery"]').forEach(function (r) { r.checked = false; });
       document.getElementById('ozon-fields').classList.remove('show');
-      saveCart(); renderCart(); hapticSuccess();
+      saveCart();
+      renderCart();
+      updateCartFabBadge();
+      hapticSuccess();
     }
-    document.getElementById('clear-cart-btn').addEventListener('click', () => {
+    document.getElementById('clear-cart-btn').addEventListener('click', function () {
       if (!cart.length) return;
-      if (tg.showConfirm) tg.showConfirm('Очистить корзину?', ok => { if (ok) doClearCart(); });
-      else doClearCart();
+      if (tg.showConfirm) {
+        tg.showConfirm('Очистить корзину?', function (ok) { if (ok) doClearCart(); });
+      } else doClearCart();
     });
 
     function updateDeliveryUI() {
-      document.querySelectorAll('.delivery-option').forEach(el => el.classList.remove('active'));
-      const fields = document.getElementById('ozon-fields');
+      document.querySelectorAll('.delivery-option').forEach(function (el) { el.classList.remove('active'); });
+      var fields = document.getElementById('ozon-fields');
       if (deliveryMethod === 'ozon') {
-        document.getElementById('opt-ozon').classList.add('active'); fields.classList.add('show');
+        document.getElementById('opt-ozon').classList.add('active');
+        fields.classList.add('show');
       } else if (deliveryMethod === 'pickup') {
-        document.getElementById('opt-pickup').classList.add('active'); fields.classList.remove('show');
+        document.getElementById('opt-pickup').classList.add('active');
+        fields.classList.remove('show');
       }
-      updateTotal(); checkCheckoutReady();
+      updateTotal();
+      checkCheckoutReady();
     }
-    document.getElementById('opt-ozon').addEventListener('click', () => {
-      deliveryMethod = 'ozon'; document.querySelector('input[value="ozon"]').checked = true; updateDeliveryUI();
+    document.getElementById('opt-ozon').addEventListener('click', function () {
+      deliveryMethod = 'ozon';
+      document.querySelector('input[value="ozon"]').checked = true;
+      updateDeliveryUI();
     });
-    document.getElementById('opt-pickup').addEventListener('click', () => {
-      deliveryMethod = 'pickup'; document.querySelector('input[value="pickup"]').checked = true; updateDeliveryUI();
+    document.getElementById('opt-pickup').addEventListener('click', function () {
+      deliveryMethod = 'pickup';
+      document.querySelector('input[value="pickup"]').checked = true;
+      updateDeliveryUI();
     });
-    document.getElementById('open-map-btn').addEventListener('click', () => {
-      const url = 'https://yandex.ru/maps/?text=' + encodeURIComponent('пункт выдачи Ozon');
-      if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
+    document.getElementById('open-map-btn').addEventListener('click', function () {
+      var url = 'https://yandex.ru/maps/?text=' + encodeURIComponent('пункт выдачи Ozon');
+      if (tg.openLink) tg.openLink(url);
+      else window.open(url, '_blank');
     });
-    document.getElementById('promo-apply').addEventListener('click', () => {
-      const code = document.getElementById('promo-input').value.trim().toUpperCase();
-      const status = document.getElementById('promo-status');
-      if (!code) { status.textContent = 'Введите промокод'; status.className = 'promo-status err'; appliedPromo = false; updateTotal(); return; }
-      if (code !== PROMO_CODE) { appliedPromo = false; status.textContent = 'Промокод не найден'; status.className = 'promo-status err'; updateTotal(); return; }
-      if (isPromoUsed()) { appliedPromo = false; status.textContent = 'Промокод уже был использован'; status.className = 'promo-status err'; updateTotal(); return; }
-      appliedPromo = true; status.textContent = 'Промокод Musli применён: −50%'; status.className = 'promo-status ok';
-      hapticSuccess(); updateTotal();
+    document.getElementById('promo-apply').addEventListener('click', function () {
+      var code = document.getElementById('promo-input').value.trim().toUpperCase();
+      var status = document.getElementById('promo-status');
+      if (!code) {
+        status.textContent = 'Введите промокод';
+        status.className = 'promo-status err';
+        appliedPromo = false;
+        updateTotal();
+        return;
+      }
+      if (code !== PROMO_CODE) {
+        appliedPromo = false;
+        status.textContent = 'Промокод не найден';
+        status.className = 'promo-status err';
+        updateTotal();
+        return;
+      }
+      if (isPromoUsed()) {
+        appliedPromo = false;
+        status.textContent = 'Промокод уже был использован';
+        status.className = 'promo-status err';
+        updateTotal();
+        return;
+      }
+      appliedPromo = true;
+      status.textContent = 'Промокод Musli применён: −50%';
+      status.className = 'promo-status ok';
+      hapticSuccess();
+      updateTotal();
     });
-    ['recipient-name', 'recipient-phone', 'ozon-address'].forEach(id => {
+    ['recipient-name', 'recipient-phone', 'ozon-address'].forEach(function (id) {
       document.getElementById(id).addEventListener('input', checkCheckoutReady);
     });
 
     function checkCheckoutReady() {
-      const btn = document.getElementById('checkout-btn');
-      if (!deliveryMethod) { btn.disabled = true; updateMainButton(); return; }
+      var btn = document.getElementById('checkout-btn');
+      if (!deliveryMethod) {
+        btn.disabled = true;
+        updateMainButton();
+        return;
+      }
       if (deliveryMethod === 'ozon') {
-        const name = document.getElementById('recipient-name').value.trim();
-        const phone = document.getElementById('recipient-phone').value.trim();
-        const address = document.getElementById('ozon-address').value.trim();
+        var name = document.getElementById('recipient-name').value.trim();
+        var phone = document.getElementById('recipient-phone').value.trim();
+        var address = document.getElementById('ozon-address').value.trim();
         btn.disabled = !(name.length >= 2 && phone.length >= 10 && address.length >= 5);
-      } else btn.disabled = false;
+      } else {
+        btn.disabled = false;
+      }
       updateMainButton();
     }
     function getDeliveryPrice() { return deliveryMethod === 'ozon' ? DELIVERY_PRICE : 0; }
@@ -696,13 +833,13 @@
       return Math.floor(productsTotal * PROMO_PERCENT / 100);
     }
     function updateTotal() {
-      const productsTotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
-      const total = Math.max(0, productsTotal - getDiscount(productsTotal) + getDeliveryPrice());
+      var productsTotal = cart.reduce(function (sum, i) { return sum + i.price * i.qty; }, 0);
+      var total = Math.max(0, productsTotal - getDiscount(productsTotal) + getDeliveryPrice());
       document.getElementById('total-price').textContent = total.toLocaleString('ru-RU') + ' ₽';
     }
 
     function renderCart() {
-      const list = document.getElementById('cart-list');
+      var list = document.getElementById('cart-list');
       if (!cart.length) {
         list.innerHTML = '<div class="empty">Корзина пуста</div>';
         document.getElementById('cart-total').style.display = 'none';
@@ -713,80 +850,110 @@
         updateBackButton();
         return;
       }
-      list.innerHTML = cart.map(item => {
-        const p = products.find(x => x.id === item.id);
-        const make = p && item.qty > p.stock;
-        return `<div class="cart-item">
-          <img src="${item.photo}" alt="">
-          <div class="cart-info">
-            <div class="name">${item.name}</div>
-            <div class="price">${item.price.toLocaleString('ru-RU')} ₽</div>
-            ${make ? '<div class="made-note">Под заказ · 1–3 дня</div>' : ''}
-          </div>
-          <div class="qty">
-            <button class="qty-btn" data-id="${item.id}" data-delta="-1" type="button">−</button>
-            <span>${item.qty}</span>
-            <button class="qty-btn" data-id="${item.id}" data-delta="1" type="button">+</button>
-          </div></div>`;
-      }).join('');
-      document.querySelectorAll('.qty-btn').forEach(btn => {
-        btn.addEventListener('click', () => changeQty(Number(btn.dataset.id), Number(btn.dataset.delta)));
+      var html = '';
+      for (var i = 0; i < cart.length; i++) {
+        var item = cart[i];
+        var p = products.find(function (x) { return x.id === item.id; });
+        var make = p && item.qty > Number(p.stock);
+        html += '<div class="cart-item">';
+        html += '<img src="' + item.photo + '" alt="">';
+        html += '<div class="cart-info">';
+        html += '<div class="name">' + item.name + '</div>';
+        html += '<div class="price">' + item.price.toLocaleString('ru-RU') + ' ₽</div>';
+        if (make) html += '<div class="made-note">Под заказ · 1–3 дня</div>';
+        html += '</div>';
+        html += '<div class="qty">';
+        html += '<button class="qty-btn" data-id="' + item.id + '" data-delta="-1" type="button">−</button>';
+        html += '<span>' + item.qty + '</span>';
+        html += '<button class="qty-btn" data-id="' + item.id + '" data-delta="1" type="button">+</button>';
+        html += '</div></div>';
+      }
+      list.innerHTML = html;
+      document.querySelectorAll('.qty-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          changeQty(Number(btn.dataset.id), Number(btn.dataset.delta));
+        });
       });
       document.getElementById('cart-top').style.display = 'flex';
       document.getElementById('promo-block').classList.add('show');
       document.getElementById('delivery-block').style.display = 'block';
       document.getElementById('cart-total').style.display = 'flex';
-      updateTotal(); checkCheckoutReady(); updateBackButton();
+      updateTotal();
+      checkCheckoutReady();
+      updateBackButton();
     }
 
     function updateCartCount() {
-      const count = cart.reduce((s, i) => s + i.qty, 0);
-      document.getElementById('cart-count').textContent = count > 0 ? `(${count})` : '';
+      var count = cart.reduce(function (s, i) { return s + i.qty; }, 0);
+      document.getElementById('cart-count').textContent = count > 0 ? '(' + count + ')' : '';
+      updateCartFabBadge();
+    }
+
+    function updateCartFabBadge() {
+      var count = cart.reduce(function (s, i) { return s + i.qty; }, 0);
+      var badge = document.getElementById('cart-fab-badge');
+      badge.textContent = String(count);
+      if (count > 0) badge.classList.add('show');
+      else badge.classList.remove('show');
     }
 
     async function processOrder() {
-      const user = tg.initDataUnsafe?.user;
-      const productsTotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
-      const discount = getDiscount(productsTotal);
-      const total = Math.max(0, productsTotal - discount + getDeliveryPrice());
-      const orderNumber = generateOrderNumber();
-      const items = cart.map(item => {
-        const p = products.find(x => x.id === item.id);
+      var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      var productsTotal = cart.reduce(function (sum, i) { return sum + i.price * i.qty; }, 0);
+      var discount = getDiscount(productsTotal);
+      var total = Math.max(0, productsTotal - discount + getDeliveryPrice());
+      var orderNumber = generateOrderNumber();
+      var items = cart.map(function (item) {
+        var p = products.find(function (x) { return x.id === item.id; });
         return {
-          id: item.id, name: item.name, price: item.price, qty: item.qty,
-          makeToOrder: p ? item.qty > p.stock : false
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          qty: item.qty,
+          makeToOrder: p ? item.qty > Number(p.stock) : false
         };
       });
       try {
-        const res = await fetch(API_URL + '/order', {
+        var res = await fetch(API_URL + '/order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            orderNumber, items, total, discount, deliveryMethod,
+            orderNumber: orderNumber,
+            items: items,
+            total: total,
+            discount: discount,
+            deliveryMethod: deliveryMethod,
             recipientName: document.getElementById('recipient-name').value.trim(),
             recipientPhone: document.getElementById('recipient-phone').value.trim(),
             recipientAddress: document.getElementById('ozon-address').value.trim(),
             user: user ? {
-              id: user.id, first_name: user.first_name,
-              last_name: user.last_name, username: user.username
+              id: user.id,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              username: user.username
             } : null
           })
         });
-        const data = await res.json();
-        return { adminOk: data.ok === true, orderNumber: data.orderNumber || orderNumber, usedPromo: discount > 0 };
+        var data = await res.json();
+        return {
+          adminOk: data.ok === true,
+          orderNumber: data.orderNumber || orderNumber,
+          usedPromo: discount > 0
+        };
       } catch (e) {
-        return { adminOk: false, orderNumber, usedPromo: false };
+        return { adminOk: false, orderNumber: orderNumber, usedPromo: false };
       }
     }
 
-    document.getElementById('checkout-btn').addEventListener('click', async () => {
+    document.getElementById('checkout-btn').addEventListener('click', async function () {
       if (!cart.length || !deliveryMethod) return;
       if (deliveryMethod === 'ozon') {
-        const name = document.getElementById('recipient-name').value.trim();
-        const phone = document.getElementById('recipient-phone').value.trim();
-        const address = document.getElementById('ozon-address').value.trim();
+        var name = document.getElementById('recipient-name').value.trim();
+        var phone = document.getElementById('recipient-phone').value.trim();
+        var address = document.getElementById('ozon-address').value.trim();
         if (name.length < 2 || phone.length < 10 || address.length < 5) {
-          tg.showAlert('Заполните все обязательные поля'); return;
+          tg.showAlert('Заполните все обязательные поля');
+          return;
         }
       }
       if (appliedPromo && isPromoUsed()) {
@@ -794,12 +961,15 @@
         appliedPromo = false;
         document.getElementById('promo-status').textContent = 'Промокод уже был использован';
         document.getElementById('promo-status').className = 'promo-status err';
-        updateTotal(); return;
+        updateTotal();
+        return;
       }
-      const btn = document.getElementById('checkout-btn');
-      btn.disabled = true; btn.textContent = 'Отправка...';
-      const result = await processOrder();
-      btn.disabled = false; btn.textContent = 'Оформить';
+      var btn = document.getElementById('checkout-btn');
+      btn.disabled = true;
+      btn.textContent = 'Отправка...';
+      var result = await processOrder();
+      btn.disabled = false;
+      btn.textContent = 'Оформить';
       if (result.adminOk) {
         if (result.usedPromo) markPromoUsed();
         hapticSuccess();
@@ -808,29 +978,38 @@
           message: 'Номер заказа: ' + result.orderNumber + '\n\nМы свяжемся с вами для оплаты.',
           buttons: [{ type: 'ok' }]
         });
-        cart = []; deliveryMethod = null; appliedPromo = false;
+        cart = [];
+        deliveryMethod = null;
+        appliedPromo = false;
         document.getElementById('promo-input').value = '';
         document.getElementById('promo-status').textContent = '';
         document.getElementById('promo-status').className = 'promo-status';
         document.getElementById('recipient-name').value = '';
         document.getElementById('recipient-phone').value = '';
         document.getElementById('ozon-address').value = '';
-        document.querySelectorAll('input[name="delivery"]').forEach(r => r.checked = false);
+        document.querySelectorAll('input[name="delivery"]').forEach(function (r) { r.checked = false; });
         document.getElementById('ozon-fields').classList.remove('show');
-        saveCart(); renderCart();
+        saveCart();
+        renderCart();
+        updateCartFabBadge();
       } else {
         tg.showAlert('Не удалось оформить заказ. Проверьте Worker и Secrets.');
       }
     });
 
     document.body.classList.remove('product-open');
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
     document.getElementById('catalog').classList.add('active');
-    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
     document.querySelector('.tab[data-page="catalog"]').classList.add('active');
     document.getElementById('main-tabs').style.display = 'flex';
     document.getElementById('page-title').textContent = 'Витрина';
-    renderProducts(); updateCartCount(); updateMainButton(); updateBackButton(); openFromStartParam();
+    renderProducts();
+    updateCartCount();
+    updateMainButton();
+    updateBackButton();
+    updateCartFabBadge();
+    openFromStartParam();
   </script>
 </body>
 </html>
