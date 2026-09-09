@@ -321,6 +321,7 @@
     const POWER2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/power-2.png';
     const POWER_GIF = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/power-3.gif';
 
+    // Цены для витрины. Итоговый заказ считает ТОЛЬКО Worker (getCatalog).
     var products = [
       {
         id: 1,
@@ -360,6 +361,7 @@
     var appliedPromo = false;
     var appliedPromoCode = '';
     var appliedPromoPercent = 0;
+    var mainButtonBound = false;
 
     function isPromoUsed() { return localStorage.getItem(PROMO_USED_KEY) === '1'; }
     function markPromoUsed() { localStorage.setItem(PROMO_USED_KEY, '1'); }
@@ -428,24 +430,27 @@
       updateBackButton();
       updateCartFabBadge();
     }
-    function updateMainButton() {
-      if (!tg.MainButton) return;
-      var activePage = document.querySelector('.page.active');
-      activePage = activePage ? activePage.id : '';
-      if (activePage === 'product-page' && currentProduct) {
-        tg.MainButton.setText('В корзину'); tg.MainButton.show(); tg.MainButton.onClick(mainButtonHandler);
-      } else if (activePage === 'cart' && cart.length > 0) {
-        tg.MainButton.setText('Оформить заказ');
-        if (!document.getElementById('checkout-btn').disabled) tg.MainButton.show();
-        else tg.MainButton.hide();
-        tg.MainButton.onClick(mainButtonHandler);
-      } else tg.MainButton.hide();
-    }
     function mainButtonHandler() {
       var activePage = document.querySelector('.page.active');
       activePage = activePage ? activePage.id : '';
       if (activePage === 'product-page' && currentProduct) addToCart(currentProduct.id);
       else if (activePage === 'cart') document.getElementById('checkout-btn').click();
+    }
+    function updateMainButton() {
+      if (!tg.MainButton) return;
+      if (!mainButtonBound) {
+        tg.MainButton.onClick(mainButtonHandler);
+        mainButtonBound = true;
+      }
+      var activePage = document.querySelector('.page.active');
+      activePage = activePage ? activePage.id : '';
+      if (activePage === 'product-page' && currentProduct) {
+        tg.MainButton.setText('В корзину'); tg.MainButton.show();
+      } else if (activePage === 'cart' && cart.length > 0) {
+        tg.MainButton.setText('Оформить заказ');
+        if (!document.getElementById('checkout-btn').disabled) tg.MainButton.show();
+        else tg.MainButton.hide();
+      } else tg.MainButton.hide();
     }
 
     document.querySelectorAll('.tab').forEach(function (btn) {
@@ -682,20 +687,14 @@
       if (!code) {
         status.textContent = 'Введите промокод';
         status.className = 'promo-status err';
-        appliedPromo = false;
-        appliedPromoCode = '';
-        appliedPromoPercent = 0;
-        updateTotal();
-        return;
+        appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+        updateTotal(); return;
       }
       if (isPromoUsed()) {
         status.textContent = 'Промокод уже был использован';
         status.className = 'promo-status err';
-        appliedPromo = false;
-        appliedPromoCode = '';
-        appliedPromoPercent = 0;
-        updateTotal();
-        return;
+        appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+        updateTotal(); return;
       }
 
       status.textContent = 'Проверка...';
@@ -717,17 +716,13 @@
           hapticSuccess();
           updateTotal();
         } else {
-          appliedPromo = false;
-          appliedPromoCode = '';
-          appliedPromoPercent = 0;
+          appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
           status.textContent = data.error === 'not_found' ? 'Промокод не найден' : 'Ошибка промокода';
           status.className = 'promo-status err';
           updateTotal();
         }
       } catch (e) {
-        appliedPromo = false;
-        appliedPromoCode = '';
-        appliedPromoPercent = 0;
+        appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
         status.textContent = 'Не удалось проверить промокод';
         status.className = 'promo-status err';
         updateTotal();
@@ -807,18 +802,13 @@
       if (count > 0) badge.classList.add('show');
       else badge.classList.remove('show');
     }
+
+    // В заказ уходят только id и qty — цену подставляет Worker
     async function processOrder() {
       var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
-      var productsTotal = cart.reduce(function (sum, i) { return sum + i.price * i.qty; }, 0);
-      var discount = getDiscount(productsTotal);
-      var total = Math.max(0, productsTotal - discount + getDeliveryPrice());
       var orderNumber = generateOrderNumber();
       var items = cart.map(function (item) {
-        var p = products.find(function (x) { return x.id === item.id; });
-        return {
-          id: item.id, name: item.name, price: item.price, qty: item.qty,
-          makeToOrder: p ? item.qty > Number(p.stock) : false
-        };
+        return { id: item.id, qty: item.qty };
       });
       try {
         var res = await fetch(API_URL + '/order', {
@@ -827,16 +817,16 @@
           body: JSON.stringify({
             orderNumber: orderNumber,
             items: items,
-            total: total,
-            discount: discount,
             promoCode: appliedPromo ? appliedPromoCode : '',
             deliveryMethod: deliveryMethod,
             recipientName: document.getElementById('recipient-name').value.trim(),
             recipientPhone: document.getElementById('recipient-phone').value.trim(),
             recipientAddress: document.getElementById('ozon-address').value.trim(),
             user: user ? {
-              id: user.id, first_name: user.first_name,
-              last_name: user.last_name, username: user.username
+              id: user.id,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              username: user.username
             } : null
           })
         });
@@ -844,12 +834,13 @@
         return {
           adminOk: data.ok === true,
           orderNumber: data.orderNumber || orderNumber,
-          usedPromo: appliedPromo && (Number(data.discount) > 0 || discount > 0)
+          usedPromo: Number(data.discount) > 0
         };
       } catch (e) {
         return { adminOk: false, orderNumber: orderNumber, usedPromo: false };
       }
     }
+
     document.getElementById('checkout-btn').addEventListener('click', async function () {
       if (!cart.length || !deliveryMethod) return;
       if (deliveryMethod === 'ozon') {
@@ -862,9 +853,7 @@
       }
       if (appliedPromo && isPromoUsed()) {
         tg.showAlert('Промокод уже был использован');
-        appliedPromo = false;
-        appliedPromoCode = '';
-        appliedPromoPercent = 0;
+        appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
         document.getElementById('promo-status').textContent = 'Промокод уже был использован';
         document.getElementById('promo-status').className = 'promo-status err';
         updateTotal(); return;
@@ -883,9 +872,7 @@
         });
         cart = [];
         deliveryMethod = null;
-        appliedPromo = false;
-        appliedPromoCode = '';
-        appliedPromoPercent = 0;
+        appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
         document.getElementById('promo-input').value = '';
         document.getElementById('promo-status').textContent = '';
         document.getElementById('promo-status').className = 'promo-status';
