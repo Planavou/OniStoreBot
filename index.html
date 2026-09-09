@@ -321,6 +321,7 @@
     const POWER2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/power-2.png';
     const POWER_GIF = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/power-3.gif';
 
+    // Локально: фото и описания. price/stock обновляются с сервера при открытии.
     var products = [
       {
         id: 1,
@@ -346,14 +347,6 @@
 
     var cart = [];
     try { cart = JSON.parse(localStorage.getItem('shop_cart') || '[]'); } catch (e) { cart = []; }
-    cart = cart.map(function (item) {
-      var p = products.find(function (x) { return x.id === item.id; });
-      if (p) { item.price = p.price; item.name = p.name; item.photo = p.photos[0]; }
-      return item;
-    }).filter(function (item) {
-      return products.some(function (p) { return p.id === item.id; });
-    });
-    localStorage.setItem('shop_cart', JSON.stringify(cart));
 
     var currentProduct = null, currentSlide = 0, currentCategory = 'all', searchQuery = '';
     var deliveryMethod = null;
@@ -396,6 +389,40 @@
       try { if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
       try { if (navigator.vibrate) navigator.vibrate(20); } catch (e) {}
     }
+
+    async function syncFromServer() {
+      try {
+        var res = await fetch(API_URL + '/products');
+        var data = await res.json();
+        if (!data.ok || !data.products || !data.products.length) return;
+
+        for (var i = 0; i < data.products.length; i++) {
+          var server = data.products[i];
+          var local = products.find(function (p) {
+            return Number(p.id) === Number(server.id);
+          });
+          if (local) {
+            if (server.price != null) local.price = Number(server.price);
+            if (server.stock != null) local.stock = Number(server.stock);
+            if (server.name) local.name = server.name;
+          }
+        }
+
+        cart = cart.map(function (item) {
+          var p = products.find(function (x) { return x.id === item.id; });
+          if (p) {
+            item.price = p.price;
+            item.name = p.name;
+            item.photo = p.photos[0];
+          }
+          return item;
+        }).filter(function (item) {
+          return products.some(function (p) { return p.id === item.id; });
+        });
+        localStorage.setItem('shop_cart', JSON.stringify(cart));
+      } catch (e) {}
+    }
+
     function goBackInApp() {
       var active = document.querySelector('.page.active');
       active = active ? active.id : '';
@@ -605,7 +632,6 @@
       saveCart();
       updateCartFabBadge();
       hapticSuccess();
-      // баннер «Добавлено» убран — только вибрация и счётчик корзины
     }
 
     function addToCart(id) {
@@ -626,9 +652,7 @@
           }, function (btnId) {
             if (btnId === 'ok' || btnId === 'default') doAddToCart(product);
           });
-        } else {
-          doAddToCart(product);
-        }
+        } else doAddToCart(product);
         return;
       }
       doAddToCart(product);
@@ -927,7 +951,16 @@
     document.querySelector('.tab[data-page="catalog"]').classList.add('active');
     document.getElementById('main-tabs').style.display = 'flex';
     document.getElementById('page-title').textContent = 'Витрина';
-    renderProducts(); updateCartCount(); updateMainButton(); updateBackButton(); updateCartFabBadge(); openFromStartParam();
+
+    updateCartCount();
+    updateMainButton();
+    updateBackButton();
+    updateCartFabBadge();
+
+    syncFromServer().then(function () {
+      renderProducts();
+      openFromStartParam();
+    });
   </script>
 </body>
 </html>
