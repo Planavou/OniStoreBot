@@ -312,7 +312,7 @@
     const BOT_USERNAME = 'IamOniStore_bot';
     const APP_NAME = 'Shop';
     const PROMO_USED_KEY = 'promo_used_server';
-    const MAKE_TIME_MSG = 'Товара нет в наличии.\n\nСрок изготовления: 1–3 дня.\nМожно оформить заказ — сделаем под вас.';
+    const MAKE_TIME_MSG = '⚠️ Товара нет в наличии.\n\nСрок изготовления: 1–3 дня.\nМожно оформить заказ — сделаем под вас.';
 
     const ROGUE1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Rogue-1.png';
     const ROGUE2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Rogue-2.png';
@@ -321,7 +321,6 @@
     const POWER2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/power-2.png';
     const POWER_GIF = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/power-3.gif';
 
-    // Цены для витрины. Итоговый заказ считает ТОЛЬКО Worker (getCatalog).
     var products = [
       {
         id: 1,
@@ -374,7 +373,7 @@
     function stockLabel(stock) {
       var n = Number(stock);
       if (n > 0) return { text: 'В наличии: ' + n + ' шт.', out: false };
-      return { text: 'Под заказ · 1–3 дня', out: true };
+      return { text: '⚠️ Под заказ · 1–3 дня', out: true };
     }
     function needsMakeTime(productId, nextQty) {
       var p = products.find(function (x) { return x.id === productId; });
@@ -596,50 +595,85 @@
     function doAddToCart(product) {
       var existing = cart.find(function (item) { return item.id === product.id; });
       if (existing) existing.qty += 1;
-      else cart.push({ id: product.id, name: product.name, price: product.price, qty: 1, photo: product.photos[0] });
+      else cart.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        qty: 1,
+        photo: product.photos[0]
+      });
       saveCart();
       updateCartFabBadge();
       hapticSuccess();
-      tg.showPopup({ title: 'Добавлено', message: product.name + ' добавлен в корзину', buttons: [{ type: 'ok' }] });
+      // баннер «Добавлено» убран — только вибрация и счётчик корзины
     }
+
     function addToCart(id) {
       var product = products.find(function (p) { return p.id === id; });
       if (!product) return;
       var existing = cart.find(function (item) { return item.id === id; });
       var nextQty = (existing ? existing.qty : 0) + 1;
+
       if (needsMakeTime(id, nextQty)) {
         if (tg.showPopup) {
           tg.showPopup({
-            title: 'Под заказ', message: MAKE_TIME_MSG,
-            buttons: [{ id: 'cancel', type: 'cancel' }, { id: 'ok', type: 'default', text: 'В корзину' }]
+            title: '⚠️ Под заказ',
+            message: MAKE_TIME_MSG,
+            buttons: [
+              { id: 'cancel', type: 'cancel' },
+              { id: 'ok', type: 'default', text: 'В корзину' }
+            ]
           }, function (btnId) {
             if (btnId === 'ok' || btnId === 'default') doAddToCart(product);
           });
-        } else doAddToCart(product);
+        } else {
+          doAddToCart(product);
+        }
         return;
       }
       doAddToCart(product);
     }
+
     function changeQty(id, delta) {
       var item = cart.find(function (i) { return i.id === id; });
       if (!item) return;
+
       if (delta > 0 && needsMakeTime(id, item.qty + 1)) {
         if (tg.showPopup) {
           tg.showPopup({
-            title: 'Под заказ', message: MAKE_TIME_MSG,
-            buttons: [{ id: 'cancel', type: 'cancel' }, { id: 'ok', type: 'default', text: 'Добавить' }]
+            title: '⚠️ Под заказ',
+            message: MAKE_TIME_MSG,
+            buttons: [
+              { id: 'cancel', type: 'cancel' },
+              { id: 'ok', type: 'default', text: 'Добавить' }
+            ]
           }, function (btnId) {
             if (btnId === 'ok' || btnId === 'default') {
-              item.qty += 1; saveCart(); hapticLight(); renderCart(); updateCartFabBadge();
+              item.qty += 1;
+              saveCart();
+              hapticLight();
+              renderCart();
+              updateCartFabBadge();
             }
           });
-        } else { item.qty += 1; saveCart(); hapticLight(); renderCart(); updateCartFabBadge(); }
+        } else {
+          item.qty += 1;
+          saveCart();
+          hapticLight();
+          renderCart();
+          updateCartFabBadge();
+        }
         return;
       }
+
       item.qty += delta;
       if (item.qty <= 0) cart = cart.filter(function (i) { return i.id !== id; });
-      saveCart(); hapticLight(); renderCart(); updateCartFabBadge();
+      saveCart();
+      hapticLight();
+      renderCart();
+      updateCartFabBadge();
     }
+
     function doClearCart() {
       cart = [];
       appliedPromo = false;
@@ -771,7 +805,7 @@
         html += '<div class="cart-item"><img src="' + item.photo + '" alt="">';
         html += '<div class="cart-info"><div class="name">' + item.name + '</div>';
         html += '<div class="price">' + item.price.toLocaleString('ru-RU') + ' ₽</div>';
-        if (make) html += '<div class="made-note">Под заказ · 1–3 дня</div>';
+        if (make) html += '<div class="made-note">⚠️ Под заказ · 1–3 дня</div>';
         html += '</div><div class="qty">';
         html += '<button class="qty-btn" data-id="' + item.id + '" data-delta="-1" type="button">−</button>';
         html += '<span>' + item.qty + '</span>';
@@ -803,7 +837,6 @@
       else badge.classList.remove('show');
     }
 
-    // В заказ уходят только id и qty — цену подставляет Worker
     async function processOrder() {
       var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
       var orderNumber = generateOrderNumber();
