@@ -14,7 +14,6 @@
       --button-text: var(--tg-theme-button-text-color, #ffffff);
       --secondary: var(--tg-theme-secondary-bg-color, #f2f2f7);
       --border: color-mix(in srgb, var(--hint) 25%, transparent);
-      --warn: #ff9500;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body, .page, header, .product, .gallery, .cart-item, button, .tab, .cat-btn {
@@ -64,7 +63,7 @@
     .product-name { font-weight: 600; font-size: 14px; }
     .product-price { color: var(--button); font-weight: 700; font-size: 16px; }
     .product-stock { font-size: 12px; color: var(--hint); font-weight: 500; }
-    .product-stock.out { color: var(--warn); }
+    .product-stock.out { color: #ff9500; }
     .add-btn {
       margin-top: 8px; background: var(--button); color: var(--button-text);
       border: none; padding: 11px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
@@ -110,18 +109,8 @@
     .detail-name { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
     .detail-price { font-size: 24px; font-weight: 700; color: var(--button); margin-bottom: 8px; }
     .detail-stock { font-size: 14px; color: var(--hint); margin-bottom: 16px; font-weight: 500; }
-    .detail-stock.out { color: var(--warn); }
-    .detail-desc { font-size: 15px; line-height: 1.5; margin-bottom: 12px; white-space: pre-wrap; }
-    .detail-assembly-note {
-      display: none;
-      font-size: 14px;
-      font-weight: 600;
-      line-height: 1.45;
-      color: var(--warn);
-      margin-bottom: 14px;
-    }
-    .detail-assembly-note.show { display: block; }
-    .detail-specs { font-size: 15px; line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; color: var(--text); }
+    .detail-stock.out { color: #ff9500; }
+    .detail-desc { font-size: 15px; line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; }
     .detail-actions { display: flex; flex-direction: column; gap: 10px; }
     .detail-add-btn {
       width: 100%; padding: 14px; border-radius: 14px; border: none;
@@ -144,7 +133,7 @@
     .cart-info { flex: 1; min-width: 0; }
     .cart-info .name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
     .cart-info .price { color: var(--button); font-weight: 600; }
-    .cart-info .made-note { font-size: 12px; color: var(--warn); margin-top: 4px; }
+    .cart-info .made-note { font-size: 12px; color: #ff9500; margin-top: 4px; }
     .qty { display: flex; align-items: center; gap: 12px; }
     .qty button {
       width: 34px; height: 34px; border-radius: 50%; border: none;
@@ -250,8 +239,6 @@
         <div class="detail-price" id="detail-price"></div>
         <div class="detail-stock" id="detail-stock"></div>
         <div class="detail-desc" id="detail-desc"></div>
-        <div class="detail-assembly-note" id="detail-assembly-note">⚠️ Фигурка поставляется в разобранном виде — так удобнее доставлять и красить.</div>
-        <div class="detail-specs" id="detail-specs"></div>
         <div class="detail-actions">
           <button class="detail-add-btn" id="detail-add-btn" type="button">В корзину</button>
           <button class="share-btn" id="share-btn" type="button">Поделиться</button>
@@ -326,12 +313,6 @@
     const APP_NAME = 'Shop';
     const PROMO_USED_KEY = 'promo_used_server';
     const MAKE_TIME_MSG = '⚠️ Товара нет в наличии.\n\nСрок изготовления: 1–3 дня.\nМожно оформить заказ — сделаем под вас.';
-    const PRODUCT_SPECS =
-      'Высота изделия: 20 см.\n' +
-      'Изделие под покраску (кастом).\n' +
-      'Материал: пластик PLA.\n' +
-      'Изготовление: 3D-печать высокого качества.\n' +
-      'Срок под заказ: 1–3 дня.';
 
     const ROGUE1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Rogue-1.png';
     const ROGUE2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Rogue-2.png';
@@ -360,6 +341,18 @@
     const Z1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Zitz-1.png';
     const Z2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Zitz-2.png';
     const Z3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Zitz-3.gif';
+    const JINX1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Jinx-1.jpg';
+    const JINX2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Jinx-2.png';
+    const JINX3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Jinx-3.gif';
+    const MIME1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Mime-1.jpg';
+    const MIME2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Mime-2.png';
+    const MIME3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Mime-3.gif';
+    const REB1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca-1.jpg';
+    const REB2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca-2.png';
+    const REB3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca-3.gif';
+    const REBB1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca_bust-1.jpg';
+    const REBB2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca_bust-2.png';
+    const REBB3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca_bust-3.gif';
 
     var products = [
       {
@@ -367,7 +360,7 @@
         name: 'Бюст Rogue / Люди Икс / X-Men',
         shareName: 'Бюст Rogue (X-Men)',
         price: 1490, stock: 2, category: 'busts',
-        description: 'Rogue (Роуг) — мутант из Marvel / X-Men. Поглощает силу и память при касании.',
+        description: 'Rogue (Роуг) — мутант из Marvel / X-Men. Поглощает силу и память при касании.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nСрок под заказ: 1–3 дня.',
         photos: [ROGUE1, ROGUE2, ROGUE_GIF]
       },
       {
@@ -375,7 +368,7 @@
         name: 'Фигурка Power / Человек-бензопила / Chainsaw Man',
         shareName: 'Фигурка Power (Chainsaw Man)',
         price: 1490, stock: 0, category: 'figures',
-        description: 'Power (Пауэр) — демон крови из Chainsaw Man: хаос, характер и узнаваемый силуэт.',
+        description: 'Power (Пауэр) — демон крови из Chainsaw Man: хаос, характер и узнаваемый силуэт.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nФигурка поставляется в разобранном виде — так удобнее доставлять и собирать.\nСрок под заказ: 1–3 дня.',
         photos: [POWER1, POWER2, POWER_GIF]
       },
       {
@@ -383,7 +376,7 @@
         name: 'Фигурка Невидива / Invisigal / Dispatch',
         shareName: 'Фигурка Invisigal (Dispatch)',
         price: 1490, stock: 0, category: 'figures',
-        description: 'Invisigal (Невидива) — героиня вселенной Dispatch. Играет на скрытности и контрастах «видно / не видно».',
+        description: 'Invisigal (Невидива) — героиня вселенной Dispatch. Играет на скрытности и контрастах «видно / не видно».\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nФигурка поставляется в разобранном виде — так удобнее доставлять и собирать.\nСрок под заказ: 1–3 дня.',
         photos: [INV1, INV2, INV3]
       },
       {
@@ -391,7 +384,7 @@
         name: 'Бюст Луна Сноу / Luna Snow / Marvel Rivals',
         shareName: 'Бюст Luna Snow (Marvel Rivals)',
         price: 1490, stock: 0, category: 'busts',
-        description: 'Luna Snow (Луна Сноу) — поп-звезда и героиня Marvel с ледяными способностями, знакома по Marvel Rivals.',
+        description: 'Luna Snow (Луна Сноу) — поп-звезда и героиня Marvel с ледяными способностями, знакома по Marvel Rivals.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nСрок под заказ: 1–3 дня.',
         photos: [LUNA1, LUNA2, LUNA3]
       },
       {
@@ -399,7 +392,7 @@
         name: 'Фигурка Makima / Человек-бензопила / Chainsaw Man',
         shareName: 'Фигурка Makima (Chainsaw Man)',
         price: 1490, stock: 0, category: 'figures',
-        description: 'Makima — Демон Контроля из Chainsaw Man. Спокойный взгляд и тотальный контроль над ситуацией.',
+        description: 'Makima — Демон Контроля из Chainsaw Man. Спокойный взгляд и тотальный контроль над ситуацией.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nФигурка поставляется в разобранном виде — так удобнее доставлять и собирать.\nСрок под заказ: 1–3 дня.',
         photos: [MAK1, MAK2, MAK3]
       },
       {
@@ -407,7 +400,7 @@
         name: 'Фигурка Малевола / Malevola / Dispatch',
         shareName: 'Фигурка Malevola (Dispatch)',
         price: 1490, stock: 0, category: 'figures',
-        description: 'Malevola (Малевола) — яркий персонаж Dispatch с жёстким характером и запоминающимся дизайном.',
+        description: 'Malevola (Малевола) — яркий персонаж Dispatch с жёстким характером и запоминающимся дизайном.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nФигурка поставляется в разобранном виде — так удобнее доставлять и собирать.\nСрок под заказ: 1–3 дня.',
         photos: [MAL1, MAL2, MAL3]
       },
       {
@@ -415,7 +408,7 @@
         name: 'Бюст Power / Человек-бензопила / Chainsaw Man',
         shareName: 'Бюст Power (Chainsaw Man)',
         price: 1490, stock: 0, category: 'busts',
-        description: 'Бюст Power — акцент на лице и рогах демона крови из Chainsaw Man. Компактный формат для полки.',
+        description: 'Бюст Power — акцент на лице и рогах демона крови из Chainsaw Man. Компактный формат для полки.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nСрок под заказ: 1–3 дня.',
         photos: [PB1, PB2, PB3]
       },
       {
@@ -423,7 +416,7 @@
         name: 'Фигурка Рюк / Тетрадь смерти / Death Note',
         shareName: 'Фигурка Ryuk (Death Note)',
         price: 1490, stock: 0, category: 'figures',
-        description: 'Ryuk (Рюк) — шинигами из Death Note. Ухмылка, яблоки и вечный интерес к человеческим играм.',
+        description: 'Ryuk (Рюк) — шинигами из Death Note. Ухмылка, яблоки и вечный интерес к человеческим играм.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nФигурка поставляется в разобранном виде — так удобнее доставлять и собирать.\nСрок под заказ: 1–3 дня.',
         photos: [RY1, RY2, RY3]
       },
       {
@@ -431,8 +424,40 @@
         name: 'Бюст Зитц / Zitz / Battletoads',
         shareName: 'Бюст Zitz (Battletoads)',
         price: 1490, stock: 0, category: 'busts',
-        description: 'Zitz (Зитц) — лидер Battletoads, умный жаб с характером из классики ретро-игр.',
+        description: 'Zitz (Зитц) — лидер Battletoads, умный жаб с характером из классики ретро-игр.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nСрок под заказ: 1–3 дня.',
         photos: [Z1, Z2, Z3]
+      },
+      {
+        id: 10,
+        name: 'Фигурка Jinx / Arcane',
+        shareName: 'Фигурка Jinx (Arcane)',
+        price: 1490, stock: 0, category: 'figures',
+        description: 'Jinx — хаотичная героиня Arcane / League of Legends. Взрывы, розовые волосы и полная непредсказуемость.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nФигурка поставляется в разобранном виде — так удобнее доставлять и собирать.\nСрок под заказ: 1–3 дня.',
+        photos: [JINX1, JINX2, JINX3]
+      },
+      {
+        id: 11,
+        name: 'Фигурка Mime',
+        shareName: 'Фигурка Mime',
+        price: 1490, stock: 0, category: 'figures',
+        description: 'Mime — персонаж в образе мима: выразительная пластика, театральный силуэт и узнаваемый стиль.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nФигурка поставляется в разобранном виде — так удобнее доставлять и собирать.\nСрок под заказ: 1–3 дня.',
+        photos: [MIME1, MIME2, MIME3]
+      },
+      {
+        id: 12,
+        name: 'Фигурка Ребекка / Rebecca / Cyberpunk Edgerunners',
+        shareName: 'Фигурка Rebecca (Edgerunners)',
+        price: 1490, stock: 0, category: 'figures',
+        description: 'Rebecca — вспыльчивая наёмница из Cyberpunk: Edgerunners. Маленький рост, огромный характер и культовый дизайн.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nФигурка поставляется в разобранном виде — так удобнее доставлять и собирать.\nСрок под заказ: 1–3 дня.',
+        photos: [REB1, REB2, REB3]
+      },
+      {
+        id: 13,
+        name: 'Бюст Ребекка / Rebecca / Cyberpunk Edgerunners',
+        shareName: 'Бюст Rebecca (Edgerunners)',
+        price: 1490, stock: 0, category: 'busts',
+        description: 'Бюст Rebecca из Cyberpunk: Edgerunners — акцент на лице, причёске и узнаваемом киберпанк-стиле.\n\nВысота изделия: 20 см.\nИзделие под покраску (кастом).\nМатериал: пластик PLA.\nИзготовление: 3D-печать высокого качества.\nСрок под заказ: 1–3 дня.',
+        photos: [REBB1, REBB2, REBB3]
       }
     ];
 
@@ -652,10 +677,6 @@
       stockEl.textContent = s.text;
       stockEl.className = s.out ? 'detail-stock out' : 'detail-stock';
       document.getElementById('detail-desc').textContent = currentProduct.description;
-      var noteEl = document.getElementById('detail-assembly-note');
-      if (currentProduct.category === 'figures') noteEl.classList.add('show');
-      else noteEl.classList.remove('show');
-      document.getElementById('detail-specs').textContent = PRODUCT_SPECS;
       var trackHtml = '';
       for (var i = 0; i < currentProduct.photos.length; i++) {
         trackHtml += '<div class="gallery-slide"><img src="' + currentProduct.photos[i] + '" alt=""></div>';
