@@ -74,10 +74,17 @@
       border: 1.5px solid var(--border); background: transparent; color: var(--text);
       font-size: 15px; font-weight: 600; cursor: pointer;
     }
-    .gallery { position: relative; width: 100%; height: 320px; overflow: hidden; background: #d1d1d6; }
-    .gallery-track { display: flex; height: 100%; transition: transform 0.3s ease; }
-    .gallery-slide { min-width: 100%; height: 100%; }
-    .gallery-slide img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery { position: relative; width: 100%; height: 320px; overflow: hidden; background: #d1d1d6; touch-action: none; }
+    .gallery-track { display: flex; height: 100%; transition: transform 0.3s ease; will-change: transform; }
+    .gallery-slide { min-width: 100%; height: 100%; overflow: hidden; position: relative; }
+    .gallery-slide img {
+      width: 100%; height: 100%; object-fit: cover;
+      transform-origin: center center;
+      will-change: transform;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+    .gallery.zoomed .gallery-track { transition: none; }
     .gallery-dots {
       position: absolute; bottom: 12px; left: 0; right: 0;
       display: flex; justify-content: center; gap: 6px;
@@ -730,6 +737,7 @@
         dotsHtml += '<span class="' + (d === 0 ? 'active' : '') + '"></span>';
       }
       document.getElementById('gallery-dots').innerHTML = dotsHtml;
+      resetGalleryZoom();
       showPage('product-page');
     }
     function openFromStartParam() {
@@ -752,23 +760,171 @@
         if (tg.showAlert) tg.showAlert(msg);
       }
     }
-    var startX = 0;
-    document.querySelector('.gallery').addEventListener('touchstart', function (e) {
-      startX = e.touches[0].clientX;
-    }, { passive: true });
-    document.querySelector('.gallery').addEventListener('touchend', function (e) {
-      if (!currentProduct) return;
-      var diff = startX - e.changedTouches[0].clientX;
-      if (Math.abs(diff) > 40) {
-        if (diff > 0 && currentSlide < currentProduct.photos.length - 1) currentSlide++;
-        else if (diff < 0 && currentSlide > 0) currentSlide--;
-        document.getElementById('gallery-track').style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
-        document.querySelectorAll('#gallery-dots span').forEach(function (dot, i) {
-          if (i === currentSlide) dot.classList.add('active');
-          else dot.classList.remove('active');
-        });
+
+    /* ——— Pinch-zoom + swipe gallery ——— */
+    var zoomScale = 1, zoomX = 0, zoomY = 0;
+    var pinchStartDist = 0, pinchStartScale = 1;
+    var panStartX = 0, panStartY = 0, panOriginX = 0, panOriginY = 0;
+    var swipeStartX = 0, swipeStartY = 0, swipeActive = false;
+    var isPinching = false, isPanning = false;
+    var MIN_ZOOM = 1, MAX_ZOOM = 4;
+
+    function getGalleryImg() {
+      var slides = document.querySelectorAll('#gallery-track .gallery-slide img');
+      return slides[currentSlide] || null;
+    }
+    function applyGalleryZoom() {
+      var img = getGalleryImg();
+      if (!img) return;
+      img.style.transform = 'translate(' + zoomX + 'px,' + zoomY + 'px) scale(' + zoomScale + ')';
+      var gal = document.querySelector('.gallery');
+      if (gal) {
+        if (zoomScale > 1.02) gal.classList.add('zoomed');
+        else gal.classList.remove('zoomed');
       }
-    }, { passive: true });
+    }
+    function resetGalleryZoom() {
+      zoomScale = 1; zoomX = 0; zoomY = 0;
+      isPinching = false; isPanning = false; swipeActive = false;
+      var imgs = document.querySelectorAll('#gallery-track .gallery-slide img');
+      for (var i = 0; i < imgs.length; i++) imgs[i].style.transform = '';
+      var gal = document.querySelector('.gallery');
+      if (gal) gal.classList.remove('zoomed');
+      applyGalleryZoom();
+    }
+    function clampZoomPan() {
+      var gal = document.querySelector('.gallery');
+      if (!gal || zoomScale <= 1) {
+        zoomX = 0; zoomY = 0; zoomScale = 1;
+        return;
+      }
+      var w = gal.clientWidth, h = gal.clientHeight;
+      var maxX = (w * (zoomScale - 1)) / 2;
+      var maxY = (h * (zoomScale - 1)) / 2;
+      if (zoomX > maxX) zoomX = maxX;
+      if (zoomX < -maxX) zoomX = -maxX;
+      if (zoomY > maxY) zoomY = maxY;
+      if (zoomY < -maxY) zoomY = -maxY;
+    }
+    function touchDist(t0, t1) {
+      var dx = t0.clientX - t1.clientX;
+      var dy = t0.clientY - t1.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    function goToSlide(index) {
+      if (!currentProduct) return;
+      if (index < 0 || index >= currentProduct.photos.length) return;
+      currentSlide = index;
+      resetGalleryZoom();
+      var track = document.getElementById('gallery-track');
+      track.style.transition = 'transform 0.3s ease';
+      track.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
+      document.querySelectorAll('#gallery-dots span').forEach(function (dot, i) {
+        if (i === currentSlide) dot.classList.add('active');
+        else dot.classList.remove('active');
+      });
+    }
+
+    (function setupGalleryGestures() {
+      var gal = document.querySelector('.gallery');
+      if (!gal) return;
+
+      gal.addEventListener('touchstart', function (e) {
+        if (!currentProduct) return;
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          isPinching = true;
+          isPanning = false;
+          swipeActive = false;
+          pinchStartDist = touchDist(e.touches[0], e.touches[1]);
+          pinchStartScale = zoomScale;
+        } else if (e.touches.length === 1) {
+          if (zoomScale > 1.05) {
+            isPanning = true;
+            swipeActive = false;
+            panStartX = e.touches[0].clientX;
+            panStartY = e.touches[0].clientY;
+            panOriginX = zoomX;
+            panOriginY = zoomY;
+          } else {
+            swipeActive = true;
+            isPanning = false;
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
+          }
+        }
+      }, { passive: false });
+
+      gal.addEventListener('touchmove', function (e) {
+        if (!currentProduct) return;
+        if (e.touches.length === 2 && isPinching) {
+          e.preventDefault();
+          var dist = touchDist(e.touches[0], e.touches[1]);
+          if (pinchStartDist < 8) return;
+          var next = pinchStartScale * (dist / pinchStartDist);
+          if (next < MIN_ZOOM) next = MIN_ZOOM;
+          if (next > MAX_ZOOM) next = MAX_ZOOM;
+          zoomScale = next;
+          if (zoomScale <= 1.02) {
+            zoomScale = 1; zoomX = 0; zoomY = 0;
+          } else {
+            clampZoomPan();
+          }
+          applyGalleryZoom();
+        } else if (e.touches.length === 1 && isPanning && zoomScale > 1.05) {
+          e.preventDefault();
+          zoomX = panOriginX + (e.touches[0].clientX - panStartX);
+          zoomY = panOriginY + (e.touches[0].clientY - panStartY);
+          clampZoomPan();
+          applyGalleryZoom();
+        }
+      }, { passive: false });
+
+      gal.addEventListener('touchend', function (e) {
+        if (!currentProduct) return;
+        if (e.touches.length < 2) isPinching = false;
+        if (e.touches.length === 0) {
+          if (zoomScale < 1.08) {
+            zoomScale = 1; zoomX = 0; zoomY = 0;
+            applyGalleryZoom();
+          }
+          if (swipeActive && zoomScale <= 1.05 && e.changedTouches[0]) {
+            var dx = swipeStartX - e.changedTouches[0].clientX;
+            var dy = swipeStartY - e.changedTouches[0].clientY;
+            if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+              if (dx > 0) goToSlide(currentSlide + 1);
+              else goToSlide(currentSlide - 1);
+            }
+          }
+          isPanning = false;
+          swipeActive = false;
+        }
+      }, { passive: true });
+
+      // Двойной тап — зум 2x / сброс
+      var lastTap = 0;
+      gal.addEventListener('click', function (e) {
+        if (!currentProduct) return;
+        var now = Date.now();
+        if (now - lastTap < 280) {
+          if (zoomScale > 1.2) {
+            zoomScale = 1; zoomX = 0; zoomY = 0;
+          } else {
+            zoomScale = 2.2;
+            var rect = gal.getBoundingClientRect();
+            var cx = (e.clientX || (rect.left + rect.width / 2)) - rect.left - rect.width / 2;
+            var cy = (e.clientY || (rect.top + rect.height / 2)) - rect.top - rect.height / 2;
+            zoomX = -cx * (zoomScale - 1) * 0.35;
+            zoomY = -cy * (zoomScale - 1) * 0.35;
+            clampZoomPan();
+          }
+          applyGalleryZoom();
+          lastTap = 0;
+        } else {
+          lastTap = now;
+        }
+      });
+    })();
 
     document.getElementById('back-btn').addEventListener('click', goBackInApp);
     document.getElementById('detail-add-btn').addEventListener('click', function () {
