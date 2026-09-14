@@ -220,6 +220,27 @@
     .promo-status { font-size: 13px; color: var(--hint); min-height: 18px; }
     .promo-status.ok { color: #34c759; }
     .promo-status.err { color: #ff3b30; }
+    .oni-block {
+      display: none; margin: 0 16px 16px; padding: 14px; border-radius: 14px;
+      border: 1.5px solid var(--border); background: var(--secondary);
+      flex-direction: column; gap: 10px;
+    }
+    .oni-block.show { display: flex; }
+    .oni-title { font-size: 15px; font-weight: 700; }
+    .oni-balance { font-size: 14px; color: var(--hint); }
+    .oni-balance b { color: var(--button); font-weight: 700; }
+    .oni-row { display: flex; gap: 8px; align-items: center; }
+    .oni-row input {
+      flex: 1; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 14px; outline: none;
+    }
+    .oni-row button {
+      padding: 12px 14px; border-radius: 12px; border: none;
+      background: var(--button); color: var(--button-text); font-size: 13px; font-weight: 600; cursor: pointer;
+      white-space: nowrap;
+    }
+    .oni-hint { font-size: 12px; color: var(--hint); line-height: 1.4; }
+    .oni-earn { font-size: 13px; color: #34c759; font-weight: 600; }
     .total-bar {
       position: fixed; bottom: 0; left: 0; right: 0; background: var(--secondary); padding: 16px;
       display: none; justify-content: space-between; align-items: center;
@@ -304,6 +325,16 @@
         <button type="button" id="promo-apply">Применить</button>
       </div>
       <div class="promo-status" id="promo-status"></div>
+    </div>
+    <div class="oni-block" id="oni-block">
+      <div class="oni-title">🪙 ONI coin</div>
+      <div class="oni-balance" id="oni-balance-text">Загрузка баланса…</div>
+      <div class="oni-row">
+        <input type="number" id="oni-spend-input" min="0" step="1" placeholder="Списать ONI" inputmode="numeric">
+        <button type="button" id="oni-spend-max">Макс</button>
+      </div>
+      <div class="oni-hint">1 ONI = 1 ₽. Можно вместе с промокодом. Кэшбек 5% начислим после оплаты.</div>
+      <div class="oni-earn" id="oni-earn-text"></div>
     </div>
     <div class="delivery-block" id="delivery-block" style="display:none;">
       <div class="delivery-title">Способ получения</div>
@@ -482,6 +513,8 @@
     var deliveryMethod = null;
     var appliedPromo = false, appliedPromoCode = '', appliedPromoPercent = 0;
     var mainButtonBound = false;
+    var oniBalance = 0;
+    var coinsToSpend = 0;
 
     function isServerPromo(code) {
       var c = (code || '').toUpperCase();
@@ -1026,9 +1059,12 @@
     function doClearCart() {
       cart = [];
       appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+      coinsToSpend = 0;
       document.getElementById('promo-input').value = '';
       document.getElementById('promo-status').textContent = '';
       document.getElementById('promo-status').className = 'promo-status';
+      var oniIn = document.getElementById('oni-spend-input');
+      if (oniIn) oniIn.value = '';
       deliveryMethod = null;
       document.querySelectorAll('input[name="delivery"]').forEach(function (r) { r.checked = false; });
       document.getElementById('ozon-fields').classList.remove('show');
@@ -1160,10 +1196,63 @@
       if (!appliedPromo || !appliedPromoPercent) return 0;
       return Math.floor(productsTotal * appliedPromoPercent / 100);
     }
+    function getProductsTotal() {
+      return cart.reduce(function (sum, i) { return sum + i.price * i.qty; }, 0);
+    }
+    function maxCoinsAllowed() {
+      var productsTotal = getProductsTotal();
+      var afterPromo = Math.max(0, productsTotal - getDiscount(productsTotal));
+      return Math.min(oniBalance, afterPromo);
+    }
+    function clampCoinsToSpend() {
+      var max = maxCoinsAllowed();
+      coinsToSpend = Math.floor(Number(coinsToSpend) || 0);
+      if (coinsToSpend < 0) coinsToSpend = 0;
+      if (coinsToSpend > max) coinsToSpend = max;
+      var input = document.getElementById('oni-spend-input');
+      if (input && document.activeElement !== input) input.value = coinsToSpend > 0 ? String(coinsToSpend) : '';
+    }
     function updateTotal() {
-      var productsTotal = cart.reduce(function (sum, i) { return sum + i.price * i.qty; }, 0);
-      var total = Math.max(0, productsTotal - getDiscount(productsTotal) + getDeliveryPrice());
+      clampCoinsToSpend();
+      var productsTotal = getProductsTotal();
+      var discount = getDiscount(productsTotal);
+      var total = Math.max(0, productsTotal - discount - coinsToSpend + getDeliveryPrice());
       document.getElementById('total-price').textContent = total.toLocaleString('ru-RU') + ' ₽';
+
+      var earnBase = Math.max(0, productsTotal - coinsToSpend);
+      var earn = Math.floor(earnBase * 0.05);
+      var earnEl = document.getElementById('oni-earn-text');
+      if (earnEl) {
+        if (cart.length && earn > 0) {
+          earnEl.textContent = 'После оплаты начислим ≈ ' + earn + ' ONI (5%)';
+        } else {
+          earnEl.textContent = '';
+        }
+      }
+      var balEl = document.getElementById('oni-balance-text');
+      if (balEl) {
+        balEl.innerHTML = 'Баланс: <b>' + oniBalance + ' ONI</b>' +
+          (coinsToSpend > 0 ? ' · спишем <b>−' + coinsToSpend + '</b>' : '');
+      }
+    }
+    async function fetchOniBalance() {
+      var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      var balEl = document.getElementById('oni-balance-text');
+      if (!user || !user.id) {
+        oniBalance = 0;
+        if (balEl) balEl.textContent = 'Баланс доступен при входе из Telegram';
+        updateTotal();
+        return;
+      }
+      try {
+        var res = await fetch(API_URL + '/oni/balance?userId=' + encodeURIComponent(user.id));
+        var data = await res.json();
+        if (data && data.ok) oniBalance = Math.max(0, Math.floor(Number(data.balance) || 0));
+        else oniBalance = 0;
+      } catch (e) {
+        oniBalance = 0;
+      }
+      updateTotal();
     }
     function renderCart() {
       renderPendingBanner();
@@ -1173,6 +1262,7 @@
         document.getElementById('cart-total').style.display = 'none';
         document.getElementById('delivery-block').style.display = 'none';
         document.getElementById('promo-block').classList.remove('show');
+        document.getElementById('oni-block').classList.remove('show');
         document.getElementById('cart-top').style.display = 'none';
         updateMainButton(); updateBackButton(); return;
       }
@@ -1199,8 +1289,10 @@
       });
       document.getElementById('cart-top').style.display = 'flex';
       document.getElementById('promo-block').classList.add('show');
+      document.getElementById('oni-block').classList.add('show');
       document.getElementById('delivery-block').style.display = 'block';
       document.getElementById('cart-total').style.display = 'flex';
+      fetchOniBalance();
       updateTotal(); checkCheckoutReady(); updateBackButton();
     }
     function updateCartCount() {
@@ -1220,6 +1312,7 @@
       var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
       var orderNumber = generateOrderNumber();
       var items = cart.map(function (item) { return { id: item.id, qty: item.qty }; });
+      clampCoinsToSpend();
       try {
         var res = await fetch(API_URL + '/order', {
           method: 'POST',
@@ -1228,6 +1321,7 @@
             orderNumber: orderNumber,
             items: items,
             promoCode: appliedPromo ? appliedPromoCode : '',
+            coinsToSpend: coinsToSpend,
             deliveryMethod: deliveryMethod,
             recipientName: document.getElementById('recipient-name').value.trim(),
             recipientPhone: document.getElementById('recipient-phone').value.trim(),
@@ -1245,6 +1339,17 @@
         return { ok: false };
       }
     }
+
+    document.getElementById('oni-spend-input').addEventListener('input', function (e) {
+      coinsToSpend = Math.floor(Number(e.target.value) || 0);
+      updateTotal();
+    });
+    document.getElementById('oni-spend-max').addEventListener('click', function () {
+      coinsToSpend = maxCoinsAllowed();
+      document.getElementById('oni-spend-input').value = coinsToSpend > 0 ? String(coinsToSpend) : '';
+      updateTotal();
+      hapticLight();
+    });
 
     document.getElementById('checkout-btn').addEventListener('click', async function () {
       if (!cart.length || !deliveryMethod) return;
@@ -1289,18 +1394,29 @@
         });
         // корзину НЕ очищаем
 
+        var payMsg =
+          'Заказ №' + result.orderNumber +
+          '\nСумма: ' + Number(result.total).toLocaleString('ru-RU') + ' ₽';
+        if (Number(result.coinsSpent) > 0) {
+          payMsg += '\nONI: −' + result.coinsSpent;
+        }
+        if (Number(result.expectedEarn) > 0) {
+          payMsg += '\nКэшбек после оплаты: +' + result.expectedEarn + ' ONI';
+        }
+        payMsg += '\n\nОткроется ЮKassa.\nКорзина сохранена — оплату можно открыть снова из корзины.';
+
         tg.showPopup({
           title: 'Переход к оплате',
-          message:
-            'Заказ №' + result.orderNumber +
-            '\nСумма: ' + Number(result.total).toLocaleString('ru-RU') + ' ₽' +
-            '\n\nОткроется ЮKassa.\nКорзина сохранена — оплату можно открыть снова из корзины.',
+          message: payMsg,
           buttons: [{ type: 'ok' }]
         }, function () {
           if (tg.openLink) tg.openLink(result.confirmationUrl);
           else window.open(result.confirmationUrl, '_blank');
         });
       } else {
+        if (result && result.error === 'oni_balance') {
+          fetchOniBalance();
+        }
         var msg = (result && (result.message || result.error)) || 'Не удалось создать оплату. Проверьте Worker и ЮKassa.';
         tg.showAlert(String(msg));
       }
