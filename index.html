@@ -123,9 +123,31 @@
       width: 100%; padding: 14px; border-radius: 14px; border: none;
       background: var(--button); color: var(--button-text); font-size: 15px; font-weight: 600; cursor: pointer;
     }
+    .detail-buy-now {
+      width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid var(--button);
+      background: transparent; color: var(--button); font-size: 15px; font-weight: 600; cursor: pointer;
+    }
     .share-btn {
       width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid var(--border);
       background: transparent; color: var(--text); font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .pending-banner {
+      display: none; margin: 12px 16px 0; padding: 14px; border-radius: 14px;
+      background: color-mix(in srgb, var(--button) 12%, transparent);
+      border: 1.5px solid color-mix(in srgb, var(--button) 35%, transparent);
+    }
+    .pending-banner.show { display: block; }
+    .pending-banner .t { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .pending-banner .s { font-size: 13px; color: var(--hint); margin-bottom: 12px; line-height: 1.4; }
+    .pending-banner .row { display: flex; flex-direction: column; gap: 8px; }
+    .pending-banner button {
+      width: 100%; padding: 12px; border-radius: 12px; border: none;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .pending-pay { background: var(--button); color: var(--button-text); }
+    .pending-done {
+      background: transparent; color: var(--text);
+      border: 1.5px solid var(--border) !important;
     }
     .cart-top { display: flex; justify-content: flex-end; padding: 12px 16px 0; }
     .clear-cart-btn {
@@ -250,12 +272,21 @@
         <div class="detail-specs" id="detail-specs"></div>
         <div class="detail-actions">
           <button class="detail-add-btn" id="detail-add-btn" type="button">В корзину</button>
+          <button class="detail-buy-now" id="detail-buy-now" type="button">Купить сейчас</button>
           <button class="share-btn" id="share-btn" type="button">Поделиться</button>
         </div>
       </div>
     </div>
   </div>
   <div id="cart" class="page">
+    <div class="pending-banner" id="pending-banner">
+      <div class="t" id="pending-title">Заказ ожидает оплаты</div>
+      <div class="s" id="pending-sub"></div>
+      <div class="row">
+        <button type="button" class="pending-pay" id="pending-pay-btn">Перейти к оплате</button>
+        <button type="button" class="pending-done" id="pending-done-btn">Я уже оплатил / отменить ожидание</button>
+      </div>
+    </div>
     <div class="cart-top" id="cart-top" style="display:none;">
       <button class="clear-cart-btn" id="clear-cart-btn" type="button">Очистить корзину</button>
     </div>
@@ -321,6 +352,8 @@
     const BOT_USERNAME = 'IamOniStore_bot';
     const APP_NAME = 'Shop';
     const PROMO_USED_KEY = 'promo_used_server';
+    const MAKE_WARNED_KEY = 'make_order_warned_session';
+    const PENDING_ORDER_KEY = 'pending_yookassa_order';
     const MAKE_TIME_MSG = '⚠️ Товара нет в наличии.\n\nСрок изготовления: 1–3 дня.\nМожно оформить заказ — сделаем под вас.';
     const PRODUCT_SPECS =
       'Высота изделия: 20 см.\n' +
@@ -443,8 +476,47 @@
     var appliedPromo = false, appliedPromoCode = '', appliedPromoPercent = 0;
     var mainButtonBound = false;
 
+    function isServerPromo(code) {
+      var c = (code || '').toUpperCase();
+      return c === 'IAMCLOWN' || c === 'ONI20';
+    }
     function isPromoUsed() { return localStorage.getItem(PROMO_USED_KEY) === '1'; }
     function markPromoUsed() { localStorage.setItem(PROMO_USED_KEY, '1'); }
+    function wasMakeWarned() {
+      try { return sessionStorage.getItem(MAKE_WARNED_KEY) === '1'; } catch (e) { return false; }
+    }
+    function setMakeWarned() {
+      try { sessionStorage.setItem(MAKE_WARNED_KEY, '1'); } catch (e) {}
+    }
+    function getPendingOrder() {
+      try {
+        var raw = localStorage.getItem(PENDING_ORDER_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+    function setPendingOrder(data) {
+      localStorage.setItem(PENDING_ORDER_KEY, JSON.stringify(data));
+      renderPendingBanner();
+    }
+    function clearPendingOrder() {
+      localStorage.removeItem(PENDING_ORDER_KEY);
+      renderPendingBanner();
+    }
+    function renderPendingBanner() {
+      var box = document.getElementById('pending-banner');
+      if (!box) return;
+      var p = getPendingOrder();
+      if (!p || !p.orderNumber) {
+        box.classList.remove('show');
+        return;
+      }
+      document.getElementById('pending-title').textContent =
+        'Заказ №' + p.orderNumber + ' ожидает оплаты';
+      document.getElementById('pending-sub').textContent =
+        'Сумма: ' + Number(p.total || 0).toLocaleString('ru-RU') +
+        ' ₽. Если закрыли ЮKassa — откройте оплату снова. Корзина сохранена.';
+      box.classList.add('show');
+    }
     function saveCart() {
       localStorage.setItem('shop_cart', JSON.stringify(cart));
       updateCartCount();
@@ -662,9 +734,22 @@
     }
     function openFromStartParam() {
       var param = tg.initDataUnsafe && tg.initDataUnsafe.start_param;
-      if (param && param.indexOf('product_') === 0) {
+      if (!param) return;
+      if (param.indexOf('product_') === 0) {
         var id = Number(param.replace('product_', ''));
         if (id && products.some(function (p) { return p.id === id; })) openProduct(id);
+        return;
+      }
+      if (param.indexOf('paid_') === 0 || param === 'paid') {
+        var num = param.indexOf('paid_') === 0 ? param.replace('paid_', '') : '';
+        showPage('cart');
+        document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
+        document.querySelector('.tab[data-page="cart"]').classList.add('active');
+        renderCart();
+        var msg = num
+          ? 'Если оплата по заказу №' + num + ' прошла — бот пришлёт подтверждение в личку. Напоминание можно закрыть кнопкой в баннере.'
+          : 'Если оплата прошла — бот пришлёт подтверждение в личку.';
+        if (tg.showAlert) tg.showAlert(msg);
       }
     }
     var startX = 0;
@@ -689,6 +774,11 @@
     document.getElementById('detail-add-btn').addEventListener('click', function () {
       if (currentProduct) addToCart(currentProduct.id);
     });
+    document.getElementById('detail-buy-now').addEventListener('click', function () {
+      if (!currentProduct) return;
+      hapticLight();
+      addToCart(currentProduct.id, { goCart: true });
+    });
     function shareProduct() {
       if (!currentProduct) return;
       hapticLight();
@@ -709,12 +799,24 @@
       else cart.push({ id: product.id, name: product.name, price: product.price, qty: 1, photo: product.photos[0] });
       saveCart(); updateCartFabBadge(); hapticSuccess();
     }
-    function addToCart(id) {
+    function addToCart(id, opts) {
+      opts = opts || {};
       var product = products.find(function (p) { return p.id === id; });
       if (!product) return;
       var existing = cart.find(function (item) { return item.id === id; });
       var nextQty = (existing ? existing.qty : 0) + 1;
-      if (needsMakeTime(id, nextQty)) {
+
+      function afterAdd() {
+        doAddToCart(product);
+        if (opts.goCart) {
+          showPage('cart');
+          document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
+          document.querySelector('.tab[data-page="cart"]').classList.add('active');
+          renderCart();
+        }
+      }
+
+      if (needsMakeTime(id, nextQty) && !wasMakeWarned()) {
         if (tg.showPopup) {
           tg.showPopup({
             title: '⚠️ Под заказ',
@@ -724,17 +826,23 @@
               { id: 'ok', type: 'default', text: 'В корзину' }
             ]
           }, function (btnId) {
-            if (btnId === 'ok' || btnId === 'default') doAddToCart(product);
+            if (btnId === 'ok' || btnId === 'default') {
+              setMakeWarned();
+              afterAdd();
+            }
           });
-        } else doAddToCart(product);
+        } else {
+          setMakeWarned();
+          afterAdd();
+        }
         return;
       }
-      doAddToCart(product);
+      afterAdd();
     }
     function changeQty(id, delta) {
       var item = cart.find(function (i) { return i.id === id; });
       if (!item) return;
-      if (delta > 0 && needsMakeTime(id, item.qty + 1)) {
+      if (delta > 0 && needsMakeTime(id, item.qty + 1) && !wasMakeWarned()) {
         if (tg.showPopup) {
           tg.showPopup({
             title: '⚠️ Под заказ',
@@ -745,10 +853,12 @@
             ]
           }, function (btnId) {
             if (btnId === 'ok' || btnId === 'default') {
+              setMakeWarned();
               item.qty += 1; saveCart(); hapticLight(); renderCart(); updateCartFabBadge();
             }
           });
         } else {
+          setMakeWarned();
           item.qty += 1; saveCart(); hapticLight(); renderCart(); updateCartFabBadge();
         }
         return;
@@ -772,6 +882,20 @@
       if (!cart.length) return;
       if (tg.showConfirm) tg.showConfirm('Очистить корзину?', function (ok) { if (ok) doClearCart(); });
       else doClearCart();
+    });
+    document.getElementById('pending-pay-btn').addEventListener('click', function () {
+      var p = getPendingOrder();
+      if (!p || !p.confirmationUrl) return;
+      if (tg.openLink) tg.openLink(p.confirmationUrl);
+      else window.open(p.confirmationUrl, '_blank');
+    });
+    document.getElementById('pending-done-btn').addEventListener('click', function () {
+      if (tg.showConfirm) {
+        tg.showConfirm(
+          'Убрать напоминание об ожидании оплаты? Корзину можно очистить отдельно.',
+          function (ok) { if (ok) clearPendingOrder(); }
+        );
+      } else clearPendingOrder();
     });
     function updateDeliveryUI() {
       document.querySelectorAll('.delivery-option').forEach(function (el) { el.classList.remove('active'); });
@@ -804,7 +928,7 @@
         appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
         updateTotal(); return;
       }
-      if (code.toUpperCase() !== 'IAMCLOWN' && isPromoUsed()) {
+      if (!isServerPromo(code) && isPromoUsed()) {
         status.textContent = 'Промокод уже был использован';
         status.className = 'promo-status err';
         appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
@@ -813,10 +937,14 @@
       status.textContent = 'Проверка...';
       status.className = 'promo-status';
       try {
+        var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
         var res = await fetch(API_URL + '/promo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: code })
+          body: JSON.stringify({
+            code: code,
+            userId: user && user.id ? user.id : null
+          })
         });
         var data = await res.json();
         if (data.ok) {
@@ -827,6 +955,16 @@
           status.textContent = 'Промокод применён: −' + appliedPromoPercent + '%' + extra;
           status.className = 'promo-status ok';
           hapticSuccess();
+          updateTotal();
+        } else if (data.error === 'used') {
+          appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+          status.textContent = 'Вы уже использовали этот промокод';
+          status.className = 'promo-status err';
+          updateTotal();
+        } else if (data.error === 'need_user') {
+          appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+          status.textContent = 'Откройте магазин из Telegram';
+          status.className = 'promo-status err';
           updateTotal();
         } else if (data.error === 'limit') {
           appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
@@ -872,6 +1010,7 @@
       document.getElementById('total-price').textContent = total.toLocaleString('ru-RU') + ' ₽';
     }
     function renderCart() {
+      renderPendingBanner();
       var list = document.getElementById('cart-list');
       if (!cart.length) {
         list.innerHTML = '<div class="empty">Корзина пуста</div>';
@@ -962,7 +1101,7 @@
           return;
         }
       }
-      if (appliedPromo && appliedPromoCode !== 'IAMCLOWN' && isPromoUsed()) {
+      if (appliedPromo && !isServerPromo(appliedPromoCode) && isPromoUsed()) {
         tg.showAlert('Промокод уже был использован');
         appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
         document.getElementById('promo-status').textContent = 'Промокод уже был использован';
@@ -980,27 +1119,26 @@
       btn.textContent = 'Оплатить';
 
       if (result && result.ok && result.confirmationUrl) {
-        if (Number(result.discount) > 0 && appliedPromoCode !== 'IAMCLOWN') markPromoUsed();
+        if (Number(result.discount) > 0 && !isServerPromo(appliedPromoCode)) {
+          markPromoUsed();
+        }
         hapticSuccess();
 
-        cart = [];
-        deliveryMethod = null;
-        appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
-        document.getElementById('promo-input').value = '';
-        document.getElementById('promo-status').textContent = '';
-        document.getElementById('promo-status').className = 'promo-status';
-        document.getElementById('recipient-name').value = '';
-        document.getElementById('recipient-phone').value = '';
-        document.getElementById('ozon-address').value = '';
-        document.querySelectorAll('input[name="delivery"]').forEach(function (r) { r.checked = false; });
-        document.getElementById('ozon-fields').classList.remove('show');
-        saveCart();
-        renderCart();
-        updateCartFabBadge();
+        setPendingOrder({
+          orderNumber: result.orderNumber,
+          total: result.total,
+          confirmationUrl: result.confirmationUrl,
+          paymentId: result.paymentId || '',
+          createdAt: Date.now()
+        });
+        // корзину НЕ очищаем
 
         tg.showPopup({
           title: 'Переход к оплате',
-          message: 'Заказ №' + result.orderNumber + '\nСумма: ' + Number(result.total).toLocaleString('ru-RU') + ' ₽\n\nОткроется страница ЮKassa.',
+          message:
+            'Заказ №' + result.orderNumber +
+            '\nСумма: ' + Number(result.total).toLocaleString('ru-RU') + ' ₽' +
+            '\n\nОткроется ЮKassa.\nКорзина сохранена — оплату можно открыть снова из корзины.',
           buttons: [{ type: 'ok' }]
         }, function () {
           if (tg.openLink) tg.openLink(result.confirmationUrl);
@@ -1024,6 +1162,7 @@
     updateMainButton();
     updateBackButton();
     updateCartFabBadge();
+    renderPendingBanner();
 
     syncFromServer().then(function () {
       renderProducts();
