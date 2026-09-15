@@ -645,6 +645,23 @@
       } catch (e) {}
     }
 
+    var catalogScrollY = 0;
+    function saveCatalogScroll() {
+      var active = document.querySelector('.page.active');
+      if (active && active.id === 'catalog') {
+        catalogScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+      }
+    }
+    function restoreCatalogScroll() {
+      var y = catalogScrollY || 0;
+      // после перерисовки списка — два кадра, чтобы DOM успел
+      requestAnimationFrame(function () {
+        window.scrollTo(0, y);
+        requestAnimationFrame(function () {
+          window.scrollTo(0, y);
+        });
+      });
+    }
     function goBackInApp() {
       var active = document.querySelector('.page.active');
       active = active ? active.id : '';
@@ -653,6 +670,7 @@
         document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
         document.querySelector('.tab[data-page="catalog"]').classList.add('active');
         renderProducts();
+        restoreCatalogScroll();
         return;
       }
       try { tg.close(); } catch (e) {}
@@ -667,13 +685,22 @@
     if (tg.BackButton) tg.BackButton.onClick(goBackInApp);
 
     function showPage(pageId) {
+      var prev = document.querySelector('.page.active');
+      var prevId = prev ? prev.id : '';
+      if (prevId === 'catalog' && pageId !== 'catalog') {
+        saveCatalogScroll();
+      }
       document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
       document.getElementById(pageId).classList.add('active');
       document.body.classList.toggle('product-open', pageId === 'product-page');
       var titles = { catalog: 'Витрина', cart: 'Корзина', 'product-page': 'Товар' };
       document.getElementById('page-title').textContent = titles[pageId] || 'Магазин';
       document.getElementById('main-tabs').style.display = pageId === 'product-page' ? 'none' : 'flex';
-      window.scrollTo(0, 0);
+      if (pageId === 'catalog') {
+        restoreCatalogScroll();
+      } else {
+        window.scrollTo(0, 0);
+      }
       updateMainButton();
       updateBackButton();
       updateCartFabBadge();
@@ -706,7 +733,10 @@
         document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('active'); });
         btn.classList.add('active');
         showPage(btn.dataset.page);
-        if (btn.dataset.page === 'catalog') renderProducts();
+        if (btn.dataset.page === 'catalog') {
+          renderProducts();
+          restoreCatalogScroll();
+        }
         if (btn.dataset.page === 'cart') renderCart();
       });
     });
