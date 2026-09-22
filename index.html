@@ -25,7 +25,7 @@
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg); color: var(--text); padding-bottom: 88px; line-height: 1.4;
+      background: var(--bg); color: var(--text); padding-bottom: 100px; line-height: 1.4;
     }
     body.product-open { padding-bottom: 24px; }
     img { -webkit-user-drag: none; display: block; }
@@ -185,9 +185,9 @@
     .catalog-extra { display: none; margin-bottom: 8px; }
     .catalog-extra.show { display: block; }
     .support-bottom {
-      margin: 8px 16px 24px; width: calc(100% - 32px); padding: 14px; border-radius: 14px;
-      border: 1.5px solid var(--border); background: transparent; color: var(--text);
-      font-size: 15px; font-weight: 600; cursor: pointer;
+      margin: 16px 16px 32px; width: calc(100% - 32px); padding: 14px; border-radius: 14px;
+      border: 1.5px solid var(--border); background: var(--secondary); color: var(--text);
+      font-size: 15px; font-weight: 600; cursor: pointer; position: relative; z-index: 5;
     }
     .gallery { position: relative; width: 100%; height: 320px; overflow: hidden; background: #d1d1d6; touch-action: none; }
     .gallery-track { display: flex; height: 100%; transition: transform 0.3s ease; will-change: transform; }
@@ -1308,25 +1308,31 @@
       searchQuery = e.target.value.toLowerCase().trim();
       renderProducts();
     });
-    document.getElementById('support-btn').addEventListener('click', function () {
-      if (tg.openTelegramLink) tg.openTelegramLink(SUPPORT_LINK);
-      else if (tg.openLink) tg.openLink(SUPPORT_LINK);
-      else window.open(SUPPORT_LINK, '_blank');
-    });
+    function openSupport() {
+      hapticLight();
+      try {
+        if (tg && typeof tg.openTelegramLink === 'function') {
+          tg.openTelegramLink(SUPPORT_LINK);
+          return;
+        }
+      } catch (e) {}
+      try {
+        if (tg && typeof tg.openLink === 'function') {
+          tg.openLink(SUPPORT_LINK);
+          return;
+        }
+      } catch (e2) {}
+      window.open(SUPPORT_LINK, '_blank');
+    }
+    var supportBtn = document.getElementById('support-btn');
+    if (supportBtn) supportBtn.addEventListener('click', openSupport);
+    var profileSupport = document.getElementById('profile-support-btn');
+    if (profileSupport) profileSupport.addEventListener('click', openSupport);
     document.getElementById('cart-fab').addEventListener('click', function () {
       hapticLight();
       showPage('cart');
-      setBottomNav('cart');
       renderCart();
     });
-    var profileSupport = document.getElementById('profile-support-btn');
-    if (profileSupport) {
-      profileSupport.addEventListener('click', function () {
-        if (tg.openTelegramLink) tg.openTelegramLink(SUPPORT_LINK);
-        else if (tg.openLink) tg.openLink(SUPPORT_LINK);
-        else window.open(SUPPORT_LINK, '_blank');
-      });
-    }
 
     function getFilteredProducts() {
       var list = products.filter(function (p) {
