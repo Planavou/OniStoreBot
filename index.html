@@ -38,18 +38,27 @@
     body.product-open header { display: none; }
     body.product-open .bottom-nav { display: none; }
     header h1 { font-size: 18px; font-weight: 700; white-space: nowrap; flex: 1; }
-    .header-cart {
+    .header-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .header-icon-btn {
       position: relative; width: 40px; height: 40px; border-radius: 50%; border: none;
       background: transparent; color: var(--text); display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0;
     }
-    .header-cart svg { width: 24px; height: 24px; fill: currentColor; }
+    .header-icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
     .header-cart-badge {
       position: absolute; top: 0; right: 0; min-width: 16px; height: 16px;
       padding: 0 4px; border-radius: 8px; background: #ff3b30; color: #fff;
       font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; display: none;
     }
     .header-cart-badge.show { display: block; }
+    .support-fab {
+      position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: 56px; z-index: 200;
+      width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(0,0,0,0.45);
+      color: white; display: none; align-items: center; justify-content: center; cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+    body.product-open .support-fab { display: flex; }
+    .support-fab svg { width: 20px; height: 20px; fill: white; }
     .bottom-nav {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 120;
       display: flex; justify-content: space-around; align-items: center;
@@ -378,10 +387,15 @@
 <body>
   <header>
     <h1 id="page-title">ONI Store</h1>
-    <button type="button" class="header-cart" id="header-cart-btn" aria-label="Корзина">
-      <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-      <span class="header-cart-badge" id="header-cart-badge">0</span>
-    </button>
+    <div class="header-actions">
+      <button type="button" class="header-icon-btn" id="header-support-btn" aria-label="Поддержка" title="Поддержка">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
+      </button>
+      <button type="button" class="header-icon-btn" id="header-cart-btn" aria-label="Корзина">
+        <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        <span class="header-cart-badge" id="header-cart-badge">0</span>
+      </button>
+    </div>
   </header>
   <nav class="bottom-nav" id="bottom-nav">
     <button type="button" class="nav-btn active" data-page="catalog" id="nav-catalog">
@@ -399,6 +413,9 @@
   </nav>
   <button class="back-icon" id="back-btn" type="button" aria-label="Назад">
     <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+  </button>
+  <button class="support-fab" id="support-fab" type="button" aria-label="Поддержка">
+    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
   </button>
   <button class="cart-fab" id="cart-fab" type="button" aria-label="Корзина">
     <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
@@ -419,7 +436,6 @@
             <button class="cat-btn active" data-category="all" type="button">Все</button>
             <button class="cat-btn" data-category="busts" type="button">Бюсты</button>
             <button class="cat-btn" data-category="figures" type="button">Фигурки</button>
-            <button class="cat-btn" data-category="favorites" type="button">Избранное</button>
           </div>
         </div>
         <div>
@@ -437,7 +453,6 @@
       </div>
     </div>
     <div class="products" id="products-list"></div>
-    <button class="support-bottom" id="support-btn" type="button">Написать в поддержку</button>
   </div>
   <div id="favorites-page" class="page">
     <div class="section-title">Моё избранное</div>
@@ -463,7 +478,6 @@
       <div class="ps" id="oni-ref-text">Пригласи друга: вы оба получите <b>+150 ONI</b> после его первой оплаты.</div>
       <button type="button" class="pbtn" id="ref-copy-btn">Поделиться ссылкой</button>
     </div>
-    <button class="support-bottom" id="profile-support-btn" type="button">Написать в поддержку</button>
   </div>
   <div id="product-page" class="page">
     <div class="product-detail">
@@ -1324,10 +1338,10 @@
       } catch (e2) {}
       window.open(SUPPORT_LINK, '_blank');
     }
-    var supportBtn = document.getElementById('support-btn');
-    if (supportBtn) supportBtn.addEventListener('click', openSupport);
-    var profileSupport = document.getElementById('profile-support-btn');
-    if (profileSupport) profileSupport.addEventListener('click', openSupport);
+    var headerSupport = document.getElementById('header-support-btn');
+    if (headerSupport) headerSupport.addEventListener('click', openSupport);
+    var supportFab = document.getElementById('support-fab');
+    if (supportFab) supportFab.addEventListener('click', openSupport);
     document.getElementById('cart-fab').addEventListener('click', function () {
       hapticLight();
       showPage('cart');
@@ -1337,8 +1351,7 @@
     function getFilteredProducts() {
       var list = products.filter(function (p) {
         var matchCategory;
-        if (currentCategory === 'favorites') matchCategory = isFavorite(p.id);
-        else matchCategory = currentCategory === 'all' || p.category === currentCategory;
+        matchCategory = currentCategory === 'all' || p.category === currentCategory;
         var matchSearch = !searchQuery || p.name.toLowerCase().indexOf(searchQuery) !== -1;
         return matchCategory && matchSearch;
       });
@@ -1350,17 +1363,16 @@
       return list;
     }
     function updateCategoryCounts() {
-      var all = 0, figures = 0, busts = 0, fav = 0;
+      var all = 0, figures = 0, busts = 0;
       for (var i = 0; i < products.length; i++) {
         all++;
         if (products[i].category === 'figures') figures++;
         else if (products[i].category === 'busts') busts++;
-        if (isFavorite(products[i].id)) fav++;
       }
       document.querySelectorAll('.cat-btn').forEach(function (btn) {
         var cat = btn.dataset.category;
-        var label = cat === 'all' ? 'Все' : cat === 'figures' ? 'Фигурки' : cat === 'busts' ? 'Бюсты' : 'Избранное';
-        var n = cat === 'all' ? all : cat === 'figures' ? figures : cat === 'busts' ? busts : fav;
+        var label = cat === 'all' ? 'Все' : cat === 'figures' ? 'Фигурки' : 'Бюсты';
+        var n = cat === 'all' ? all : cat === 'figures' ? figures : busts;
         btn.innerHTML = label + ' <span class="cat-count">' + n + '</span>';
       });
     }
