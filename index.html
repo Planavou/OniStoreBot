@@ -1324,19 +1324,21 @@
     });
     function openSupport() {
       hapticLight();
+      // открываем чат с ботом и закрываем Mini App, чтобы не оставаться «внутри магазина»
       try {
         if (tg && typeof tg.openTelegramLink === 'function') {
           tg.openTelegramLink(SUPPORT_LINK);
-          return;
-        }
-      } catch (e) {}
-      try {
-        if (tg && typeof tg.openLink === 'function') {
+        } else if (tg && typeof tg.openLink === 'function') {
           tg.openLink(SUPPORT_LINK);
-          return;
+        } else {
+          window.open(SUPPORT_LINK, '_blank');
         }
-      } catch (e2) {}
-      window.open(SUPPORT_LINK, '_blank');
+      } catch (e) {
+        try { window.open(SUPPORT_LINK, '_blank'); } catch (e2) {}
+      }
+      setTimeout(function () {
+        try { if (tg && typeof tg.close === 'function') tg.close(); } catch (e3) {}
+      }, 150);
     }
     var headerSupport = document.getElementById('header-support-btn');
     if (headerSupport) headerSupport.addEventListener('click', openSupport);
