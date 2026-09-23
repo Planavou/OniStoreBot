@@ -1,0 +1,2235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Магазин</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: var(--tg-theme-bg-color, #ffffff);
+      --text: var(--tg-theme-text-color, #111111);
+      --hint: var(--tg-theme-hint-color, #8e8e93);
+      --button: var(--tg-theme-button-color, #007aff);
+      --button-text: var(--tg-theme-button-text-color, #ffffff);
+      --secondary: var(--tg-theme-secondary-bg-color, #f2f2f7);
+      --border: color-mix(in srgb, var(--hint) 25%, transparent);
+      --warn: #ff9500;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body, .page, header, .product, .gallery, .cart-item, button, .tab, .cat-btn {
+      -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    }
+    input, textarea {
+      -webkit-user-select: text !important; user-select: text !important; -webkit-touch-callout: default !important;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg); color: var(--text); padding-bottom: 100px; line-height: 1.4;
+    }
+    body.product-open { padding-bottom: 24px; }
+    img { -webkit-user-drag: none; display: block; }
+    header {
+      position: sticky; top: 0; z-index: 100; background: var(--secondary);
+      padding: 12px 16px; padding-top: calc(12px + env(safe-area-inset-top, 0px));
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    body.product-open header { display: none; }
+    body.product-open .bottom-nav { display: none; }
+    header h1 { font-size: 18px; font-weight: 700; white-space: nowrap; flex: 1; }
+    .header-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .header-icon-btn {
+      position: relative; width: 40px; height: 40px; border-radius: 50%; border: none;
+      background: transparent; color: var(--text); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .header-icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
+    .header-cart-badge {
+      position: absolute; top: 0; right: 0; min-width: 16px; height: 16px;
+      padding: 0 4px; border-radius: 8px; background: #ff3b30; color: #fff;
+      font-size: 10px; font-weight: 700; line-height: 16px; text-align: center; display: none;
+    }
+    .header-cart-badge.show { display: block; }
+    .support-fab {
+      position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: 56px; z-index: 200;
+      width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(0,0,0,0.45);
+      color: white; display: none; align-items: center; justify-content: center; cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+    body.product-open .support-fab { display: flex; }
+    .support-fab svg { width: 20px; height: 20px; fill: white; }
+    .bottom-nav {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 120;
+      display: flex; justify-content: space-around; align-items: center;
+      background: var(--secondary); border-top: 1px solid var(--border);
+      padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+    }
+    .bottom-nav button {
+      flex: 1; border: none; background: transparent; color: var(--hint);
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      padding: 6px 4px; cursor: pointer; font-size: 11px; font-weight: 600;
+      position: relative;
+    }
+    .bottom-nav button.active { color: var(--button); }
+    .bottom-nav button svg { width: 24px; height: 24px; fill: currentColor; }
+    .profile-page { padding-bottom: 24px; }
+    .profile-card {
+      margin: 16px; padding: 16px; border-radius: 16px; border: 1.5px solid var(--border);
+      background: var(--secondary);
+    }
+    .profile-card .ph { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .profile-card .ps { font-size: 13px; color: var(--hint); line-height: 1.4; margin-bottom: 12px; }
+    .profile-card .pbtn {
+      width: 100%; padding: 12px; border-radius: 12px; border: none;
+      background: var(--button); color: var(--button-text); font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .profile-card .pbtn.secondary {
+      background: var(--bg); color: var(--text); border: 1.5px solid var(--border); margin-top: 8px;
+    }
+    .filters { padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .search-row { display: flex; gap: 8px; align-items: center; }
+    .search-box {
+      flex: 1; padding: 12px 16px; border-radius: 14px;
+      border: 1.5px solid var(--border); background: var(--bg); color: var(--text); font-size: 15px; outline: none;
+    }
+    .filter-icon-btn {
+      width: 46px; height: 46px; flex-shrink: 0; border-radius: 14px; border: 1.5px solid var(--border);
+      background: var(--secondary); color: var(--text); display: flex; align-items: center; justify-content: center;
+      cursor: pointer; position: relative;
+    }
+    .filter-icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
+    .filter-icon-btn.active-dot::after {
+      content: ''; position: absolute; top: 8px; right: 8px; width: 8px; height: 8px;
+      border-radius: 50%; background: var(--button);
+    }
+    .filter-panel {
+      display: none; padding: 12px; border-radius: 14px; border: 1.5px solid var(--border);
+      background: var(--secondary); flex-direction: column; gap: 12px;
+    }
+    .filter-panel.show { display: flex; }
+    .filter-panel .fp-label { font-size: 12px; color: var(--hint); font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+    .categories { display: flex; gap: 8px; overflow-x: auto; flex-wrap: wrap; }
+    .cat-btn {
+      padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 13px; font-weight: 500; white-space: nowrap; cursor: pointer;
+    }
+    .cat-btn.active { background: var(--button); color: var(--button-text); border-color: var(--button); }
+    .cat-btn .cat-count { opacity: 0.75; font-weight: 600; }
+    .cat-btn.active .cat-count { opacity: 0.9; }
+    .sort-row select {
+      width: 100%; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 14px; outline: none;
+    }
+    .oni-strip {
+      margin: 0 16px 12px; padding: 12px 14px; border-radius: 14px;
+      border: 1.5px solid var(--border); background: var(--secondary);
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .oni-strip-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .oni-strip .oni-main { font-size: 14px; font-weight: 600; }
+    .oni-strip .oni-main b { color: var(--button); }
+    .oni-strip .oni-ref {
+      font-size: 12px; color: var(--hint); line-height: 1.35;
+    }
+    .oni-strip .oni-ref b { color: var(--text); }
+    .oni-strip-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .oni-strip-actions button {
+      padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .section-title {
+      padding: 4px 16px 10px; font-size: 16px; font-weight: 700;
+    }
+    .products { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 0 16px 16px; }
+    .product {
+      background: var(--secondary); border-radius: 18px; overflow: hidden;
+      display: flex; flex-direction: column; cursor: pointer; position: relative;
+    }
+    .product-img-wrap { width: 100%; height: 150px; background: #d1d1d6; overflow: hidden; position: relative; }
+    .product-img-wrap img { width: 100%; height: 150px; object-fit: cover; }
+    .badge-new {
+      position: absolute; top: 8px; left: 8px; z-index: 2;
+      padding: 4px 8px; border-radius: 8px; background: #ff3b30; color: #fff;
+      font-size: 11px; font-weight: 700; line-height: 1;
+    }
+    .fav-btn {
+      position: absolute; top: 8px; right: 8px; z-index: 2;
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: rgba(0,0,0,0.4); color: #fff; font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    .fav-btn.on { color: #ff3b30; }
+    .product-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+    .product-name { font-weight: 600; font-size: 14px; }
+    .product-price { color: var(--button); font-weight: 700; font-size: 16px; }
+    .product-stock { font-size: 12px; color: var(--hint); font-weight: 500; }
+    .product-stock.out { color: var(--warn); }
+    .add-btn {
+      margin-top: 8px; background: var(--button); color: var(--button-text);
+      border: none; padding: 11px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .similar-block { margin-top: 20px; }
+    .similar-block .section-title { padding-left: 0; }
+    .detail-fav-row { margin-bottom: 12px; }
+    .detail-fav-row button {
+      padding: 10px 14px; border-radius: 12px; border: 1.5px solid var(--border);
+      background: var(--secondary); color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .detail-fav-row button.on { border-color: #ff3b30; color: #ff3b30; }
+    .oni-history {
+      display: none; margin: 0 16px 16px; padding: 14px; border-radius: 14px;
+      border: 1.5px solid var(--border); background: var(--secondary);
+    }
+    .oni-history.show { display: block; }
+    .oni-history h3 { font-size: 15px; margin-bottom: 10px; }
+    .oni-history .row {
+      display: flex; justify-content: space-between; gap: 10px;
+      font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .oni-history .row:last-child { border-bottom: none; }
+    .oni-history .earn { color: #34c759; font-weight: 700; }
+    .oni-history .spend { color: #ff3b30; font-weight: 700; }
+    .catalog-extra { display: none; margin-bottom: 8px; }
+    .catalog-extra.show { display: block; }
+    .support-bottom {
+      margin: 16px 16px 32px; width: calc(100% - 32px); padding: 14px; border-radius: 14px;
+      border: 1.5px solid var(--border); background: var(--secondary); color: var(--text);
+      font-size: 15px; font-weight: 600; cursor: pointer; position: relative; z-index: 5;
+    }
+    .gallery { position: relative; width: 100%; height: 320px; overflow: hidden; background: #d1d1d6; touch-action: none; }
+    .gallery-track { display: flex; height: 100%; transition: transform 0.3s ease; will-change: transform; }
+    .gallery-slide { min-width: 100%; height: 100%; overflow: hidden; position: relative; }
+    .gallery-slide img {
+      width: 100%; height: 100%; object-fit: cover;
+      transform-origin: center center;
+      will-change: transform;
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+    .gallery.zoomed .gallery-track { transition: none; }
+    .gallery-dots {
+      position: absolute; bottom: 12px; left: 0; right: 0;
+      display: flex; justify-content: center; gap: 6px;
+    }
+    .gallery-dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); }
+    .gallery-dots span.active { background: white; }
+    .back-icon {
+      position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: 12px; z-index: 200;
+      width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(0,0,0,0.45);
+      color: white; display: none; align-items: center; justify-content: center; cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+    body.product-open .back-icon { display: flex; }
+    .back-icon svg { width: 22px; height: 22px; fill: white; }
+    .cart-fab {
+      position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: 12px; z-index: 200;
+      width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(0,0,0,0.45);
+      color: white; display: none; align-items: center; justify-content: center; cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+    body.product-open .cart-fab { display: flex; }
+    .cart-fab svg { width: 22px; height: 22px; fill: white; }
+    .cart-fab-badge {
+      position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px;
+      padding: 0 4px; border-radius: 9px; background: #ff3b30; color: #fff;
+      font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; display: none;
+    }
+    .cart-fab-badge.show { display: block; }
+    .detail-content { padding: 20px 16px; }
+    .detail-name { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .detail-price { font-size: 24px; font-weight: 700; color: var(--button); margin-bottom: 8px; }
+    .detail-stock { font-size: 14px; color: var(--hint); margin-bottom: 16px; font-weight: 500; }
+    .detail-stock.out { color: var(--warn); }
+    .detail-desc { font-size: 15px; line-height: 1.5; margin-bottom: 12px; white-space: pre-wrap; }
+    .detail-assembly-note {
+      display: none; font-size: 14px; font-weight: 600; line-height: 1.45;
+      color: var(--warn); margin-bottom: 14px;
+    }
+    .detail-assembly-note.show { display: block; }
+    .detail-specs { font-size: 15px; line-height: 1.5; margin-bottom: 20px; white-space: pre-wrap; }
+    .detail-actions { display: flex; flex-direction: column; gap: 10px; }
+    .detail-add-btn {
+      width: 100%; padding: 14px; border-radius: 14px; border: none;
+      background: var(--button); color: var(--button-text); font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .detail-buy-now {
+      width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid var(--button);
+      background: transparent; color: var(--button); font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .share-btn {
+      width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid var(--button);
+      background: color-mix(in srgb, var(--button) 12%, transparent); color: var(--button);
+      font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .share-btn:active { opacity: 0.85; }
+    .pending-banner {
+      display: none; margin: 12px 16px 0; padding: 14px; border-radius: 14px;
+      background: color-mix(in srgb, var(--button) 12%, transparent);
+      border: 1.5px solid color-mix(in srgb, var(--button) 35%, transparent);
+    }
+    .pending-banner.show { display: block; }
+    .pending-banner .t { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .pending-banner .s { font-size: 13px; color: var(--hint); margin-bottom: 12px; line-height: 1.4; }
+    .pending-banner .row { display: flex; flex-direction: column; gap: 8px; }
+    .pending-banner button {
+      width: 100%; padding: 12px; border-radius: 12px; border: none;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .pending-pay { background: var(--button); color: var(--button-text); }
+    .pending-done {
+      background: transparent; color: var(--text);
+      border: 1.5px solid var(--border) !important;
+    }
+    .cart-top { display: flex; justify-content: flex-end; padding: 12px 16px 0; }
+    .clear-cart-btn {
+      border: none; background: transparent; color: #ff3b30;
+      font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px 4px;
+    }
+    .cart-item {
+      display: flex; gap: 14px; padding: 16px;
+      border-bottom: 1px solid var(--border); align-items: center;
+    }
+    .cart-item img { width: 70px; height: 70px; object-fit: cover; border-radius: 14px; background: #d1d1d6; }
+    .cart-info { flex: 1; min-width: 0; }
+    .cart-info .name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+    .cart-info .price { color: var(--button); font-weight: 600; }
+    .cart-info .made-note { font-size: 12px; color: var(--warn); margin-top: 4px; }
+    .qty { display: flex; align-items: center; gap: 12px; }
+    .qty button {
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: var(--button); color: white; font-size: 18px; cursor: pointer;
+    }
+    .delivery-block { padding: 16px; border-top: 1px solid var(--border); }
+    .delivery-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+    .delivery-option {
+      display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px;
+      border: 1.5px solid var(--border); margin-bottom: 10px; cursor: pointer;
+    }
+    .delivery-option.active {
+      border-color: var(--button);
+      background: color-mix(in srgb, var(--button) 8%, transparent);
+    }
+    .delivery-option input { accent-color: var(--button); width: 18px; height: 18px; }
+    .delivery-option .text { flex: 1; font-size: 14px; }
+    .delivery-option .price-tag { font-weight: 600; color: var(--button); font-size: 14px; }
+    .ozon-fields { margin-top: 14px; display: none; flex-direction: column; gap: 12px; }
+    .ozon-fields.show { display: flex; }
+    .ozon-fields .note {
+      font-size: 13px; color: var(--hint); line-height: 1.45;
+      background: color-mix(in srgb, var(--button) 8%, transparent);
+      padding: 12px 14px; border-radius: 12px;
+    }
+    .ozon-fields input {
+      width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 15px; outline: none;
+    }
+    .map-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 14px; border-radius: 14px; border: none;
+      background: linear-gradient(135deg, #fc3f1d, #ff6b4a); color: white;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .map-btn svg { width: 20px; height: 20px; fill: white; }
+    .promo-block { padding: 0 16px 16px; display: none; flex-direction: column; gap: 8px; }
+    .promo-block.show { display: flex; }
+    .promo-row { display: flex; gap: 8px; }
+    .promo-row input {
+      flex: 1; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 14px; outline: none;
+    }
+    .promo-row button {
+      padding: 12px 16px; border-radius: 12px; border: none;
+      background: var(--button); color: var(--button-text); font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+    .promo-status { font-size: 13px; color: var(--hint); min-height: 18px; }
+    .promo-status.ok { color: #34c759; }
+    .promo-status.err { color: #ff3b30; }
+    .oni-block {
+      display: none; margin: 0 16px 16px; padding: 14px; border-radius: 14px;
+      border: 1.5px solid var(--border); background: var(--secondary);
+      flex-direction: column; gap: 10px;
+    }
+    .oni-block.show { display: flex; }
+    .oni-title { font-size: 15px; font-weight: 700; }
+    .oni-balance { font-size: 14px; color: var(--hint); }
+    .oni-balance b { color: var(--button); font-weight: 700; }
+    .oni-row { display: flex; gap: 8px; align-items: center; }
+    .oni-row input {
+      flex: 1; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--border);
+      background: var(--bg); color: var(--text); font-size: 14px; outline: none;
+    }
+    .oni-row button {
+      padding: 12px 14px; border-radius: 12px; border: none;
+      background: var(--button); color: var(--button-text); font-size: 13px; font-weight: 600; cursor: pointer;
+      white-space: nowrap;
+    }
+    .oni-hint { font-size: 12px; color: var(--hint); line-height: 1.4; }
+    .oni-earn { font-size: 13px; color: #34c759; font-weight: 600; }
+    .total-bar {
+      position: sticky; bottom: 72px; left: 0; right: 0; background: var(--secondary);
+      padding: 16px;
+      margin-top: 8px;
+      display: none; justify-content: space-between; align-items: center;
+      box-shadow: 0 -6px 24px rgba(0,0,0,0.1); z-index: 50; border-top: 1px solid var(--border);
+    }
+    .total-bar .label { font-size: 13px; color: var(--hint); }
+    .total-bar .amount { font-size: 22px; font-weight: 700; }
+    .checkout-btn {
+      background: var(--button); color: var(--button-text); border: none;
+      padding: 14px 26px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer;
+    }
+    .checkout-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .empty { text-align: center; padding: 90px 24px; color: var(--hint); font-size: 16px; }
+    .page { display: none; }
+    .page.active { display: block; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="page-title">ONI Store</h1>
+    <div class="header-actions">
+      <button type="button" class="header-icon-btn" id="header-support-btn" aria-label="Поддержка" title="Поддержка">
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
+      </button>
+      <button type="button" class="header-icon-btn" id="header-cart-btn" aria-label="Корзина">
+        <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        <span class="header-cart-badge" id="header-cart-badge">0</span>
+      </button>
+    </div>
+  </header>
+  <nav class="bottom-nav" id="bottom-nav">
+    <button type="button" class="nav-btn active" data-page="catalog" id="nav-catalog">
+      <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/></svg>
+      <span>Товары</span>
+    </button>
+    <button type="button" class="nav-btn" data-page="favorites-page" id="nav-favorites">
+      <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      <span>Избранное</span>
+    </button>
+    <button type="button" class="nav-btn" data-page="profile" id="nav-profile">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+      <span>Кабинет</span>
+    </button>
+  </nav>
+  <button class="back-icon" id="back-btn" type="button" aria-label="Назад">
+    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+  </button>
+  <button class="support-fab" id="support-fab" type="button" aria-label="Поддержка">
+    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
+  </button>
+  <button class="cart-fab" id="cart-fab" type="button" aria-label="Корзина">
+    <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+    <span class="cart-fab-badge" id="cart-fab-badge">0</span>
+  </button>
+  <div id="catalog" class="page active">
+    <div class="filters">
+      <div class="search-row">
+        <button type="button" class="filter-icon-btn" id="filter-toggle" aria-label="Фильтры">
+          <svg viewBox="0 0 24 24"><path d="M3 5h18v2H3V5zm4 6h10v2H7v-2zm3 6h4v2h-4v-2z"/></svg>
+        </button>
+        <input type="text" class="search-box" id="search-input" placeholder="Поиск по названию...">
+      </div>
+      <div class="filter-panel" id="filter-panel">
+        <div>
+          <div class="fp-label">Категория</div>
+          <div class="categories">
+            <button class="cat-btn active" data-category="all" type="button">Все</button>
+            <button class="cat-btn" data-category="busts" type="button">Бюсты</button>
+            <button class="cat-btn" data-category="figures" type="button">Фигурки</button>
+          </div>
+        </div>
+        <div>
+          <div class="fp-label">Сортировка</div>
+          <div class="sort-row">
+            <select id="sort-select">
+              <option value="default">По умолчанию</option>
+              <option value="newest">Сначала новые</option>
+              <option value="price_asc">Цена ↑</option>
+              <option value="price_desc">Цена ↓</option>
+              <option value="name">По имени</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="products" id="products-list"></div>
+  </div>
+  <div id="favorites-page" class="page">
+    <div class="section-title">Моё избранное</div>
+    <div class="products" id="fav-page-list"></div>
+    <div id="fav-recent-section" style="display:none;">
+      <div class="section-title">Недавно смотрели</div>
+      <div class="products" id="fav-recent-list"></div>
+    </div>
+    <div id="fav-popular-section" style="display:none;">
+      <div class="section-title">Нравятся другим</div>
+      <div class="products" id="fav-popular-list"></div>
+    </div>
+  </div>
+  <div id="profile" class="page profile-page">
+    <div class="profile-card">
+      <div class="ph">🪙 Мои ONI</div>
+      <div class="ps" id="profile-oni-text">Баланс: —</div>
+      <button type="button" class="pbtn secondary" id="oni-history-btn">История начислений</button>
+      <div class="oni-history" id="oni-history" style="margin:12px 0 0;padding:0;border:none;background:transparent;"></div>
+    </div>
+    <div class="profile-card">
+      <div class="ph">Рефералка</div>
+      <div class="ps" id="oni-ref-text">Пригласи друга: вы оба получите <b>+150 ONI</b> после его первой оплаты.</div>
+      <button type="button" class="pbtn" id="ref-copy-btn">Поделиться ссылкой</button>
+    </div>
+  </div>
+  <div id="product-page" class="page">
+    <div class="product-detail">
+      <div class="gallery">
+        <div class="gallery-track" id="gallery-track"></div>
+        <div class="gallery-dots" id="gallery-dots"></div>
+      </div>
+      <div class="detail-content">
+        <div class="detail-name" id="detail-name"></div>
+        <div class="detail-price" id="detail-price"></div>
+        <div class="detail-stock" id="detail-stock"></div>
+        <div class="detail-fav-row">
+          <button type="button" id="detail-fav-btn">♡ В избранное</button>
+        </div>
+        <div class="detail-desc" id="detail-desc"></div>
+        <div class="detail-assembly-note" id="detail-assembly-note">⚠️ Фигурка поставляется в разобранном виде — так удобнее доставлять и красить.</div>
+        <div class="detail-specs" id="detail-specs"></div>
+        <div class="detail-actions">
+          <button class="detail-add-btn" id="detail-add-btn" type="button">В корзину</button>
+          <button class="detail-buy-now" id="detail-buy-now" type="button">Купить сейчас</button>
+          <button class="share-btn" id="share-btn" type="button">Поделиться</button>
+        </div>
+        <div class="similar-block" id="similar-block" style="display:none;">
+          <div class="section-title">Похожие</div>
+          <div class="products" id="similar-list"></div>
+        </div>
+        <div class="similar-block" id="detail-recent-block" style="display:none;">
+          <div class="section-title">Недавно смотрели</div>
+          <div class="products" id="detail-recent-list"></div>
+        </div>
+        <div class="similar-block" id="detail-popular-block" style="display:none;">
+          <div class="section-title">Нравятся другим</div>
+          <div class="products" id="detail-popular-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="cart" class="page">
+    <div class="pending-banner" id="pending-banner">
+      <div class="t" id="pending-title">Заказ ожидает оплаты</div>
+      <div class="s" id="pending-sub"></div>
+      <div class="row">
+        <button type="button" class="pending-pay" id="pending-pay-btn">Перейти к оплате</button>
+        <button type="button" class="pending-done" id="pending-done-btn">Я уже оплатил / отменить ожидание</button>
+      </div>
+    </div>
+    <div class="cart-top" id="cart-top" style="display:none;">
+      <button class="clear-cart-btn" id="clear-cart-btn" type="button">Очистить корзину</button>
+    </div>
+    <div id="cart-list"></div>
+    <div class="promo-block" id="promo-block">
+      <div class="promo-row">
+        <input type="text" id="promo-input" placeholder="Промокод">
+        <button type="button" id="promo-apply">Применить</button>
+      </div>
+      <div class="promo-status" id="promo-status"></div>
+    </div>
+    <div class="oni-block" id="oni-block">
+      <div class="oni-title">🪙 ONI coin</div>
+      <div class="oni-balance" id="oni-balance-text">Загрузка баланса…</div>
+      <div class="oni-row">
+        <input type="number" id="oni-spend-input" min="0" step="1" placeholder="Списать ONI" inputmode="numeric">
+        <button type="button" id="oni-spend-max">Макс</button>
+      </div>
+      <div class="oni-hint">1 ONI = 1 ₽. Можно вместе с промокодом. Кэшбек 5% начислим после оплаты.</div>
+      <div class="oni-earn" id="oni-earn-text"></div>
+    </div>
+    <div class="delivery-block" id="delivery-block" style="display:none;">
+      <div class="delivery-title">Способ получения</div>
+      <label class="delivery-option" id="opt-ozon">
+        <input type="radio" name="delivery" value="ozon">
+        <div class="text">Доставка до пункта Ozon</div>
+        <div class="price-tag">+500 ₽</div>
+      </label>
+      <label class="delivery-option" id="opt-pickup">
+        <input type="radio" name="delivery" value="pickup">
+        <div class="text">Самовывоз по г. Москва</div>
+        <div class="price-tag">Бесплатно</div>
+      </label>
+      <div class="ozon-fields" id="ozon-fields">
+        <div class="note">
+          Обязательная информация для оформления заказа на Ozon.<br>
+          Найдите пункт на карте, скопируйте адрес, затем зажмите поле и выберите «Вставить».
+        </div>
+        <button class="map-btn" id="open-map-btn" type="button">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          Найти пункт на карте
+        </button>
+        <input type="text" id="recipient-name" placeholder="Имя получателя *">
+        <input type="tel" id="recipient-phone" placeholder="Номер телефона *">
+        <input type="text" id="ozon-address" placeholder="Адрес пункта выдачи Ozon *" autocomplete="street-address">
+      </div>
+    </div>
+    <div class="total-bar" id="cart-total">
+      <div>
+        <div class="label">Итого</div>
+        <div class="amount" id="total-price">0 ₽</div>
+      </div>
+      <button class="checkout-btn" id="checkout-btn" disabled type="button">Оплатить</button>
+    </div>
+  </div>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    try { tg.enableClosingConfirmation(); } catch (e) {}
+
+    document.addEventListener('contextmenu', function (e) {
+      if (e.target.closest('input, textarea')) return;
+      e.preventDefault();
+    });
+    document.addEventListener('dragstart', function (e) {
+      if (e.target.tagName === 'IMG') e.preventDefault();
+    });
+
+    const API_URL = 'https://wandering-truth-5089onistoreapi.eramor-068.workers.dev';
+    const SUPPORT_LINK = 'https://t.me/IamOniStore_bot?start=support';
+    const DELIVERY_PRICE = 500;
+    const BOT_USERNAME = 'IamOniStore_bot';
+    const APP_NAME = 'Shop';
+    const PROMO_USED_KEY = 'promo_used_server';
+    const MAKE_WARNED_KEY = 'make_order_warned_session';
+    const PENDING_ORDER_KEY = 'pending_yookassa_order';
+    const FAV_KEY = 'shop_favorites';
+    const RECENT_KEY = 'shop_recent';
+    const OZON_SAVE_KEY = 'shop_ozon_fields';
+    const NEW_ID_FROM = 28;
+    const REF_BONUS = 150;
+    const MAKE_TIME_MSG = '⚠️ Товара нет в наличии.\n\nСрок изготовления: 1–3 дня.\nМожно оформить заказ — сделаем под вас.';
+    const PRODUCT_SPECS =
+      'Высота изделия: 20 см.\n' +
+      'Изделие под покраску (кастом).\n' +
+      'Материал: пластик PLA.\n' +
+      'Изготовление: 3D-печать высокого качества.\n' +
+      'Срок под заказ: 1–3 дня.';
+
+    const ROGUE1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Rogue-1.png';
+    const ROGUE2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Rogue-2.png';
+    const ROGUE_GIF = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Rogue-3.gif';
+    const POWER1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/power-1.jpg';
+    const POWER2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/power-2.png';
+    const POWER_GIF = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/power-3.gif';
+    const INV1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Invisigal-1.jpg';
+    const INV2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Invisigal-2.png';
+    const INV3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Invisigal-3.gif';
+    const LUNA1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Luna-1.jpg';
+    const LUNA2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Luna-2.png';
+    const LUNA3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Luna-3.gif';
+    const MAK1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Makima-1.jpg';
+    const MAK2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Makima-2.png';
+    const MAK3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Makima-3.gif';
+    const MAL1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Malevola-1.jpg';
+    const MAL2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Malevola-2.png';
+    const MAL3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Malevola-3.gif';
+    const PB1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Power_bust-1.jpg';
+    const PB2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Power_bust-2.png';
+    const PB3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Power_bust-3.gif';
+    const RY1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Ryuk-1.jpg';
+    const RY2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Ryuk-2.png';
+    const RY3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Ryuk-3.gif';
+    const Z1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Zitz-1.png';
+    const Z2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Zitz-2.png';
+    const Z3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/Zitz-3.gif';
+    const JINX1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Jinx-1.jpg';
+    const JINX2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Jinx-2.png';
+    const JINX3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Jinx-3.gif';
+    const MIME1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Mime-1.jpg';
+    const MIME2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Mime-2.png';
+    const MIME3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Mime-3.gif';
+    const REB1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca-1.jpg';
+    const REB2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca-2.png';
+    const REB3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca-3.gif';
+    const REBB1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca_bust-1.jpg';
+    const REBB2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca_bust-2.png';
+    const REBB3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/2/Rebecca_bust-3.gif';
+    const CAIT1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Caitlyn-1.jpg';
+    const CAIT2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Caitlyn-2.png';
+    const CAIT3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Caitlyn-3.gif';
+    const REB21 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Rebecca2-1.jpg';
+    const REB22 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Rebecca2-2.png';
+    const REB23 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Rebecca2-3.gif';
+    const REZE1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Reze-1.jpg';
+    const REZE2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Reze-2.png';
+    const REZE3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Reze-3.gif';
+    const VI1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Vi-1.jpg';
+    const VI2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Vi-2.png';
+    const VI3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/3/3/Vi-3.gif';
+    const ARL1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4.2/Arlecchino-1.jpg';
+    const ARL2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4.2/Arlecchino-2.png';
+    const ARL3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4.2/Arlecchino-3.gif';
+    const COL1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4.2/Columbina-1.jpg';
+    const COL2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4.2/Columbina-2.png';
+    const COL3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4.2/Columbina-3.gif';
+    const FUR1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4/Furina-1.jpg';
+    const FUR2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4/Furina-2.png';
+    const FUR3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4/Furina-3.gif';
+    const RON1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4/Ronova-1.jpg';
+    const RON2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4/Ronova-2.png';
+    const RON3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4/Ronova-3.gif';
+    const YAE1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4/Yae_Miko_bunny-1.jpg';
+    const YAE2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4/Yae_Miko_bunny-2.png';
+    const YAE3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/4/Yae_Miko_bunny-3.gif';
+    const IWM1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.1/Invisible_woman_malice-1.jpg';
+    const IWM2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.1/Invisible_woman_malice-2.png';
+    const IWM3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.1/Invisible_woman_malice-3.gif';
+    const IWM21 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.1/Invisible_woman_malice_2-1.jpg';
+    const IWM22 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.1/Invisible_woman_malice_2-2.png';
+    const IWM23 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.1/Invisible_woman_malice_2-3.gif';
+    const LD1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.2/Lucy_David-1.jpg';
+    const LD2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.2/Lucy_David-2.png';
+    const LD3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.2/Lucy_David-3.gif';
+    const RS1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.2/Rebecca_smasher-1.jpg';
+    const RS2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.2/Rebecca_smasher-2.png';
+    const RS3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.2/Rebecca_smasher-3.gif';
+    const YAEB1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.2/Yae_miko_bust-1.jpg';
+    const YAEB2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.2/Yae_miko_bust-2.png';
+    const YAEB3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/5.2/Yae_miko_bust-3.gif';
+    const DENJIB1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.1/Denji_bust-1.jpg';
+    const DENJIB2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.1/Denji_bust-2.png';
+    const DENJIB3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.1/Denji_bust-3.gif';
+    const MAKB1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.1/Makima_bust-1.jpg';
+    const MAKB2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.1/Makima_bust-2.png';
+    const MAKB3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.1/Makima_bust-3.gif';
+    const MIKAB1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.1/Mikasa_bust-1.jpg';
+    const MIKAB2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.1/Mikasa_bust-2.png';
+    const MIKAB3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.1/Mikasa_bust-3.gif';
+    const MIKA1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.2/Mikasa-1.jpg';
+    const MIKA2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.2/Mikasa-2.png';
+    const MIKA3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.2/Mikasa-3.gif';
+    const RM1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.2/Rick_and_Morty-1.jpg';
+    const RM2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.2/Rick_and_Morty-2.png';
+    const RM3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.2/Rick_and_Morty-3.gif';
+    const TAL1 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.2/Talia_Yang-1.jpg';
+    const TAL2 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.2/Talia_Yang-2.png';
+    const TAL3 = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/6.2/Talia_Yang-3.gif';
+
+    var products = [
+      { id: 1, name: 'Бюст Rogue / Люди Икс / X-Men', shareName: 'Бюст Rogue (X-Men)', price: 1490, stock: 2, category: 'busts',
+        description: 'Rogue из X-Men — прикоснулась, и ты уже не тот, кем был.\nЮжный акцент, кожаная куртка и сила, которую она сама не всегда контролирует. Бюст ловит взгляд, причёску и ту самую смесь уязвимости и опасности. Под покраску — можно вытянуть контраст кожи и костюма так, что с полки не оторвёшься.',
+        photos: [ROGUE1, ROGUE2, ROGUE_GIF] },
+      { id: 2, name: 'Фигурка Power / Человек-бензопила / Chainsaw Man', shareName: 'Фигурка Power (Chainsaw Man)', price: 1490, stock: 0, category: 'figures',
+        description: 'Power — демон крови, который считает, что мир крутится вокруг неё. И в чём-то права.\nРога, клыки, хаос в глазах и характер «сначала ударю, потом спрошу». Фигурка под покраску: усиль кровь, светлые волосы и тот безумный вайб Chainsaw Man, из-за которого её невозможно перепутать ни с кем.',
+        photos: [POWER1, POWER2, POWER_GIF] },
+      { id: 3, name: 'Фигурка Невидива / Invisigal / Dispatch', shareName: 'Фигурка Invisigal (Dispatch)', price: 1490, stock: 0, category: 'figures',
+        description: 'Invisigal из Dispatch — её то видишь, то уже нет.\nИгра на контрасте: силуэт, жест, момент, когда персонаж будто растворяется в кадре. Фигурка для тех, кто любит необычный дизайн и кастом — здесь особенно кайфово прорабатывать тени, костюм и «невидимую» пластику позы.',
+        photos: [INV1, INV2, INV3] },
+      { id: 4, name: 'Бюст Луна Сноу / Luna Snow / Marvel Rivals', shareName: 'Бюст Luna Snow (Marvel Rivals)', price: 1490, stock: 0, category: 'busts',
+        description: 'Luna Snow — поп-сцена и ледяной удар в одном лице.\nИз Marvel Rivals: яркий образ, холодные способности и энергия айдола, которая не спорит с силой героя. Бюст — про лицо, причёску и «морозный» характер. Под покраску отлично заходят голубые и белые акценты.',
+        photos: [LUNA1, LUNA2, LUNA3] },
+      { id: 5, name: 'Фигурка Makima / Человек-бензопила / Chainsaw Man', shareName: 'Фигурка Makima (Chainsaw Man)', price: 1490, stock: 0, category: 'figures',
+        description: 'Makima не кричит — она просто смотрит. И этого достаточно.\nДемон Контроля из Chainsaw Man: спокойствие, красные глаза и ощущение, что исход разговора уже решён. Фигурка под покраску — можно довести до леденящей вежливости: галстук, плащ, взгляд, от которого мурашки.',
+        photos: [MAK1, MAK2, MAK3] },
+      { id: 6, name: 'Фигурка Малевола / Malevola / Dispatch', shareName: 'Фигурка Malevola (Dispatch)', price: 1490, stock: 0, category: 'figures',
+        description: 'Malevola из Dispatch — жёсткий характер в ярком силуэте.\nНе «милая героиня на полку», а персонаж с оскалом и подачей. Фигурка любит контрастную покраску: кожа, рога, костюм — всё, что делает её заметной с другого конца комнаты.',
+        photos: [MAL1, MAL2, MAL3] },
+      { id: 7, name: 'Бюст Power / Человек-бензопила / Chainsaw Man', shareName: 'Бюст Power (Chainsaw Man)', price: 1490, stock: 0, category: 'busts',
+        description: 'Power крупным планом — рога, ухмылка и ноль спокойствия.\nКомпактный бюст демона крови из Chainsaw Man: акцент на лице и характере, без лишнего. Идеален, если хочется именно «вау» на полке, а не высокую статую. Под покраску — кровь, зубы, взгляд.',
+        photos: [PB1, PB2, PB3] },
+      { id: 8, name: 'Фигурка Рюк / Тетрадь смерти / Death Note', shareName: 'Фигурка Ryuk (Death Note)', price: 1490, stock: 0, category: 'figures',
+        description: 'Ryuk пришёл не судить — ему просто скучно наверху.\nШинигами из Death Note: длинные конечности, ухмылка и вечный интерес к человеческим играм (и яблокам). Фигурка с сильным силуэтом — кайф красить тени, перья и тот «нечеловеческий» контраст чёрного и серого.',
+        photos: [RY1, RY2, RY3] },
+      { id: 9, name: 'Бюст Зитц / Zitz / Battletoads', shareName: 'Бюст Zitz (Battletoads)', price: 1490, stock: 0, category: 'busts',
+        description: 'Zitz — мозг команды Battletoads и главный по плану (пока всё не пошло боком).\nРетро-вайб 90-х, умный жаб с характером лидера. Бюст — ностальгия и узнаваемость: шлем, взгляд, та самая «arcade» энергия. Отлично смотрится в кастоме под классическую палитру.',
+        photos: [Z1, Z2, Z3] },
+      { id: 10, name: 'Фигурка Jinx / Arcane', shareName: 'Фигурка Jinx (Arcane)', price: 1490, stock: 0, category: 'figures',
+        description: 'Jinx не входит в комнату — она в неё врывается.\nArcane / League of Legends: голубые косы, взрывы, гениальность на грани безумия. Фигурка про движение и хаос — под покраску можно выкрутить неон, оружие и ту самую улыбку, после которой Пилтовер уже не будет прежним.',
+        photos: [JINX1, JINX2, JINX3] },
+      { id: 11, name: 'Фигурка Mime', shareName: 'Фигурка Mime', price: 1490, stock: 0, category: 'figures',
+        description: 'Mime молчит — и от этого только громче.\nТеатральный силуэт, жесты без слов, костюм, в котором каждая складка просит кисть. Фигурка для тех, кто любит нестандартных персонажей и кастом: чёрно-белый контраст, грим, пластика позы.',
+        photos: [MIME1, MIME2, MIME3] },
+      { id: 12, name: 'Фигурка Ребекка / Rebecca / Cyberpunk Edgerunners', shareName: 'Фигурка Rebecca (Edgerunners)', price: 1490, stock: 0, category: 'figures',
+        description: 'Rebecca из Edgerunners — маленький рост, огромная проблема для врагов.\nNight City, розовые волосы, оружие больше неё и характер без тормозов. Фигурка узнаётся с метра: дерзость, импланты, вайб «живу быстро». Под покраску — неоновые акценты и тот самый уличный grit.',
+        photos: [REB1, REB2, REB3] },
+      { id: 13, name: 'Бюст Ребекка / Rebecca / Cyberpunk Edgerunners', shareName: 'Бюст Rebecca (Edgerunners)', price: 1490, stock: 0, category: 'busts',
+        description: 'Rebecca крупным планом — взгляд, из-за которого Night City становится ещё шумнее.\nБюст из Cyberpunk: Edgerunners: причёска, лицо, дерзость без лишнего. Компактный формат, сильная подача. Кастом здесь про контраст кожи, волос и «кибер»-деталей.',
+        photos: [REBB1, REBB2, REBB3] },
+      { id: 14, name: 'Фигурка Caitlyn / Arcane', shareName: 'Фигурка Caitlyn (Arcane)', price: 1490, stock: 0, category: 'figures',
+        description: 'Caitlyn целится один раз — и этого хватает.\nСнайпер и энфорсер Arcane: точность, стиль Пилтовера и холодная уверенность. Фигурка про элегантность и сталь одновременно. Под покраску хорошо заходят форма, винтовка и тот спокойный «я всё вижу» взгляд.',
+        photos: [CAIT1, CAIT2, CAIT3] },
+      { id: 15, name: 'Фигурка Ребекка 2 / Rebecca 2 / Cyberpunk Edgerunners', shareName: 'Фигурка Rebecca 2 (Edgerunners)', price: 1490, stock: 0, category: 'figures',
+        description: 'Rebecca — вторая поза, тот же адреналин Night City.\nАльтернативный силуэт героини Edgerunners: другая динамика, тот же характер «стреляю первой». Если первая версия уже есть — это отличный дубль в коллекцию. Если нет — можно начать с неё: энергия та же, подача свежая.',
+        photos: [REB21, REB22, REB23] },
+      { id: 16, name: 'Фигурка Reze / Человек-бензопила / Chainsaw Man', shareName: 'Фигурка Reze (Chainsaw Man)', price: 1490, stock: 0, category: 'figures',
+        description: 'Reze улыбается мягко. Это не значит, что тебе повезло.\nДемон Бомбы из Chainsaw Man: школьная форма, нежность в лице и разрушение за кадром. Один из самых цепких образов серии. Фигурка под покраску — игра на контрасте «мило / опасно», от которого не оторваться.',
+        photos: [REZE1, REZE2, REZE3] },
+      { id: 17, name: 'Фигурка Vi / Arcane', shareName: 'Фигурка Vi (Arcane)', price: 1490, stock: 0, category: 'figures',
+        description: 'Vi из Arcane — та, кого слышно ещё до того, как увидишь.\nРозовые волосы, тяжёлые перчатки и взгляд «я уже решила, чем это закончится». Не принцесса Пилтовера и не фон для чужой драмы: она бьёт первой, защищает своих и не извиняется за характер.\nФигурка под покраску — можно усилить шрамы, металл на кастетах и тот самый уличный вайб Зауна.',
+        photos: [VI1, VI2, VI3] },
+      { id: 18, name: 'Фигурка Арлекино / Arlecchino / Genshin Impact', shareName: 'Фигурка Arlecchino (Genshin)', price: 1490, stock: 0, category: 'figures',
+        description: 'Arlecchino не просит уважения — она его подразумевает.\nЧетвёртая Предвестница Фатуи, «Отец» Дома Очага: чёрно-красные акценты, холодный взгляд и аура, от которой хочется выпрямить спину. Фигурка Genshin под покраску — кресты, плащ, острые линии характера.',
+        photos: [ARL1, ARL2, ARL3] },
+      { id: 19, name: 'Фигурка Коломбина / Columbina / Genshin Impact', shareName: 'Фигурка Columbina (Genshin)', price: 1490, stock: 0, category: 'figures',
+        description: 'Columbina кажется тихой. Это и пугает сильнее всего.\nТретья Предвестница Фатуи: почти безмятежная улыбка и ощущение, что за ней стоит нечто большее. Фигурка для тех, кто любит загадку, а не кричащий пафос. Под покраску — мягкие тона и тревожная нежность образа.',
+        photos: [COL1, COL2, COL3] },
+      { id: 20, name: 'Фигурка Фурина / Furina / Genshin Impact', shareName: 'Фигурка Furina (Genshin)', price: 1490, stock: 0, category: 'figures',
+        description: 'Furina всегда на сцене — даже когда занавес уже упал.\nБывшая Гидро Архонт Фонтейна: театр, драма, двусторонний характер и стиль, который не сливается с толпой. Фигурка Genshin под покраску — двуцветные волосы, костюм, поза «я всё ещё в центре внимания».',
+        photos: [FUR1, FUR2, FUR3] },
+      { id: 21, name: 'Фигурка Ронова / Ronova / Genshin Impact', shareName: 'Фигурка Ronova (Genshin)', price: 1490, stock: 0, category: 'figures',
+        description: 'Ronova — не злодей с речами. Она — закон, после которого спорить поздно.\nПравительница Смерти из Genshin Impact: тёмный, величественный силуэт и атмосфера абсолютной власти. Фигурка про масштаб и тяжёлый вайб. Под покраску — глубокие тени, контраст и «божественная» холодность.',
+        photos: [RON1, RON2, RON3] },
+      { id: 22, name: 'Фигурка Яэ Мико Зайчик / Yae Miko Bunny / Genshin Impact', shareName: 'Фигурка Yae Miko Bunny (Genshin)', price: 1490, stock: 0, category: 'figures',
+        description: 'Yae Miko в зайчике — та же кицунэ, только ещё наглее улыбается.\nГудзи святилища Наруками в игривом образе: ушки, поза, фирменный характер «я знаю, что ты подумаешь». Фигурка Genshin для кастома — розовые тона, глаза, детали костюма, от которых коллекция сразу теплеет.',
+        photos: [YAE1, YAE2, YAE3] },
+      { id: 23, name: 'Фигурка Женщина-Невидимка Злоба / Invisible Woman Malice / Marvel Rivals', shareName: 'Фигурка Invisible Woman Malice (Marvel Rivals)', price: 1490, stock: 0, category: 'figures',
+        description: 'Invisible Woman в облике Malice — та же Сью, только без «доброй мамы из Фантастической четвёрки».\nMarvel Rivals: тёмный вайб, сила невидимости и щитов, характер острее. Фигурка под покраску — контраст светлого и мрачного, энергия, от которой с полки не спутаешь с классической версией.',
+        photos: [IWM1, IWM2, IWM3] },
+      { id: 24, name: 'Фигурка Женщина-Невидимка Злоба 2 / Invisible Woman Malice 2 / Marvel Rivals', shareName: 'Фигурка Invisible Woman Malice 2 (Marvel Rivals)', price: 1490, stock: 0, category: 'figures',
+        description: 'Malice — вторая поза, тот же тёмный поворот Сью Шторм.\nАльтернативный силуэт из Marvel Rivals: другая динамика, та же «злая» подача. Если первая версия уже есть — сильный дубль в коллекцию. Если нет — можно начать с неё: узнаваемость на максимуме, кастом любит глубокие тени и акценты костюма.',
+        photos: [IWM21, IWM22, IWM23] },
+      { id: 25, name: 'Фигурка Люси и Дэвид / Lucy and David / Cyberpunk Edgerunners', shareName: 'Фигурка Lucy & David (Edgerunners)', price: 1490, stock: 0, category: 'figures',
+        description: 'Lucy и David — два сердца Night City, которые слишком поздно поняли цену мечты.\nCyberpunk: Edgerunners: неон, импланты, нежность на фоне жести. Парная фигурка про историю, а не просто «два персонажа рядом». Под покраску — волосы Люси, куртка Дэвида и тот самый bittersweet вайб сериала.',
+        photos: [LD1, LD2, LD3] },
+      { id: 26, name: 'Фигурка Ребекка Смешер / Rebecca Smasher / Cyberpunk Edgerunners', shareName: 'Фигурка Rebecca Smasher (Edgerunners)', price: 1490, stock: 0, category: 'figures',
+        description: 'Rebecca vs Smasher — столкновение, которое Night City не забудет.\nМаленькая, яростная, против машины войны. Фигурка про контраст масштабов и характер без тормозов. Под покраску — розовый хаос Ребекки, металл Смешера и момент, когда кажется, что шансов нет — а она всё равно идёт.',
+        photos: [RS1, RS2, RS3] },
+      { id: 27, name: 'Бюст Яэ Мико / Yae Miko / Genshin Impact', shareName: 'Бюст Yae Miko (Genshin)', price: 1490, stock: 0, category: 'busts',
+        description: 'Yae Miko крупным планом — ушки, ухмылка и взгляд «я уже всё про тебя поняла».\nГудзи святилища Наруками без лишнего: лицо, причёска, характер кицунэ. Бюст для тех, кто хочет именно её вайб на полке. Под покраску — розовые тона, глаза и та самая наглая мягкость образа.',
+        photos: [YAEB1, YAEB2, YAEB3] },
+      { id: 28, name: 'Бюст Denji / Человек-бензопила / Chainsaw Man', shareName: 'Бюст Denji (Chainsaw Man)', price: 1490, stock: 0, category: 'busts',
+        description: 'Denji — парень, который хотел простого: еды, крыши и чтобы его обняли. Вместо этого ему вшили бензопилу в сердце.\nChainsaw Man: голодный взгляд, шрамы и та самая смесь «я устал» и «я всё равно пойду до конца». Бюст крупным планом — лицо, волосы, характер без лишнего пафоса. Под покраску хорошо заходят кожа, кровь и тяжёлый взгляд.',
+        photos: [DENJIB1, DENJIB2, DENJIB3] },
+      { id: 29, name: 'Бюст Makima / Человек-бензопила / Chainsaw Man', shareName: 'Бюст Makima (Chainsaw Man)', price: 1490, stock: 0, category: 'busts',
+        description: 'Makima не повышает голос. Ей это и не нужно.\nДемон Контроля из Chainsaw Man: спокойные красные глаза и ощущение, что разговор уже закончился в её пользу. Бюст — про лицо, причёску и ледяную вежливость. Под покраску: взгляд, губы, та самая «офисная» холодность, от которой мурашки.',
+        photos: [MAKB1, MAKB2, MAKB3] },
+      { id: 30, name: 'Бюст Mikasa / Атака Титанов / Attack on Titan', shareName: 'Бюст Mikasa (Attack on Titan)', price: 1490, stock: 0, category: 'busts',
+        description: 'Mikasa не говорит много. Она просто всегда оказывается там, где нужно защитить своих.\nAttack on Titan: шарф, короткий взгляд и сила, которую не рекламируют. Бюст крупным планом — лицо, волосы, характер солдата, а не постерной героини. Под покраску — кожа, шарф, тот самый спокойный «я уже решила» взгляд.',
+        photos: [MIKAB1, MIKAB2, MIKAB3] },
+      { id: 31, name: 'Фигурка Mikasa / Атака Титанов / Attack on Titan', shareName: 'Фигурка Mikasa (Attack on Titan)', price: 1490, stock: 0, category: 'figures',
+        description: 'Mikasa в полный рост — клинок, поза и готовность ударить первой.\nГероиня Attack on Titan: скорость UDM, шарф и верность, которая сильнее страха. Фигурка про движение и характер. Под покраску — форма, ремни, металл клинков и тот жёсткий силуэт разведкорпуса.',
+        photos: [MIKA1, MIKA2, MIKA3] },
+      { id: 32, name: 'Фигурка Рик и Морти / Rick and Morty', shareName: 'Фигурка Rick and Morty', price: 1490, stock: 0, category: 'figures',
+        description: 'Rick и Morty — гений на грани безумия и внук, который снова втянут «на пять минут».\nКультовый дуэт: портальная пушка, белый халат, паника в глазах Морти и фирменное «Wubba lubba dub dub». Фигурка про узнаваемость с первого взгляда. Под покраску — слюна Рика, волосы, контраст «умный хаос / испуганный подросток».',
+        photos: [RM1, RM2, RM3] },
+      { id: 33, name: 'Фигурка Талия Янг / Talia Yang / Cyberpunk Edgerunners', shareName: 'Фигурка Talia Yang (Edgerunners)', price: 1490, stock: 0, category: 'figures',
+        description: 'Talia Yang — часть банды, которая живёт в Night City на полной громкости.\nCyberpunk: Edgerunners: уличный стиль, импланты и вайб «сегодня выжили — уже победа». Фигурка для тех, кто собирает вселенную Edgerunners не только по главным героям. Под покраску — неон, кожа, детали костюма и тот киберпанк-grit.',
+        photos: [TAL1, TAL2, TAL3] }
+    ];
+
+    var cart = [];
+    try { cart = JSON.parse(localStorage.getItem('shop_cart') || '[]'); } catch (e) { cart = []; }
+
+    var currentProduct = null, currentSlide = 0, currentCategory = 'all', searchQuery = '';
+    var currentSort = 'default';
+    var deliveryMethod = null;
+    var appliedPromo = false, appliedPromoCode = '', appliedPromoPercent = 0;
+    var mainButtonBound = false;
+    var oniBalance = 0;
+    var coinsToSpend = 0;
+    var oniLedger = [];
+    var favorites = [];
+    try { favorites = JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); } catch (e) { favorites = []; }
+    var recentIds = [];
+    try { recentIds = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch (e) { recentIds = []; }
+
+    function saveFavorites() {
+      localStorage.setItem(FAV_KEY, JSON.stringify(favorites));
+    }
+    function isFavorite(id) {
+      return favorites.indexOf(Number(id)) !== -1;
+    }
+    function toggleFavorite(id) {
+      id = Number(id);
+      var i = favorites.indexOf(id);
+      var added = false;
+      if (i === -1) {
+        favorites.push(id);
+        added = true;
+      } else {
+        favorites.splice(i, 1);
+      }
+      saveFavorites();
+      hapticLight();
+      // синхрон популярности на сервере
+      fetch(API_URL + '/favorites/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId: id, action: added ? 'add' : 'remove' })
+      }).then(function () {
+        loadPopular();
+      }).catch(function () {});
+    }
+    function pushRecent(id) {
+      id = Number(id);
+      recentIds = recentIds.filter(function (x) { return Number(x) !== id; });
+      recentIds.unshift(id);
+      if (recentIds.length > 6) recentIds = recentIds.slice(0, 6);
+      localStorage.setItem(RECENT_KEY, JSON.stringify(recentIds));
+    }
+    function saveOzonFields() {
+      try {
+        localStorage.setItem(OZON_SAVE_KEY, JSON.stringify({
+          name: document.getElementById('recipient-name').value.trim(),
+          phone: document.getElementById('recipient-phone').value.trim(),
+          address: document.getElementById('ozon-address').value.trim()
+        }));
+      } catch (e) {}
+    }
+    function loadOzonFields() {
+      try {
+        var raw = localStorage.getItem(OZON_SAVE_KEY);
+        if (!raw) return;
+        var d = JSON.parse(raw);
+        if (d.name) document.getElementById('recipient-name').value = d.name;
+        if (d.phone) document.getElementById('recipient-phone').value = d.phone;
+        if (d.address) document.getElementById('ozon-address').value = d.address;
+      } catch (e) {}
+    }
+    function isNewProduct(id) {
+      return Number(id) >= NEW_ID_FROM;
+    }
+    function productCardHtml(p, opts) {
+      opts = opts || {};
+      var s = stockLabel(p.stock);
+      var stockClass = s.out ? 'product-stock out' : 'product-stock';
+      var favOn = isFavorite(p.id);
+      var html = '<div class="product" data-id="' + p.id + '">';
+      html += '<div class="product-img-wrap">';
+      if (isNewProduct(p.id)) html += '<span class="badge-new">Новинка</span>';
+      if (!opts.hideFav) {
+        html += '<button type="button" class="fav-btn' + (favOn ? ' on' : '') + '" data-fav="' + p.id + '" aria-label="Избранное">' + (favOn ? '♥' : '♡') + '</button>';
+      }
+      html += '<img src="' + p.photos[0] + '" alt=""></div>';
+      html += '<div class="product-info">';
+      html += '<div class="product-name">' + p.name + '</div>';
+      html += '<div class="product-price">' + p.price.toLocaleString('ru-RU') + ' ₽</div>';
+      html += '<div class="' + stockClass + '">' + s.text + '</div>';
+      if (!opts.hideAdd) html += '<button class="add-btn" data-id="' + p.id + '" type="button">В корзину</button>';
+      html += '</div></div>';
+      return html;
+    }
+    function bindProductCards(root) {
+      root = root || document;
+      root.querySelectorAll('.product').forEach(function (card) {
+        card.addEventListener('click', function (e) {
+          if (e.target.classList.contains('add-btn') || e.target.classList.contains('fav-btn')) return;
+          openProduct(Number(card.dataset.id));
+        });
+      });
+      root.querySelectorAll('.add-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          addToCart(Number(btn.dataset.id));
+        });
+      });
+      root.querySelectorAll('.fav-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          toggleFavorite(btn.dataset.fav);
+          var on = isFavorite(btn.dataset.fav);
+          btn.classList.toggle('on', on);
+          btn.textContent = on ? '♥' : '♡';
+          if (currentCategory === 'favorites') renderProducts();
+          updateDetailFavBtn();
+        });
+      });
+    }
+    function updateDetailFavBtn() {
+      var btn = document.getElementById('detail-fav-btn');
+      if (!btn || !currentProduct) return;
+      var on = isFavorite(currentProduct.id);
+      btn.classList.toggle('on', on);
+      btn.textContent = on ? '♥ В избранном' : '♡ В избранное';
+    }
+    function universeKey(name) {
+      var n = (name || '').toLowerCase();
+      if (n.indexOf('genshin') !== -1) return 'genshin';
+      if (n.indexOf('arcane') !== -1) return 'arcane';
+      if (n.indexOf('edgerunner') !== -1 || n.indexOf('cyberpunk') !== -1) return 'edgerunners';
+      if (n.indexOf('chainsaw') !== -1) return 'csm';
+      if (n.indexOf('marvel') !== -1 || n.indexOf('rivals') !== -1 || n.indexOf('x-men') !== -1) return 'marvel';
+      if (n.indexOf('dispatch') !== -1) return 'dispatch';
+      if (n.indexOf('death note') !== -1) return 'deathnote';
+      return '';
+    }
+    function renderSimilar() {
+      var box = document.getElementById('similar-block');
+      var list = document.getElementById('similar-list');
+      if (!currentProduct || !box || !list) return;
+      var uni = universeKey(currentProduct.name);
+      var similar = products.filter(function (p) {
+        if (p.id === currentProduct.id) return false;
+        if (uni && universeKey(p.name) === uni) return true;
+        return p.category === currentProduct.category;
+      }).slice(0, 4);
+      if (!similar.length) {
+        box.style.display = 'none';
+        return;
+      }
+      box.style.display = 'block';
+      var html = '';
+      for (var i = 0; i < similar.length; i++) html += productCardHtml(similar[i], { hideAdd: true });
+      list.innerHTML = html;
+      bindProductCards(list);
+    }
+    function getRecentProducts(excludeId) {
+      var items = [];
+      for (var i = 0; i < recentIds.length; i++) {
+        if (excludeId && Number(recentIds[i]) === Number(excludeId)) continue;
+        var p = products.find(function (x) { return Number(x.id) === Number(recentIds[i]); });
+        if (p) items.push(p);
+      }
+      return items;
+    }
+    var popularIds = [];
+    async function loadPopular() {
+      try {
+        var res = await fetch(API_URL + '/favorites/popular');
+        var data = await res.json();
+        if (data && data.ok && Array.isArray(data.ids)) popularIds = data.ids.map(Number);
+        else popularIds = [];
+      } catch (e) {
+        popularIds = [];
+      }
+      renderPopularCatalog();
+      if (currentProduct) renderDetailExtras();
+    }
+    function getPopularProducts(excludeId, limit) {
+      limit = limit || 6;
+      var items = [];
+      for (var i = 0; i < popularIds.length && items.length < limit; i++) {
+        if (excludeId && Number(popularIds[i]) === Number(excludeId)) continue;
+        var p = products.find(function (x) { return Number(x.id) === Number(popularIds[i]); });
+        if (p) items.push(p);
+      }
+      // fallback: новинки, если на сервере ещё пусто
+      if (!items.length) {
+        var news = products.slice().sort(function (a, b) { return b.id - a.id; });
+        for (var j = 0; j < news.length && items.length < limit; j++) {
+          if (excludeId && news[j].id === excludeId) continue;
+          items.push(news[j]);
+        }
+      }
+      return items;
+    }
+    function renderPopularCatalog() {
+      // популярное перенесено в кабинет
+    }
+    function renderProfile() {
+      updateOniStrip();
+      var oniText = document.getElementById('profile-oni-text');
+      if (oniText) oniText.innerHTML = 'Баланс: <b>' + oniBalance + ' ONI</b> · 1 ONI = 1 ₽, кэшбек 5% после оплаты';
+      var refEl = document.getElementById('oni-ref-text');
+      if (refEl) {
+        refEl.innerHTML = 'Пригласи друга: вы оба получите <b>+' + REF_BONUS + ' ONI</b> после его первой оплаты.';
+      }
+    }
+    function renderFavoritesPage() {
+      var list = document.getElementById('fav-page-list');
+      if (list) {
+        var favs = products.filter(function (p) { return isFavorite(p.id); });
+        if (!favs.length) {
+          list.innerHTML = '<div class="empty">Пока пусто — жми ♡ на товарах</div>';
+        } else {
+          var html = '';
+          for (var i = 0; i < favs.length; i++) html += productCardHtml(favs[i]);
+          list.innerHTML = html;
+          bindProductCards(list);
+        }
+      }
+      var rSec = document.getElementById('fav-recent-section');
+      var rList = document.getElementById('fav-recent-list');
+      if (rSec && rList) {
+        var recent = getRecentProducts(null).slice(0, 6);
+        if (recent.length) {
+          rSec.style.display = 'block';
+          var rh = '';
+          for (var j = 0; j < recent.length; j++) rh += productCardHtml(recent[j]);
+          rList.innerHTML = rh;
+          bindProductCards(rList);
+        } else rSec.style.display = 'none';
+      }
+      var pSec = document.getElementById('fav-popular-section');
+      var pList = document.getElementById('fav-popular-list');
+      if (pSec && pList) {
+        var pop = getPopularProducts(null, 6);
+        if (pop.length) {
+          pSec.style.display = 'block';
+          var ph = '';
+          for (var k = 0; k < pop.length; k++) ph += productCardHtml(pop[k]);
+          pList.innerHTML = ph;
+          bindProductCards(pList);
+        } else pSec.style.display = 'none';
+      }
+    }
+    function renderDetailExtras() {
+      // недавно
+      var recentBlock = document.getElementById('detail-recent-block');
+      var recentList = document.getElementById('detail-recent-list');
+      if (recentBlock && recentList && currentProduct) {
+        var recent = getRecentProducts(currentProduct.id).slice(0, 4);
+        if (recent.length) {
+          recentBlock.style.display = 'block';
+          var rh = '';
+          for (var i = 0; i < recent.length; i++) rh += productCardHtml(recent[i], { hideAdd: true });
+          recentList.innerHTML = rh;
+          bindProductCards(recentList);
+        } else {
+          recentBlock.style.display = 'none';
+        }
+      }
+      // популярные
+      var popBlock = document.getElementById('detail-popular-block');
+      var popList = document.getElementById('detail-popular-list');
+      if (popBlock && popList && currentProduct) {
+        var pop = getPopularProducts(currentProduct.id, 4);
+        if (pop.length) {
+          popBlock.style.display = 'block';
+          var ph = '';
+          for (var j = 0; j < pop.length; j++) ph += productCardHtml(pop[j], { hideAdd: true });
+          popList.innerHTML = ph;
+          bindProductCards(popList);
+        } else {
+          popBlock.style.display = 'none';
+        }
+      }
+    }
+    function updateOniStrip() {
+      var el = document.getElementById('profile-oni-text');
+      if (el) el.innerHTML = 'Баланс: <b>' + oniBalance + ' ONI</b> · 1 ONI = 1 ₽, кэшбек 5% после оплаты';
+    }
+    function updateFilterDot() {
+      var btn = document.getElementById('filter-toggle');
+      if (!btn) return;
+      var active = currentCategory !== 'all' || currentSort !== 'default';
+      btn.classList.toggle('active-dot', active);
+    }
+    function renderOniHistory() {
+      var box = document.getElementById('oni-history');
+      if (!box) return;
+      if (!oniLedger.length) {
+        box.innerHTML = '<h3>История ONI</h3><div class="s" style="color:var(--hint);font-size:13px;">Пока пусто — появится после оплаты или рефералки.</div>';
+        return;
+      }
+      var html = '<h3>История ONI</h3>';
+      var max = Math.min(oniLedger.length, 20);
+      for (var i = 0; i < max; i++) {
+        var row = oniLedger[i];
+        var cls = row.type === 'earn' || row.type === 'ref' ? 'earn' : 'spend';
+        var sign = (row.type === 'spend') ? '−' : '+';
+        var label = row.note || (row.type === 'ref' ? 'Реферал' : row.type === 'earn' ? 'Кэшбек' : 'Списание');
+        if (row.orderNumber) label += ' · №' + row.orderNumber;
+        html += '<div class="row"><span>' + label + '</span><span class="' + cls + '">' + sign + Math.abs(row.amount) + '</span></div>';
+      }
+      box.innerHTML = html;
+    }
+    function getRefLink() {
+      var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      if (!user || !user.id) return '';
+      return 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=ref_' + user.id;
+    }
+
+    function isServerPromo(code) {
+      var c = (code || '').toUpperCase();
+      return c === 'IAMCLOWN' || c === 'ONI20';
+    }
+    function isPromoUsed() { return localStorage.getItem(PROMO_USED_KEY) === '1'; }
+    function markPromoUsed() { localStorage.setItem(PROMO_USED_KEY, '1'); }
+    function wasMakeWarned() {
+      try { return sessionStorage.getItem(MAKE_WARNED_KEY) === '1'; } catch (e) { return false; }
+    }
+    function setMakeWarned() {
+      try { sessionStorage.setItem(MAKE_WARNED_KEY, '1'); } catch (e) {}
+    }
+    function getPendingOrder() {
+      try {
+        var raw = localStorage.getItem(PENDING_ORDER_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+    function setPendingOrder(data) {
+      localStorage.setItem(PENDING_ORDER_KEY, JSON.stringify(data));
+      renderPendingBanner();
+    }
+    function clearPendingOrder() {
+      localStorage.removeItem(PENDING_ORDER_KEY);
+      renderPendingBanner();
+    }
+    function renderPendingBanner() {
+      var box = document.getElementById('pending-banner');
+      if (!box) return;
+      var p = getPendingOrder();
+      if (!p || !p.orderNumber) {
+        box.classList.remove('show');
+        return;
+      }
+      document.getElementById('pending-title').textContent =
+        'Заказ №' + p.orderNumber + ' ожидает оплаты';
+      document.getElementById('pending-sub').textContent =
+        'Сумма: ' + Number(p.total || 0).toLocaleString('ru-RU') +
+        ' ₽. Если закрыли ЮKassa — откройте оплату снова. Корзина сохранена.';
+      box.classList.add('show');
+    }
+    function saveCart() {
+      localStorage.setItem('shop_cart', JSON.stringify(cart));
+      updateCartCount();
+      updateMainButton();
+    }
+    function generateOrderNumber() { return Math.floor(100000 + Math.random() * 900000); }
+    function stockLabel(stock) {
+      var n = Number(stock);
+      if (n > 0) return { text: 'В наличии: ' + n + ' шт.', out: false };
+      return { text: '⚠️ Под заказ · 1–3 дня', out: true };
+    }
+    function needsMakeTime(productId, nextQty) {
+      var p = products.find(function (x) { return x.id === productId; });
+      return p ? nextQty > Number(p.stock) : false;
+    }
+    function hapticSuccess() {
+      try {
+        if (tg.HapticFeedback) {
+          try { tg.HapticFeedback.impactOccurred('heavy'); } catch (e1) {
+            try { tg.HapticFeedback.impactOccurred('medium'); } catch (e2) {}
+          }
+          setTimeout(function () {
+            try { tg.HapticFeedback.notificationOccurred('success'); } catch (e3) {}
+          }, 30);
+        }
+      } catch (e) {}
+      try { if (navigator.vibrate) navigator.vibrate([40, 30, 40]); } catch (e) {}
+    }
+    function hapticLight() {
+      try { if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+      try { if (navigator.vibrate) navigator.vibrate(20); } catch (e) {}
+    }
+
+    async function syncFromServer() {
+      try {
+        var res = await fetch(API_URL + '/products');
+        var data = await res.json();
+        if (!data.ok || !data.products || !data.products.length) return;
+        for (var i = 0; i < data.products.length; i++) {
+          var server = data.products[i];
+          var local = products.find(function (p) { return Number(p.id) === Number(server.id); });
+          if (local) {
+            if (server.price != null) local.price = Number(server.price);
+            if (server.stock != null) local.stock = Number(server.stock);
+            if (server.name) local.name = server.name;
+          }
+        }
+        cart = cart.map(function (item) {
+          var p = products.find(function (x) { return x.id === item.id; });
+          if (p) { item.price = p.price; item.name = p.name; item.photo = p.photos[0]; }
+          return item;
+        }).filter(function (item) {
+          return products.some(function (p) { return p.id === item.id; });
+        });
+        localStorage.setItem('shop_cart', JSON.stringify(cart));
+      } catch (e) {}
+    }
+
+    var catalogScrollY = 0;
+    function saveCatalogScroll() {
+      var active = document.querySelector('.page.active');
+      if (active && active.id === 'catalog') {
+        catalogScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+      }
+    }
+    function restoreCatalogScroll() {
+      var y = catalogScrollY || 0;
+      // после перерисовки списка — два кадра, чтобы DOM успел
+      requestAnimationFrame(function () {
+        window.scrollTo(0, y);
+        requestAnimationFrame(function () {
+          window.scrollTo(0, y);
+        });
+      });
+    }
+    function setBottomNav(pageId) {
+      document.querySelectorAll('.bottom-nav .nav-btn').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.page === pageId);
+      });
+    }
+    function goBackInApp() {
+      var active = document.querySelector('.page.active');
+      active = active ? active.id : '';
+      if (active === 'product-page') {
+        showPage('catalog');
+        setBottomNav('catalog');
+        renderProducts();
+        restoreCatalogScroll();
+        return;
+      }
+      if (active === 'cart' || active === 'profile' || active === 'favorites-page') {
+        showPage('catalog');
+        setBottomNav('catalog');
+        renderProducts();
+        restoreCatalogScroll();
+        return;
+      }
+      try { tg.close(); } catch (e) {}
+    }
+    function updateBackButton() {
+      if (!tg.BackButton) return;
+      var active = document.querySelector('.page.active');
+      active = active ? active.id : '';
+      if (active === 'product-page' || active === 'cart' || active === 'profile' || active === 'favorites-page') tg.BackButton.show();
+      else tg.BackButton.hide();
+    }
+    if (tg.BackButton) tg.BackButton.onClick(goBackInApp);
+
+    function showPage(pageId) {
+      var prev = document.querySelector('.page.active');
+      var prevId = prev ? prev.id : '';
+      if (prevId === 'catalog' && pageId !== 'catalog') {
+        saveCatalogScroll();
+      }
+      document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
+      document.getElementById(pageId).classList.add('active');
+      document.body.classList.toggle('product-open', pageId === 'product-page');
+      var titles = { catalog: 'ONI Store', cart: 'Корзина', profile: 'Кабинет', 'favorites-page': 'Избранное', 'product-page': 'Товар' };
+      document.getElementById('page-title').textContent = titles[pageId] || 'ONI Store';
+      if (pageId === 'catalog' || pageId === 'profile' || pageId === 'favorites-page') {
+        setBottomNav(pageId);
+      }
+      // на корзине нижнее меню оставляем, но без активного пункта корзины
+      if (pageId === 'cart') {
+        document.querySelectorAll('.bottom-nav .nav-btn').forEach(function (b) { b.classList.remove('active'); });
+      }
+      if (pageId === 'catalog') {
+        restoreCatalogScroll();
+      } else {
+        window.scrollTo(0, 0);
+      }
+      updateMainButton();
+      updateBackButton();
+      updateCartFabBadge();
+    }
+    function mainButtonHandler() {
+      var activePage = document.querySelector('.page.active');
+      activePage = activePage ? activePage.id : '';
+      if (activePage === 'product-page' && currentProduct) addToCart(currentProduct.id);
+      else if (activePage === 'cart') document.getElementById('checkout-btn').click();
+    }
+    function updateMainButton() {
+      if (!tg.MainButton) return;
+      if (!mainButtonBound) {
+        tg.MainButton.onClick(mainButtonHandler);
+        mainButtonBound = true;
+      }
+      var activePage = document.querySelector('.page.active');
+      activePage = activePage ? activePage.id : '';
+      if (activePage === 'product-page' && currentProduct) {
+        tg.MainButton.setText('В корзину'); tg.MainButton.show();
+      } else if (activePage === 'cart' && cart.length > 0) {
+        tg.MainButton.setText('Оплатить');
+        if (!document.getElementById('checkout-btn').disabled) tg.MainButton.show();
+        else tg.MainButton.hide();
+      } else tg.MainButton.hide();
+    }
+
+    document.querySelectorAll('.bottom-nav .nav-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var page = btn.dataset.page;
+        showPage(page);
+        if (page === 'catalog') {
+          renderProducts();
+          restoreCatalogScroll();
+        }
+        if (page === 'profile') renderProfile();
+        if (page === 'favorites-page') renderFavoritesPage();
+      });
+    });
+    document.getElementById('header-cart-btn').addEventListener('click', function () {
+      hapticLight();
+      showPage('cart');
+      renderCart();
+    });
+    document.querySelectorAll('.cat-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.cat-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        currentCategory = btn.dataset.category;
+        updateFilterDot();
+        renderProducts();
+      });
+    });
+    document.getElementById('search-input').addEventListener('input', function (e) {
+      searchQuery = e.target.value.toLowerCase().trim();
+      renderProducts();
+    });
+    function openSupport() {
+      hapticLight();
+      // открываем чат с ботом и закрываем Mini App, чтобы не оставаться «внутри магазина»
+      try {
+        if (tg && typeof tg.openTelegramLink === 'function') {
+          tg.openTelegramLink(SUPPORT_LINK);
+        } else if (tg && typeof tg.openLink === 'function') {
+          tg.openLink(SUPPORT_LINK);
+        } else {
+          window.open(SUPPORT_LINK, '_blank');
+        }
+      } catch (e) {
+        try { window.open(SUPPORT_LINK, '_blank'); } catch (e2) {}
+      }
+      setTimeout(function () {
+        try { if (tg && typeof tg.close === 'function') tg.close(); } catch (e3) {}
+      }, 150);
+    }
+    var headerSupport = document.getElementById('header-support-btn');
+    if (headerSupport) headerSupport.addEventListener('click', openSupport);
+    var supportFab = document.getElementById('support-fab');
+    if (supportFab) supportFab.addEventListener('click', openSupport);
+    document.getElementById('cart-fab').addEventListener('click', function () {
+      hapticLight();
+      showPage('cart');
+      renderCart();
+    });
+
+    function getFilteredProducts() {
+      var list = products.filter(function (p) {
+        var matchCategory;
+        matchCategory = currentCategory === 'all' || p.category === currentCategory;
+        var matchSearch = !searchQuery || p.name.toLowerCase().indexOf(searchQuery) !== -1;
+        return matchCategory && matchSearch;
+      });
+      list = list.slice();
+      if (currentSort === 'price_asc') list.sort(function (a, b) { return a.price - b.price; });
+      else if (currentSort === 'price_desc') list.sort(function (a, b) { return b.price - a.price; });
+      else if (currentSort === 'name') list.sort(function (a, b) { return a.name.localeCompare(b.name, 'ru'); });
+      else if (currentSort === 'newest') list.sort(function (a, b) { return b.id - a.id; });
+      return list;
+    }
+    function updateCategoryCounts() {
+      var all = 0, figures = 0, busts = 0;
+      for (var i = 0; i < products.length; i++) {
+        all++;
+        if (products[i].category === 'figures') figures++;
+        else if (products[i].category === 'busts') busts++;
+      }
+      document.querySelectorAll('.cat-btn').forEach(function (btn) {
+        var cat = btn.dataset.category;
+        var label = cat === 'all' ? 'Все' : cat === 'figures' ? 'Фигурки' : 'Бюсты';
+        var n = cat === 'all' ? all : cat === 'figures' ? figures : busts;
+        btn.innerHTML = label + ' <span class="cat-count">' + n + '</span>';
+      });
+    }
+    function renderProducts() {
+      updateCategoryCounts();
+      updateOniStrip();
+      updateFilterDot();
+      var list = document.getElementById('products-list');
+      var filtered = getFilteredProducts();
+      if (!filtered.length) {
+        list.innerHTML = '<div class="empty">' + (currentCategory === 'favorites' ? 'В избранном пока пусто' : 'Ничего не найдено') + '</div>';
+        renderPopularCatalog();
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < filtered.length; i++) html += productCardHtml(filtered[i]);
+      list.innerHTML = html;
+      bindProductCards(list);
+      renderPopularCatalog();
+    }
+    function openProduct(id) {
+      currentProduct = products.find(function (p) { return p.id === id; });
+      if (!currentProduct) return;
+      pushRecent(id);
+      currentSlide = 0;
+      document.getElementById('detail-name').textContent = currentProduct.name;
+      document.getElementById('detail-price').textContent = currentProduct.price.toLocaleString('ru-RU') + ' ₽';
+      var s = stockLabel(currentProduct.stock);
+      var stockEl = document.getElementById('detail-stock');
+      stockEl.textContent = s.text;
+      stockEl.className = s.out ? 'detail-stock out' : 'detail-stock';
+      document.getElementById('detail-desc').textContent = currentProduct.description;
+      var noteEl = document.getElementById('detail-assembly-note');
+      if (currentProduct.category === 'figures') noteEl.classList.add('show');
+      else noteEl.classList.remove('show');
+      document.getElementById('detail-specs').textContent = PRODUCT_SPECS;
+      var trackHtml = '';
+      for (var i = 0; i < currentProduct.photos.length; i++) {
+        trackHtml += '<div class="gallery-slide"><img src="' + currentProduct.photos[i] + '" alt=""></div>';
+      }
+      document.getElementById('gallery-track').innerHTML = trackHtml;
+      document.getElementById('gallery-track').style.transform = 'translateX(0)';
+      var dotsHtml = '';
+      for (var d = 0; d < currentProduct.photos.length; d++) {
+        dotsHtml += '<span class="' + (d === 0 ? 'active' : '') + '"></span>';
+      }
+      document.getElementById('gallery-dots').innerHTML = dotsHtml;
+      resetGalleryZoom();
+      updateDetailFavBtn();
+      renderSimilar();
+      renderDetailExtras();
+      showPage('product-page');
+    }
+    function openFromStartParam() {
+      var param = tg.initDataUnsafe && tg.initDataUnsafe.start_param;
+      if (!param) return;
+      if (param.indexOf('ref_') === 0) {
+        var refId = String(param.replace('ref_', '')).trim();
+        var me = tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.id;
+        if (refId && me && String(refId) !== String(me)) {
+          // зарегистрировать реферала на сервере
+          fetch(API_URL + '/oni/ref', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: me, refId: refId })
+          }).catch(function () {});
+        }
+        return;
+      }
+      if (param.indexOf('product_') === 0) {
+        var id = Number(param.replace('product_', ''));
+        if (id && products.some(function (p) { return p.id === id; })) openProduct(id);
+        return;
+      }
+      if (param.indexOf('paid_') === 0 || param === 'paid') {
+        var num = param.indexOf('paid_') === 0 ? param.replace('paid_', '') : '';
+        showPage('cart');
+        setBottomNav('cart');
+        renderCart();
+        var msg = num
+          ? 'Если оплата по заказу №' + num + ' прошла — бот пришлёт подтверждение в личку. Напоминание можно закрыть кнопкой в баннере.'
+          : 'Если оплата прошла — бот пришлёт подтверждение в личку.';
+        if (tg.showAlert) tg.showAlert(msg);
+      }
+    }
+
+    /* ——— Pinch-zoom + swipe gallery ——— */
+    var zoomScale = 1, zoomX = 0, zoomY = 0;
+    var pinchStartDist = 0, pinchStartScale = 1;
+    var panStartX = 0, panStartY = 0, panOriginX = 0, panOriginY = 0;
+    var swipeStartX = 0, swipeStartY = 0, swipeActive = false;
+    var isPinching = false, isPanning = false;
+    var MIN_ZOOM = 1, MAX_ZOOM = 4;
+
+    function getGalleryImg() {
+      var slides = document.querySelectorAll('#gallery-track .gallery-slide img');
+      return slides[currentSlide] || null;
+    }
+    function applyGalleryZoom() {
+      var img = getGalleryImg();
+      if (!img) return;
+      img.style.transform = 'translate(' + zoomX + 'px,' + zoomY + 'px) scale(' + zoomScale + ')';
+      var gal = document.querySelector('.gallery');
+      if (gal) {
+        if (zoomScale > 1.02) gal.classList.add('zoomed');
+        else gal.classList.remove('zoomed');
+      }
+    }
+    function resetGalleryZoom() {
+      zoomScale = 1; zoomX = 0; zoomY = 0;
+      isPinching = false; isPanning = false; swipeActive = false;
+      var imgs = document.querySelectorAll('#gallery-track .gallery-slide img');
+      for (var i = 0; i < imgs.length; i++) imgs[i].style.transform = '';
+      var gal = document.querySelector('.gallery');
+      if (gal) gal.classList.remove('zoomed');
+      applyGalleryZoom();
+    }
+    function clampZoomPan() {
+      var gal = document.querySelector('.gallery');
+      if (!gal || zoomScale <= 1) {
+        zoomX = 0; zoomY = 0; zoomScale = 1;
+        return;
+      }
+      var w = gal.clientWidth, h = gal.clientHeight;
+      var maxX = (w * (zoomScale - 1)) / 2;
+      var maxY = (h * (zoomScale - 1)) / 2;
+      if (zoomX > maxX) zoomX = maxX;
+      if (zoomX < -maxX) zoomX = -maxX;
+      if (zoomY > maxY) zoomY = maxY;
+      if (zoomY < -maxY) zoomY = -maxY;
+    }
+    function touchDist(t0, t1) {
+      var dx = t0.clientX - t1.clientX;
+      var dy = t0.clientY - t1.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+    function goToSlide(index) {
+      if (!currentProduct) return;
+      if (index < 0 || index >= currentProduct.photos.length) return;
+      currentSlide = index;
+      resetGalleryZoom();
+      var track = document.getElementById('gallery-track');
+      track.style.transition = 'transform 0.3s ease';
+      track.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
+      document.querySelectorAll('#gallery-dots span').forEach(function (dot, i) {
+        if (i === currentSlide) dot.classList.add('active');
+        else dot.classList.remove('active');
+      });
+    }
+
+    (function setupGalleryGestures() {
+      var gal = document.querySelector('.gallery');
+      if (!gal) return;
+
+      gal.addEventListener('touchstart', function (e) {
+        if (!currentProduct) return;
+        if (e.touches.length === 2) {
+          e.preventDefault();
+          isPinching = true;
+          isPanning = false;
+          swipeActive = false;
+          pinchStartDist = touchDist(e.touches[0], e.touches[1]);
+          pinchStartScale = zoomScale;
+        } else if (e.touches.length === 1) {
+          if (zoomScale > 1.05) {
+            isPanning = true;
+            swipeActive = false;
+            panStartX = e.touches[0].clientX;
+            panStartY = e.touches[0].clientY;
+            panOriginX = zoomX;
+            panOriginY = zoomY;
+          } else {
+            swipeActive = true;
+            isPanning = false;
+            swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
+          }
+        }
+      }, { passive: false });
+
+      gal.addEventListener('touchmove', function (e) {
+        if (!currentProduct) return;
+        if (e.touches.length === 2 && isPinching) {
+          e.preventDefault();
+          var dist = touchDist(e.touches[0], e.touches[1]);
+          if (pinchStartDist < 8) return;
+          var next = pinchStartScale * (dist / pinchStartDist);
+          if (next < MIN_ZOOM) next = MIN_ZOOM;
+          if (next > MAX_ZOOM) next = MAX_ZOOM;
+          zoomScale = next;
+          if (zoomScale <= 1.02) {
+            zoomScale = 1; zoomX = 0; zoomY = 0;
+          } else {
+            clampZoomPan();
+          }
+          applyGalleryZoom();
+        } else if (e.touches.length === 1 && isPanning && zoomScale > 1.05) {
+          e.preventDefault();
+          zoomX = panOriginX + (e.touches[0].clientX - panStartX);
+          zoomY = panOriginY + (e.touches[0].clientY - panStartY);
+          clampZoomPan();
+          applyGalleryZoom();
+        }
+      }, { passive: false });
+
+      gal.addEventListener('touchend', function (e) {
+        if (!currentProduct) return;
+        if (e.touches.length < 2) isPinching = false;
+        if (e.touches.length === 0) {
+          if (zoomScale < 1.08) {
+            zoomScale = 1; zoomX = 0; zoomY = 0;
+            applyGalleryZoom();
+          }
+          if (swipeActive && zoomScale <= 1.05 && e.changedTouches[0]) {
+            var dx = swipeStartX - e.changedTouches[0].clientX;
+            var dy = swipeStartY - e.changedTouches[0].clientY;
+            if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+              if (dx > 0) goToSlide(currentSlide + 1);
+              else goToSlide(currentSlide - 1);
+            }
+          }
+          isPanning = false;
+          swipeActive = false;
+        }
+      }, { passive: true });
+
+      // Двойной тап — зум 2x / сброс
+      var lastTap = 0;
+      gal.addEventListener('click', function (e) {
+        if (!currentProduct) return;
+        var now = Date.now();
+        if (now - lastTap < 280) {
+          if (zoomScale > 1.2) {
+            zoomScale = 1; zoomX = 0; zoomY = 0;
+          } else {
+            zoomScale = 2.2;
+            var rect = gal.getBoundingClientRect();
+            var cx = (e.clientX || (rect.left + rect.width / 2)) - rect.left - rect.width / 2;
+            var cy = (e.clientY || (rect.top + rect.height / 2)) - rect.top - rect.height / 2;
+            zoomX = -cx * (zoomScale - 1) * 0.35;
+            zoomY = -cy * (zoomScale - 1) * 0.35;
+            clampZoomPan();
+          }
+          applyGalleryZoom();
+          lastTap = 0;
+        } else {
+          lastTap = now;
+        }
+      });
+    })();
+
+    document.getElementById('back-btn').addEventListener('click', goBackInApp);
+    document.getElementById('detail-add-btn').addEventListener('click', function () {
+      if (currentProduct) addToCart(currentProduct.id);
+    });
+    document.getElementById('detail-buy-now').addEventListener('click', function () {
+      if (!currentProduct) return;
+      hapticLight();
+      addToCart(currentProduct.id, { goCart: true });
+    });
+    function shareProduct() {
+      if (!currentProduct) return;
+      hapticLight();
+      var deepLink = 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=product_' + Number(currentProduct.id);
+      var text = (currentProduct.shareName || currentProduct.name) + ' — ' + currentProduct.price.toLocaleString('ru-RU') + ' ₽\nСмотри в ONI Store 👇';
+      var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(deepLink) + '&text=' + encodeURIComponent(text);
+      try {
+        if (tg.openTelegramLink) {
+          tg.openTelegramLink(shareUrl);
+          return;
+        }
+        if (tg.openLink) {
+          tg.openLink(shareUrl);
+          return;
+        }
+      } catch (e) {}
+      if (navigator.share) {
+        navigator.share({ title: currentProduct.shareName || currentProduct.name, text: text, url: deepLink }).catch(function () {});
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(deepLink).then(function () {
+          if (tg.showAlert) tg.showAlert('Ссылка на товар скопирована');
+        }).catch(function () {
+          if (tg.showAlert) tg.showAlert(deepLink);
+        });
+        return;
+      }
+      if (tg.showAlert) tg.showAlert(deepLink);
+      else window.open(shareUrl, '_blank');
+    }
+    document.getElementById('share-btn').addEventListener('click', shareProduct);
+
+    function doAddToCart(product) {
+      var existing = cart.find(function (item) { return item.id === product.id; });
+      if (existing) existing.qty += 1;
+      else cart.push({ id: product.id, name: product.name, price: product.price, qty: 1, photo: product.photos[0] });
+      saveCart(); updateCartFabBadge(); hapticSuccess();
+    }
+    function addToCart(id, opts) {
+      opts = opts || {};
+      var product = products.find(function (p) { return p.id === id; });
+      if (!product) return;
+      var existing = cart.find(function (item) { return item.id === id; });
+      var nextQty = (existing ? existing.qty : 0) + 1;
+
+      function afterAdd() {
+        doAddToCart(product);
+        if (opts.goCart) {
+          showPage('cart');
+          setBottomNav('cart');
+          renderCart();
+        }
+      }
+
+      if (needsMakeTime(id, nextQty) && !wasMakeWarned()) {
+        if (tg.showPopup) {
+          tg.showPopup({
+            title: '⚠️ Под заказ',
+            message: MAKE_TIME_MSG,
+            buttons: [
+              { id: 'cancel', type: 'cancel' },
+              { id: 'ok', type: 'default', text: 'В корзину' }
+            ]
+          }, function (btnId) {
+            if (btnId === 'ok' || btnId === 'default') {
+              setMakeWarned();
+              afterAdd();
+            }
+          });
+        } else {
+          setMakeWarned();
+          afterAdd();
+        }
+        return;
+      }
+      afterAdd();
+    }
+    function changeQty(id, delta) {
+      var item = cart.find(function (i) { return i.id === id; });
+      if (!item) return;
+      if (delta > 0 && needsMakeTime(id, item.qty + 1) && !wasMakeWarned()) {
+        if (tg.showPopup) {
+          tg.showPopup({
+            title: '⚠️ Под заказ',
+            message: MAKE_TIME_MSG,
+            buttons: [
+              { id: 'cancel', type: 'cancel' },
+              { id: 'ok', type: 'default', text: 'Добавить' }
+            ]
+          }, function (btnId) {
+            if (btnId === 'ok' || btnId === 'default') {
+              setMakeWarned();
+              item.qty += 1; saveCart(); hapticLight(); renderCart(); updateCartFabBadge();
+            }
+          });
+        } else {
+          setMakeWarned();
+          item.qty += 1; saveCart(); hapticLight(); renderCart(); updateCartFabBadge();
+        }
+        return;
+      }
+      item.qty += delta;
+      if (item.qty <= 0) cart = cart.filter(function (i) { return i.id !== id; });
+      saveCart(); hapticLight(); renderCart(); updateCartFabBadge();
+    }
+    function doClearCart() {
+      cart = [];
+      appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+      coinsToSpend = 0;
+      document.getElementById('promo-input').value = '';
+      document.getElementById('promo-status').textContent = '';
+      document.getElementById('promo-status').className = 'promo-status';
+      var oniIn = document.getElementById('oni-spend-input');
+      if (oniIn) oniIn.value = '';
+      deliveryMethod = null;
+      document.querySelectorAll('input[name="delivery"]').forEach(function (r) { r.checked = false; });
+      document.getElementById('ozon-fields').classList.remove('show');
+      saveCart(); renderCart(); updateCartFabBadge(); hapticSuccess();
+    }
+    document.getElementById('clear-cart-btn').addEventListener('click', function () {
+      if (!cart.length) return;
+      if (tg.showConfirm) tg.showConfirm('Очистить корзину?', function (ok) { if (ok) doClearCart(); });
+      else doClearCart();
+    });
+    document.getElementById('pending-pay-btn').addEventListener('click', function () {
+      var p = getPendingOrder();
+      if (!p || !p.confirmationUrl) return;
+      if (tg.openLink) tg.openLink(p.confirmationUrl);
+      else window.open(p.confirmationUrl, '_blank');
+    });
+    document.getElementById('pending-done-btn').addEventListener('click', function () {
+      if (tg.showConfirm) {
+        tg.showConfirm(
+          'Убрать напоминание об ожидании оплаты? Корзину можно очистить отдельно.',
+          function (ok) { if (ok) clearPendingOrder(); }
+        );
+      } else clearPendingOrder();
+    });
+    function updateDeliveryUI() {
+      document.querySelectorAll('.delivery-option').forEach(function (el) { el.classList.remove('active'); });
+      var fields = document.getElementById('ozon-fields');
+      if (deliveryMethod === 'ozon') {
+        document.getElementById('opt-ozon').classList.add('active'); fields.classList.add('show');
+      } else if (deliveryMethod === 'pickup') {
+        document.getElementById('opt-pickup').classList.add('active'); fields.classList.remove('show');
+      }
+      updateTotal(); checkCheckoutReady();
+    }
+    document.getElementById('opt-ozon').addEventListener('click', function () {
+      deliveryMethod = 'ozon'; document.querySelector('input[value="ozon"]').checked = true; updateDeliveryUI();
+    });
+    document.getElementById('opt-pickup').addEventListener('click', function () {
+      deliveryMethod = 'pickup'; document.querySelector('input[value="pickup"]').checked = true; updateDeliveryUI();
+    });
+    document.getElementById('open-map-btn').addEventListener('click', function () {
+      var url = 'https://yandex.ru/maps/?text=' + encodeURIComponent('пункт выдачи Ozon');
+      if (tg.openLink) tg.openLink(url); else window.open(url, '_blank');
+    });
+
+    document.getElementById('promo-apply').addEventListener('click', async function () {
+      var input = document.getElementById('promo-input');
+      var status = document.getElementById('promo-status');
+      var code = input.value.trim();
+      if (!code) {
+        status.textContent = 'Введите промокод';
+        status.className = 'promo-status err';
+        appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+        updateTotal(); return;
+      }
+      if (!isServerPromo(code) && isPromoUsed()) {
+        status.textContent = 'Промокод уже был использован';
+        status.className = 'promo-status err';
+        appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+        updateTotal(); return;
+      }
+      status.textContent = 'Проверка...';
+      status.className = 'promo-status';
+      try {
+        var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+        var res = await fetch(API_URL + '/promo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: code,
+            userId: user && user.id ? user.id : null
+          })
+        });
+        var data = await res.json();
+        if (data.ok) {
+          appliedPromo = true;
+          appliedPromoCode = code.toUpperCase();
+          appliedPromoPercent = Number(data.percent) || 0;
+          var extra = data.left != null ? ' (осталось ' + data.left + ')' : '';
+          status.textContent = 'Промокод применён: −' + appliedPromoPercent + '%' + extra;
+          status.className = 'promo-status ok';
+          hapticSuccess();
+          updateTotal();
+        } else if (data.error === 'used') {
+          appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+          status.textContent = 'Вы уже использовали этот промокод';
+          status.className = 'promo-status err';
+          updateTotal();
+        } else if (data.error === 'need_user') {
+          appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+          status.textContent = 'Откройте магазин из Telegram';
+          status.className = 'promo-status err';
+          updateTotal();
+        } else if (data.error === 'limit') {
+          appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+          status.textContent = 'Промокод исчерпан';
+          status.className = 'promo-status err';
+          updateTotal();
+        } else {
+          appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+          status.textContent = data.error === 'not_found' ? 'Промокод не найден' : 'Ошибка промокода';
+          status.className = 'promo-status err';
+          updateTotal();
+        }
+      } catch (e) {
+        appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+        status.textContent = 'Не удалось проверить промокод';
+        status.className = 'promo-status err';
+        updateTotal();
+      }
+    });
+
+    ['recipient-name', 'recipient-phone', 'ozon-address'].forEach(function (id) {
+      document.getElementById(id).addEventListener('input', checkCheckoutReady);
+    });
+    function checkCheckoutReady() {
+      var btn = document.getElementById('checkout-btn');
+      if (!deliveryMethod) { btn.disabled = true; updateMainButton(); return; }
+      if (deliveryMethod === 'ozon') {
+        var name = document.getElementById('recipient-name').value.trim();
+        var phone = document.getElementById('recipient-phone').value.trim();
+        var address = document.getElementById('ozon-address').value.trim();
+        btn.disabled = !(name.length >= 2 && phone.length >= 10 && address.length >= 5);
+      } else btn.disabled = false;
+      updateMainButton();
+    }
+    function getDeliveryPrice() { return deliveryMethod === 'ozon' ? DELIVERY_PRICE : 0; }
+    function getDiscount(productsTotal) {
+      if (!appliedPromo || !appliedPromoPercent) return 0;
+      return Math.floor(productsTotal * appliedPromoPercent / 100);
+    }
+    function getProductsTotal() {
+      return cart.reduce(function (sum, i) { return sum + i.price * i.qty; }, 0);
+    }
+    function maxCoinsAllowed() {
+      var productsTotal = getProductsTotal();
+      var afterPromo = Math.max(0, productsTotal - getDiscount(productsTotal));
+      return Math.min(oniBalance, afterPromo);
+    }
+    function clampCoinsToSpend() {
+      var max = maxCoinsAllowed();
+      coinsToSpend = Math.floor(Number(coinsToSpend) || 0);
+      if (coinsToSpend < 0) coinsToSpend = 0;
+      if (coinsToSpend > max) coinsToSpend = max;
+      var input = document.getElementById('oni-spend-input');
+      if (input && document.activeElement !== input) input.value = coinsToSpend > 0 ? String(coinsToSpend) : '';
+    }
+    function updateTotal() {
+      clampCoinsToSpend();
+      var productsTotal = getProductsTotal();
+      var discount = getDiscount(productsTotal);
+      var total = Math.max(0, productsTotal - discount - coinsToSpend + getDeliveryPrice());
+      document.getElementById('total-price').textContent = total.toLocaleString('ru-RU') + ' ₽';
+
+      var earnBase = Math.max(0, productsTotal - coinsToSpend);
+      var earn = Math.floor(earnBase * 0.05);
+      var earnEl = document.getElementById('oni-earn-text');
+      if (earnEl) {
+        if (cart.length && earn > 0) {
+          earnEl.textContent = 'После оплаты начислим ≈ ' + earn + ' ONI (5%)';
+        } else {
+          earnEl.textContent = '';
+        }
+      }
+      var balEl = document.getElementById('oni-balance-text');
+      if (balEl) {
+        balEl.innerHTML = 'Баланс: <b>' + oniBalance + ' ONI</b>' +
+          (coinsToSpend > 0 ? ' · спишем <b>−' + coinsToSpend + '</b>' : '');
+      }
+    }
+    async function fetchOniBalance() {
+      var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      var balEl = document.getElementById('oni-balance-text');
+      if (!user || !user.id) {
+        oniBalance = 0;
+        oniLedger = [];
+        if (balEl) balEl.textContent = 'Баланс доступен при входе из Telegram';
+        updateOniStrip();
+        updateTotal();
+        return;
+      }
+      try {
+        var res = await fetch(API_URL + '/oni/balance?userId=' + encodeURIComponent(user.id));
+        var data = await res.json();
+        if (data && data.ok) {
+          oniBalance = Math.max(0, Math.floor(Number(data.balance) || 0));
+          oniLedger = Array.isArray(data.ledger) ? data.ledger : [];
+        } else {
+          oniBalance = 0;
+          oniLedger = [];
+        }
+      } catch (e) {
+        oniBalance = 0;
+        oniLedger = [];
+      }
+      updateOniStrip();
+      updateTotal();
+    }
+    function renderCart() {
+      renderPendingBanner();
+      var list = document.getElementById('cart-list');
+      if (!cart.length) {
+        list.innerHTML = '<div class="empty">Корзина пуста</div>';
+        document.getElementById('cart-total').style.display = 'none';
+        document.getElementById('delivery-block').style.display = 'none';
+        document.getElementById('promo-block').classList.remove('show');
+        document.getElementById('oni-block').classList.remove('show');
+        document.getElementById('cart-top').style.display = 'none';
+        updateMainButton(); updateBackButton(); return;
+      }
+      var html = '';
+      for (var i = 0; i < cart.length; i++) {
+        var item = cart[i];
+        var p = products.find(function (x) { return x.id === item.id; });
+        var make = p && item.qty > Number(p.stock);
+        html += '<div class="cart-item"><img src="' + item.photo + '" alt="">';
+        html += '<div class="cart-info"><div class="name">' + item.name + '</div>';
+        html += '<div class="price">' + item.price.toLocaleString('ru-RU') + ' ₽</div>';
+        if (make) html += '<div class="made-note">⚠️ Под заказ · 1–3 дня</div>';
+        html += '</div><div class="qty">';
+        html += '<button class="qty-btn" data-id="' + item.id + '" data-delta="-1" type="button">−</button>';
+        html += '<span>' + item.qty + '</span>';
+        html += '<button class="qty-btn" data-id="' + item.id + '" data-delta="1" type="button">+</button>';
+        html += '</div></div>';
+      }
+      list.innerHTML = html;
+      document.querySelectorAll('.qty-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          changeQty(Number(btn.dataset.id), Number(btn.dataset.delta));
+        });
+      });
+      document.getElementById('cart-top').style.display = 'flex';
+      document.getElementById('promo-block').classList.add('show');
+      document.getElementById('oni-block').classList.add('show');
+      document.getElementById('delivery-block').style.display = 'block';
+      document.getElementById('cart-total').style.display = 'flex';
+      fetchOniBalance();
+      updateTotal(); checkCheckoutReady(); updateBackButton();
+    }
+    function updateCartCount() {
+      var count = cart.reduce(function (s, i) { return s + i.qty; }, 0);
+      var hb = document.getElementById('header-cart-badge');
+      if (hb) {
+        hb.textContent = String(count);
+        if (count > 0) hb.classList.add('show');
+        else hb.classList.remove('show');
+      }
+      updateCartFabBadge();
+    }
+    function updateCartFabBadge() {
+      var count = cart.reduce(function (s, i) { return s + i.qty; }, 0);
+      var badge = document.getElementById('cart-fab-badge');
+      if (!badge) return;
+      badge.textContent = String(count);
+      if (count > 0) badge.classList.add('show');
+      else badge.classList.remove('show');
+    }
+
+    async function processOrder() {
+      var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
+      var orderNumber = generateOrderNumber();
+      var items = cart.map(function (item) { return { id: item.id, qty: item.qty }; });
+      clampCoinsToSpend();
+      try {
+        var res = await fetch(API_URL + '/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderNumber: orderNumber,
+            items: items,
+            promoCode: appliedPromo ? appliedPromoCode : '',
+            coinsToSpend: coinsToSpend,
+            deliveryMethod: deliveryMethod,
+            recipientName: document.getElementById('recipient-name').value.trim(),
+            recipientPhone: document.getElementById('recipient-phone').value.trim(),
+            recipientAddress: document.getElementById('ozon-address').value.trim(),
+            user: user ? {
+              id: user.id,
+              first_name: user.first_name,
+              last_name: user.last_name,
+              username: user.username
+            } : null
+          })
+        });
+        return await res.json();
+      } catch (e) {
+        return { ok: false };
+      }
+    }
+
+    document.getElementById('oni-spend-input').addEventListener('input', function (e) {
+      coinsToSpend = Math.floor(Number(e.target.value) || 0);
+      updateTotal();
+    });
+    document.getElementById('oni-spend-max').addEventListener('click', function () {
+      coinsToSpend = maxCoinsAllowed();
+      document.getElementById('oni-spend-input').value = coinsToSpend > 0 ? String(coinsToSpend) : '';
+      updateTotal();
+      hapticLight();
+    });
+
+    document.getElementById('checkout-btn').addEventListener('click', async function () {
+      if (!cart.length || !deliveryMethod) return;
+      if (deliveryMethod === 'ozon') {
+        var name = document.getElementById('recipient-name').value.trim();
+        var phone = document.getElementById('recipient-phone').value.trim();
+        var address = document.getElementById('ozon-address').value.trim();
+        if (name.length < 2 || phone.length < 10 || address.length < 5) {
+          tg.showAlert('Заполните все обязательные поля');
+          return;
+        }
+      }
+      if (appliedPromo && !isServerPromo(appliedPromoCode) && isPromoUsed()) {
+        tg.showAlert('Промокод уже был использован');
+        appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
+        document.getElementById('promo-status').textContent = 'Промокод уже был использован';
+        document.getElementById('promo-status').className = 'promo-status err';
+        updateTotal();
+        return;
+      }
+
+      var btn = document.getElementById('checkout-btn');
+      btn.disabled = true;
+      btn.textContent = 'Создаём оплату...';
+
+      var result = await processOrder();
+      btn.disabled = false;
+      btn.textContent = 'Оплатить';
+
+      if (result && result.ok && result.confirmationUrl) {
+        if (Number(result.discount) > 0 && !isServerPromo(appliedPromoCode)) {
+          markPromoUsed();
+        }
+        hapticSuccess();
+
+        setPendingOrder({
+          orderNumber: result.orderNumber,
+          total: result.total,
+          confirmationUrl: result.confirmationUrl,
+          paymentId: result.paymentId || '',
+          createdAt: Date.now()
+        });
+        // корзину НЕ очищаем
+
+        var payMsg =
+          'Заказ №' + result.orderNumber +
+          '\nСумма: ' + Number(result.total).toLocaleString('ru-RU') + ' ₽';
+        if (Number(result.coinsSpent) > 0) {
+          payMsg += '\nONI: −' + result.coinsSpent;
+        }
+        if (Number(result.expectedEarn) > 0) {
+          payMsg += '\nКэшбек после оплаты: +' + result.expectedEarn + ' ONI';
+        }
+        payMsg += '\n\nОткроется ЮKassa.\nКорзина сохранена — оплату можно открыть снова из корзины.';
+
+        tg.showPopup({
+          title: 'Переход к оплате',
+          message: payMsg,
+          buttons: [{ type: 'ok' }]
+        }, function () {
+          if (tg.openLink) tg.openLink(result.confirmationUrl);
+          else window.open(result.confirmationUrl, '_blank');
+        });
+      } else {
+        if (result && result.error === 'oni_balance') {
+          fetchOniBalance();
+        }
+        var msg = (result && (result.message || result.error)) || 'Не удалось создать оплату. Проверьте Worker и ЮKassa.';
+        tg.showAlert(String(msg));
+      }
+    });
+
+    document.getElementById('filter-toggle').addEventListener('click', function () {
+      var panel = document.getElementById('filter-panel');
+      panel.classList.toggle('show');
+      hapticLight();
+    });
+    document.getElementById('sort-select').addEventListener('change', function (e) {
+      currentSort = e.target.value || 'default';
+      updateFilterDot();
+      renderProducts();
+    });
+    document.getElementById('detail-fav-btn').addEventListener('click', function () {
+      if (!currentProduct) return;
+      toggleFavorite(currentProduct.id);
+      updateDetailFavBtn();
+      updateCategoryCounts();
+    });
+    document.getElementById('oni-history-btn').addEventListener('click', function () {
+      var box = document.getElementById('oni-history');
+      if (box.classList.contains('show')) {
+        box.classList.remove('show');
+      } else {
+        renderOniHistory();
+        box.classList.add('show');
+      }
+    });
+    document.getElementById('ref-copy-btn').addEventListener('click', function () {
+      var link = getRefLink();
+      if (!link) {
+        if (tg.showAlert) tg.showAlert('Откройте магазин из Telegram, чтобы получить реферальную ссылку');
+        return;
+      }
+      var text = 'Загляни в ONI Store — фигурки под покраску 👇\n' + link;
+      if (navigator.share) {
+        navigator.share({ text: text, url: link }).catch(function () {});
+      } else if (tg.openTelegramLink) {
+        tg.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(link) + '&text=' + encodeURIComponent('Загляни в ONI Store — фигурки под покраску'));
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(function () {
+          if (tg.showAlert) tg.showAlert('Ссылка скопирована');
+        });
+      } else if (tg.showAlert) tg.showAlert(link);
+      hapticLight();
+    });
+    ['recipient-name', 'recipient-phone', 'ozon-address'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('change', saveOzonFields);
+        el.addEventListener('blur', saveOzonFields);
+      }
+    });
+    loadOzonFields();
+    fetchOniBalance();
+    loadPopular();
+
+    document.body.classList.remove('product-open');
+    document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
+    document.getElementById('catalog').classList.add('active');
+    setBottomNav('catalog');
+    document.getElementById('page-title').textContent = 'ONI Store';
+
+    updateCartCount();
+    updateMainButton();
+    updateBackButton();
+    updateCartFabBadge();
+    renderPendingBanner();
+
+    syncFromServer().then(function () {
+      renderProducts();
+      openFromStartParam();
+    });
+  </script>
+</body>
+</html>
