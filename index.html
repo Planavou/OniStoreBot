@@ -690,7 +690,9 @@
     body.event-newyear.product-open .cart-fab svg { display: none; }
     body.event-newyear.product-open .cart-fab .cart-fab-emoji { display: block; }
     body.event-halloween .cart-fab.bounce,
-    body.event-newyear .cart-fab.bounce {
+    body.event-newyear .cart-fab.bounce,
+    body.event-halloween #header-cart-btn.bounce,
+    body.event-newyear #header-cart-btn.bounce {
       animation: hw-cart-bounce 0.5s ease;
     }
     @keyframes hw-cart-bounce {
@@ -3038,13 +3040,33 @@
     }
     document.getElementById('share-btn').addEventListener('click', shareProduct);
 
+    function getCartFlyTarget() {
+      var fab = document.getElementById('cart-fab');
+      var headerCart = document.getElementById('header-cart-btn');
+      var productOpen = document.body.classList.contains('product-open');
+      if (productOpen && fab) {
+        var fr = fab.getBoundingClientRect();
+        if (fr.width > 0 && fr.height > 0) return fab;
+      }
+      if (headerCart) {
+        var hr = headerCart.getBoundingClientRect();
+        if (hr.width > 0 && hr.height > 0) return headerCart;
+      }
+      if (fab) {
+        var fr2 = fab.getBoundingClientRect();
+        if (fr2.width > 0 && fr2.height > 0) return fab;
+      }
+      return headerCart || fab || null;
+    }
+
     function spawnCandiesToCart() {
       if (!EVENT_ON || !(EVENT.features && EVENT.features.candyCart)) return;
-      var fab = document.getElementById('cart-fab');
-      if (!fab) return;
-      var rect = fab.getBoundingClientRect();
+      var target = getCartFlyTarget();
+      if (!target) return;
+      var rect = target.getBoundingClientRect();
       var tx = rect.left + rect.width / 2;
       var ty = rect.top + rect.height / 2;
+      if (tx <= 0 && ty <= 0) return;
       var candies =
         EVENT.id === 'newyear'
           ? ['❄️', '✨', '🎁', '⭐', '❄️', '🎄']
@@ -3077,11 +3099,11 @@
           }, delay + 750);
         })(i);
       }
-      fab.classList.remove('bounce');
-      void fab.offsetWidth;
-      fab.classList.add('bounce');
+      target.classList.remove('bounce');
+      void target.offsetWidth;
+      target.classList.add('bounce');
       setTimeout(function () {
-        fab.classList.remove('bounce');
+        target.classList.remove('bounce');
       }, 520);
     }
 
