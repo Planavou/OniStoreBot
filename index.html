@@ -689,25 +689,31 @@
     }
     body.event-newyear.product-open .cart-fab svg { display: none; }
     body.event-newyear.product-open .cart-fab .cart-fab-emoji { display: block; }
-    body.event-halloween .cart-fab.bounce,
-    body.event-newyear .cart-fab.bounce,
-    body.event-halloween #header-cart-btn.bounce,
-    body.event-newyear #header-cart-btn.bounce {
-      animation: hw-cart-bounce 0.5s ease;
+    #header-cart-btn.bounce,
+    .cart-fab.bounce {
+      animation: cart-bounce 0.45s ease;
     }
-    @keyframes hw-cart-bounce {
+    @keyframes cart-bounce {
       0% { transform: scale(1); }
-      30% { transform: scale(1.28) rotate(-8deg); }
-      55% { transform: scale(0.92) rotate(6deg); }
-      100% { transform: scale(1) rotate(0); }
+      30% { transform: scale(1.25); }
+      55% { transform: scale(0.92); }
+      100% { transform: scale(1); }
     }
-    .candy-bit {
+    .cart-fly-bit {
       position: fixed;
-      z-index: 400;
+      z-index: 999;
       pointer-events: none;
-      font-size: 16px;
+      font-size: 28px;
       line-height: 1;
-      will-change: transform, opacity;
+      margin: 0;
+      will-change: left, top, transform, opacity;
+      transform: translate(-50%, -50%) scale(1.15);
+      opacity: 1;
+      transition:
+        left 0.55s cubic-bezier(0.2, 0.75, 0.25, 1),
+        top 0.55s cubic-bezier(0.2, 0.75, 0.25, 1),
+        transform 0.55s cubic-bezier(0.2, 0.75, 0.25, 1),
+        opacity 0.45s ease 0.08s;
     }
     .cart-fab-badge {
       position: absolute; top: -2px; right: -2px; min-width: 18px; height: 18px;
@@ -3043,68 +3049,67 @@
     function getCartFlyTarget() {
       var fab = document.getElementById('cart-fab');
       var headerCart = document.getElementById('header-cart-btn');
-      var productOpen = document.body.classList.contains('product-open');
-      if (productOpen && fab) {
-        var fr = fab.getBoundingClientRect();
-        if (fr.width > 0 && fr.height > 0) return fab;
+      if (document.body.classList.contains('product-open') && fab) {
+        var st = window.getComputedStyle(fab);
+        if (st.display !== 'none' && st.visibility !== 'hidden') return fab;
       }
       if (headerCart) {
-        var hr = headerCart.getBoundingClientRect();
-        if (hr.width > 0 && hr.height > 0) return headerCart;
+        var st2 = window.getComputedStyle(headerCart);
+        if (st2.display !== 'none' && st2.visibility !== 'hidden') return headerCart;
       }
       if (fab) {
-        var fr2 = fab.getBoundingClientRect();
-        if (fr2.width > 0 && fr2.height > 0) return fab;
+        var st3 = window.getComputedStyle(fab);
+        if (st3.display !== 'none') return fab;
       }
-      return headerCart || fab || null;
+      return headerCart || null;
     }
 
-    function spawnCandiesToCart() {
-      if (!EVENT_ON || !(EVENT.features && EVENT.features.candyCart)) return;
+    /** Иконка летит в видимую корзину (left/top — без кривого transform) */
+    function playAddToCartAnim() {
       var target = getCartFlyTarget();
       if (!target) return;
       var rect = target.getBoundingClientRect();
       var tx = rect.left + rect.width / 2;
       var ty = rect.top + rect.height / 2;
-      if (tx <= 0 && ty <= 0) return;
-      var candies =
-        EVENT.id === 'newyear'
-          ? ['❄️', '✨', '🎁', '⭐', '❄️', '🎄']
-          : ['🍬', '🍭', '🍫', '🍡', '🍬', '🍭'];
-      var n = 6 + Math.floor(Math.random() * 3);
-      for (var i = 0; i < n; i++) {
-        (function (idx) {
-          var el = document.createElement('div');
-          el.className = 'candy-bit';
-          el.textContent = candies[idx % candies.length];
-          var startX = tx + (Math.random() * 120 - 60);
-          var startY = ty + 80 + Math.random() * 100;
-          el.style.left = startX + 'px';
-          el.style.top = startY + 'px';
-          el.style.opacity = '1';
-          el.style.transform = 'translate(0,0) rotate(0deg) scale(1)';
-          document.body.appendChild(el);
-          var dx = tx - startX;
-          var dy = ty - startY;
-          var rot = (Math.random() * 120 - 60);
-          var delay = idx * 35;
-          setTimeout(function () {
-            el.style.transition = 'transform 0.65s cubic-bezier(.2,.8,.3,1), opacity 0.65s ease';
-            el.style.transform =
-              'translate(' + dx + 'px,' + dy + 'px) rotate(' + rot + 'deg) scale(0.4)';
-            el.style.opacity = '0';
-          }, delay);
-          setTimeout(function () {
-            if (el.parentNode) el.parentNode.removeChild(el);
-          }, delay + 750);
-        })(i);
+      if (rect.width < 1 && rect.height < 1) return;
+
+      var icon = '🛒';
+      if (EVENT_ON && EVENT) {
+        icon = EVENT.cartEmoji || (EVENT.coin && EVENT.coin.icon) || EVENT.tabEmoji || '🛒';
       }
+
+      var startX = window.innerWidth / 2;
+      var startY = window.innerHeight * 0.55;
+
+      var el = document.createElement('div');
+      el.className = 'cart-fly-bit';
+      el.textContent = icon;
+      el.style.left = startX + 'px';
+      el.style.top = startY + 'px';
+      el.style.transition = 'none';
+      document.body.appendChild(el);
+
+      // кадр на старте, потом включаем transition и летим в корзину
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          el.style.transition = '';
+          el.style.left = tx + 'px';
+          el.style.top = ty + 'px';
+          el.style.transform = 'translate(-50%, -50%) scale(0.3)';
+          el.style.opacity = '0';
+        });
+      });
+
+      setTimeout(function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }, 650);
+
       target.classList.remove('bounce');
       void target.offsetWidth;
       target.classList.add('bounce');
       setTimeout(function () {
         target.classList.remove('bounce');
-      }, 520);
+      }, 480);
     }
 
     function doAddToCart(product) {
@@ -3120,7 +3125,7 @@
         });
       }
       saveCart(); updateCartFabBadge(); hapticSuccess();
-      spawnCandiesToCart();
+      playAddToCartAnim();
     }
     function addToCart(id, opts) {
       opts = opts || {};
