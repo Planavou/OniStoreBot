@@ -151,17 +151,54 @@
     body.event-newyear .back-icon {
       z-index: 200;
     }
-    body.event-newyear .cart-fab {
-      background: linear-gradient(160deg, #c9e8ff 0%, #5eb0e8 55%, #3a8fc4 100%);
-      box-shadow: 0 4px 14px rgba(80, 160, 220, 0.45);
-    }
-    body.event-newyear .cart-fab svg { display: none; }
-    body.event-newyear .cart-fab .cart-fab-emoji { display: block; }
-    body.event-newyear .cart-fab.bounce {
-      animation: hw-cart-bounce 0.5s ease;
-    }
     body.event-newyear .cart-fab-badge {
       background: #c41e1e;
+    }
+
+    /* Иней / снег по углам карточек — Новый год */
+    body.event-newyear .product,
+    body.event-newyear .profile-card,
+    body.event-newyear .order-card,
+    body.event-newyear .hw-hero,
+    body.event-newyear .cart-item {
+      position: relative;
+    }
+    body.event-newyear .product::before,
+    body.event-newyear .product::after,
+    body.event-newyear .profile-card::before,
+    body.event-newyear .profile-card::after,
+    body.event-newyear .order-card::before,
+    body.event-newyear .order-card::after,
+    body.event-newyear .hw-hero::after,
+    body.event-newyear .cart-item::before,
+    body.event-newyear .cart-item::after {
+      content: '';
+      position: absolute;
+      width: 72px;
+      height: 72px;
+      pointer-events: none;
+      z-index: 3;
+      opacity: 0.85;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Cdefs%3E%3ClinearGradient id='frost' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%23e8f6ff' stop-opacity='0.95'/%3E%3Cstop offset='55%25' stop-color='%23a8d8f0' stop-opacity='0.45'/%3E%3Cstop offset='100%25' stop-color='%23a8d8f0' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='none' stroke='url(%23frost)' stroke-linecap='round'%3E%3Cpath stroke-width='1.2' d='M2 2 L38 2 M2 2 L2 38'/%3E%3Cpath stroke-width='0.9' d='M2 10 L18 2 M2 18 L26 2 M2 26 L20 8' opacity='0.85'/%3E%3Cpath stroke-width='0.7' d='M8 2 L2 14 M14 2 L2 22' opacity='0.7'/%3E%3C/g%3E%3Cg fill='%23e8f6ff'%3E%3Ccircle cx='6' cy='6' r='1.6' opacity='0.95'/%3E%3Ccircle cx='16' cy='5' r='1.1' opacity='0.8'/%3E%3Ccircle cx='5' cy='16' r='1.2' opacity='0.85'/%3E%3Ccircle cx='22' cy='12' r='0.9' opacity='0.7'/%3E%3Ccircle cx='12' cy='22' r='1' opacity='0.75'/%3E%3Cpath d='M28 8l0.7 1.8h1.9l-1.5 1.1 0.6 1.8-1.7-1.2-1.7 1.2 0.6-1.8-1.5-1.1h1.9z' opacity='0.9'/%3E%3Cpath d='M10 28l0.5 1.3h1.4l-1.1 0.8 0.4 1.3-1.2-0.9-1.2 0.9 0.4-1.3-1.1-0.8h1.4z' opacity='0.75'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: contain;
+      background-repeat: no-repeat;
+    }
+    body.event-newyear .product::before,
+    body.event-newyear .profile-card::before,
+    body.event-newyear .order-card::before,
+    body.event-newyear .cart-item::before {
+      top: 0; left: 0;
+    }
+    body.event-newyear .product::after,
+    body.event-newyear .profile-card::after,
+    body.event-newyear .order-card::after,
+    body.event-newyear .hw-hero::after,
+    body.event-newyear .cart-item::after {
+      bottom: 0; right: 0;
+      transform: rotate(180deg);
+    }
+    body.event-newyear .hw-hero::after {
+      opacity: 0.65; width: 96px; height: 96px;
     }
     /* Паук — только transform, без раздувания ширины */
     #hw-spider {
@@ -608,21 +645,52 @@
       color: white; display: none; align-items: center; justify-content: center; cursor: pointer;
       backdrop-filter: blur(6px);
     }
+    /* FAB-корзина: только когда шапки нет (карточка товара) */
     body.product-open .cart-fab { display: flex; }
-    /* Ивент: тематическая FAB-корзина вместо обычной в шапке */
-    body.event-halloween .cart-fab,
-    body.event-newyear .cart-fab { display: flex; }
-    body.event-halloween #header-cart-btn,
-    body.event-newyear #header-cart-btn { display: none !important; }
     .cart-fab svg { width: 22px; height: 22px; fill: white; }
     .cart-fab .cart-fab-emoji { font-size: 22px; line-height: 1; display: none; }
-    body.event-halloween .cart-fab {
+
+    /* Ивент: корзина в шапке — тематическая, поддержка на месте */
+    #header-cart-btn .header-cart-emoji {
+      display: none; font-size: 20px; line-height: 1;
+    }
+    body.event-halloween #header-cart-btn,
+    body.event-newyear #header-cart-btn {
+      display: flex !important;
+    }
+    body.event-halloween #header-cart-btn svg,
+    body.event-newyear #header-cart-btn svg { display: none; }
+    body.event-halloween #header-cart-btn .header-cart-emoji,
+    body.event-newyear #header-cart-btn .header-cart-emoji { display: block; }
+
+    body.event-halloween #header-cart-btn {
+      background: linear-gradient(160deg, #ff9a3c 0%, #e86b00 55%, #c44d00 100%);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(232, 107, 0, 0.4);
+    }
+    body.event-newyear #header-cart-btn {
+      background: linear-gradient(160deg, #c9e8ff 0%, #5eb0e8 55%, #3a8fc4 100%);
+      color: #0a1628;
+      box-shadow: 0 2px 10px rgba(80, 160, 220, 0.4);
+    }
+    body.event-halloween .header-cart-badge { background: #7b1fa2; }
+    body.event-newyear .header-cart-badge { background: #c41e1e; }
+
+    /* FAB на карточке товара — тоже в теме ивента */
+    body.event-halloween.product-open .cart-fab {
       background: linear-gradient(160deg, #ff9a3c 0%, #e86b00 55%, #c44d00 100%);
       box-shadow: 0 4px 14px rgba(232, 107, 0, 0.45);
     }
-    body.event-halloween .cart-fab svg { display: none; }
-    body.event-halloween .cart-fab .cart-fab-emoji { display: block; }
-    body.event-halloween .cart-fab.bounce {
+    body.event-halloween.product-open .cart-fab svg { display: none; }
+    body.event-halloween.product-open .cart-fab .cart-fab-emoji { display: block; }
+    body.event-newyear.product-open .cart-fab {
+      background: linear-gradient(160deg, #c9e8ff 0%, #5eb0e8 55%, #3a8fc4 100%);
+      box-shadow: 0 4px 14px rgba(80, 160, 220, 0.45);
+    }
+    body.event-newyear.product-open .cart-fab svg { display: none; }
+    body.event-newyear.product-open .cart-fab .cart-fab-emoji { display: block; }
+    body.event-halloween .cart-fab.bounce,
+    body.event-newyear .cart-fab.bounce {
       animation: hw-cart-bounce 0.5s ease;
     }
     @keyframes hw-cart-bounce {
@@ -1077,6 +1145,7 @@
       </button>
       <button type="button" class="header-icon-btn" id="header-cart-btn" aria-label="Корзина">
         <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        <span class="header-cart-emoji" id="header-cart-emoji" aria-hidden="true">🛒</span>
         <span class="header-cart-badge" id="header-cart-badge">0</span>
       </button>
     </div>
@@ -1500,8 +1569,11 @@
         }
         var secLab = document.getElementById('event-section-label');
         if (secLab) secLab.textContent = EVENT.sectionLabel || 'Подборка ивента';
+        var cartEmoji = EVENT.cartEmoji || EVENT.tabEmoji || '🛒';
         var cartEm = document.querySelector('#cart-fab .cart-fab-emoji');
-        if (cartEm) cartEm.textContent = EVENT.cartEmoji || EVENT.tabEmoji || '🛒';
+        if (cartEm) cartEm.textContent = cartEmoji;
+        var headerCartEm = document.getElementById('header-cart-emoji');
+        if (headerCartEm) headerCartEm.textContent = cartEmoji;
       } else {
         document.body.classList.remove('event');
         Object.keys(EVENTS).forEach(function (id) {
