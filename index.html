@@ -603,13 +603,20 @@
     .section-title {
       padding: 4px 16px 10px; font-size: 16px; font-weight: 700;
     }
-    .products { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; padding: 0 16px 16px; }
+    .products {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+      padding: 0 16px 16px; align-items: stretch;
+    }
     .product {
       background: var(--secondary); border-radius: 18px; overflow: hidden;
       display: flex; flex-direction: column; cursor: pointer; position: relative;
+      height: 100%; min-height: 0;
     }
-    .product-img-wrap { width: 100%; height: 150px; background: #d1d1d6; overflow: hidden; position: relative; }
-    .product-img-wrap img { width: 100%; height: 150px; object-fit: cover; }
+    .product-img-wrap {
+      width: 100%; height: 150px; flex-shrink: 0;
+      background: #d1d1d6; overflow: hidden; position: relative;
+    }
+    .product-img-wrap img { width: 100%; height: 150px; object-fit: cover; display: block; }
     .product-no-photo {
       width: 100%; height: 150px; display: flex; align-items: center; justify-content: center;
       font-size: 42px; background: linear-gradient(160deg, #2a2a2e 0%, #1c1c1e 100%);
@@ -627,14 +634,24 @@
       display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);
     }
     .fav-btn.on { color: #ff3b30; }
-    .product-info { padding: 12px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
-    .product-name { font-weight: 600; font-size: 14px; }
+    .product-info {
+      padding: 12px; flex: 1 1 auto; min-height: 0;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .product-name {
+      font-weight: 600; font-size: 14px; line-height: 1.3;
+      display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
     .product-price { color: var(--button); font-weight: 700; font-size: 16px; }
     .product-stock { font-size: 12px; color: var(--hint); font-weight: 500; }
     .product-stock.out { color: var(--warn); }
     .add-btn {
-      margin-top: 8px; background: var(--button); color: var(--button-text);
-      border: none; padding: 11px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
+      margin-top: auto; width: 100%; box-sizing: border-box;
+      background: var(--button); color: var(--button-text);
+      border: none; padding: 11px; border-radius: 12px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      flex-shrink: 0;
     }
     .similar-block { margin-top: 20px; }
     .similar-block .section-title { padding-left: 0; }
