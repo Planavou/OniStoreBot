@@ -1018,6 +1018,7 @@
     .admin-prod-modal .apm-cancel {
       background: transparent; border: 1px solid var(--border) !important; color: var(--text);
     }
+
     .admin-orders-mini span {
       font-size: 11px; font-weight: 600; padding: 4px 8px; border-radius: 999px;
       background: color-mix(in srgb, var(--button) 12%, transparent); color: var(--button);
@@ -1531,7 +1532,8 @@
       </select>
       <div class="apm-hint">Ивент-товары не попадают в общий каталог — только во вкладку ивента.</div>
       <label>Описание</label>
-      <textarea id="apm-desc" placeholder="Текст на карточке товара"></textarea>
+      <textarea id="apm-desc" placeholder="Технический блок (подставляется автоматически)"></textarea>
+      <div class="apm-hint">При новом товаре — общий блок про материал и печать. Текст про персонажа можно дописать позже.</div>
       <label>Путь фото в GitHub</label>
       <input type="text" id="apm-photobase" placeholder="6/MyFigure" />
       <div class="apm-hint">
@@ -4402,6 +4404,14 @@
         .join('');
     }
 
+    /** Общий технический блок для новых товаров */
+    var DEFAULT_PRODUCT_DESC =
+      'Высота изделия: 20 см.\n' +
+      'Изделие под покраску (кастом).\n' +
+      'Материал: пластик PLA.\n' +
+      'Изготовление: 3D-печать высокого качества.\n' +
+      'Срок под заказ: 5–7 дней.';
+
     function openAdminProductEditor(id) {
       var modal = document.getElementById('admin-prod-modal');
       if (!modal) return;
@@ -4428,7 +4438,9 @@
           p && Array.isArray(p.events) && p.events.length ? p.events[0] : '';
         eventSelect.value = ev0 || '';
       }
-      document.getElementById('apm-desc').value = p ? p.description || '' : '';
+      document.getElementById('apm-desc').value = p
+        ? (p.description || '')
+        : DEFAULT_PRODUCT_DESC;
       document.getElementById('apm-photobase').value = p ? p.photoBase || '' : '';
       updateApmPreview();
       modal.classList.add('open');
@@ -4669,6 +4681,7 @@
       apmPhoto.addEventListener('input', updateApmPreview);
       apmPhoto.addEventListener('change', updateApmPreview);
     }
+
     var apmModal = document.getElementById('admin-prod-modal');
     if (apmModal) {
       apmModal.addEventListener('click', function (e) {
