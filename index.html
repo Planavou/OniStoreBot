@@ -2633,6 +2633,40 @@
         b.classList.toggle('active', b.dataset.page === pageId);
       });
     }
+    /* Откуда открыли карточку / вложенный экран — чтобы «назад» не кидал на ивент */
+    var returnPageId = null;
+    var RETURN_ROOT_PAGES = {
+      catalog: true,
+      'event-page': true,
+      profile: true,
+      'favorites-page': true,
+      'admin-page': true,
+    };
+    function rememberReturnPage(fromId) {
+      if (fromId && RETURN_ROOT_PAGES[fromId]) {
+        returnPageId = fromId;
+      }
+    }
+    function navigateBackToReturn() {
+      var dest = returnPageId || homePageId();
+      if (!document.getElementById(dest)) dest = homePageId();
+      showPage(dest);
+      if (
+        dest === 'catalog' ||
+        dest === 'event-page' ||
+        dest === 'profile' ||
+        dest === 'favorites-page' ||
+        dest === 'admin-page'
+      ) {
+        setBottomNav(dest);
+      }
+      if (dest === 'catalog') {
+        renderProducts();
+        restoreCatalogScroll();
+      } else if (dest === 'event-page') {
+        renderEventPage();
+      }
+    }
     function goBackInApp() {
       var active = document.querySelector('.page.active');
       active = active ? active.id : '';
@@ -2653,30 +2687,15 @@
         return;
       }
       if (active === 'admin-page') {
-        showPage(homePageId());
-        setBottomNav(homePageId());
+        navigateBackToReturn();
         return;
       }
       if (active === 'product-page') {
-        showPage(homePageId());
-        setBottomNav(homePageId());
-        if (homePageId() === 'catalog') {
-          renderProducts();
-          restoreCatalogScroll();
-        } else {
-          renderEventPage();
-        }
+        navigateBackToReturn();
         return;
       }
       if (active === 'cart' || active === 'profile' || active === 'favorites-page') {
-        showPage(homePageId());
-        setBottomNav(homePageId());
-        if (homePageId() === 'catalog') {
-          renderProducts();
-          restoreCatalogScroll();
-        } else {
-          renderEventPage();
-        }
+        navigateBackToReturn();
         return;
       }
       if (active === 'event-page' || active === 'catalog') {
@@ -2751,6 +2770,10 @@
       var prevId = prev ? prev.id : '';
       if (prevId === 'catalog' && pageId !== 'catalog') {
         saveCatalogScroll();
+      }
+      /* запоминаем, откуда ушли (каталог / ивент / …), чтобы «назад» вернул туда */
+      if (prevId && prevId !== pageId && RETURN_ROOT_PAGES[prevId] && !RETURN_ROOT_PAGES[pageId]) {
+        rememberReturnPage(prevId);
       }
       var pageEl = document.getElementById(pageId);
       if (!pageEl) return;
