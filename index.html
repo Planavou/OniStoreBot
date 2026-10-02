@@ -1532,8 +1532,7 @@
       </select>
       <div class="apm-hint">Ивент-товары не попадают в общий каталог — только во вкладку ивента.</div>
       <label>Описание</label>
-      <textarea id="apm-desc" placeholder="Технический блок (подставляется автоматически)"></textarea>
-      <div class="apm-hint">При новом товаре — общий блок про материал и печать. Текст про персонажа можно дописать позже.</div>
+      <textarea id="apm-desc" placeholder="Текст про персонажа (техблок уже в карточке)"></textarea>
       <label>Путь фото в GitHub</label>
       <input type="text" id="apm-photobase" placeholder="6/MyFigure" />
       <div class="apm-hint">
@@ -4404,14 +4403,6 @@
         .join('');
     }
 
-    /** Общий технический блок для новых товаров */
-    var DEFAULT_PRODUCT_DESC =
-      'Высота изделия: 20 см.\n' +
-      'Изделие под покраску (кастом).\n' +
-      'Материал: пластик PLA.\n' +
-      'Изготовление: 3D-печать высокого качества.\n' +
-      'Срок под заказ: 5–7 дней.';
-
     function openAdminProductEditor(id) {
       var modal = document.getElementById('admin-prod-modal');
       if (!modal) return;
@@ -4438,9 +4429,7 @@
           p && Array.isArray(p.events) && p.events.length ? p.events[0] : '';
         eventSelect.value = ev0 || '';
       }
-      document.getElementById('apm-desc').value = p
-        ? (p.description || '')
-        : DEFAULT_PRODUCT_DESC;
+      document.getElementById('apm-desc').value = p ? (p.description || '') : '';
       document.getElementById('apm-photobase').value = p ? p.photoBase || '' : '';
       updateApmPreview();
       modal.classList.add('open');
