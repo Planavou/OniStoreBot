@@ -1618,9 +1618,18 @@
       <textarea id="apm-desc" placeholder="Текст про персонажа (техблок уже в карточке)"></textarea>
       <label>Путь фото в GitHub</label>
       <input type="text" id="apm-photobase" placeholder="6/MyFigure" />
+      <label>Сколько фото</label>
+      <select id="apm-photo-count">
+        <option value="1">1 (брелки)</option>
+        <option value="2">2</option>
+        <option value="3" selected>3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+      </select>
       <div class="apm-hint">
-        Репозиторий OniStoreBot/main. Пример: <b>6/MyFigure</b> → файлы
-        <code>MyFigure-1.jpg</code>, <code>MyFigure-2.png</code>, <code>MyFigure-3.gif</code>
+        Репозиторий OniStoreBot/main. Пример: <b>6/MyFigure</b> →
+        <code>-1.jpg</code>, <code>-2.png</code>, <code>-3.gif</code>…
+        Для брелка поставь <b>1</b>.
       </div>
       <div class="apm-preview" id="apm-preview"></div>
       <div class="apm-actions">
@@ -2652,70 +2661,21 @@
     }
 
     var GH_RAW_BASE = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/';
-    var PHOTO_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
-    /** Кандидаты для превью в админке (все варианты имён). */
-    function photosFromGithubBase(photoBase) {
+    /* слоты: 1.jpg, 2.png, 3.gif, 4.jpg, 5.png — без сетевых проверок */
+    var PHOTO_SLOT_EXT = ['.jpg', '.png', '.gif', '.jpg', '.png'];
+    function clampPhotoCount(n) {
+      var x = Math.round(Number(n));
+      if (isNaN(x) || x < 1) return 3;
+      if (x > 5) return 5;
+      return x;
+    }
+    function photosFromGithubBase(photoBase, photoCount) {
       var base = String(photoBase || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
       if (!base) return [];
+      var cnt = clampPhotoCount(photoCount != null ? photoCount : 3);
       var out = [];
-      for (var i = 1; i <= 5; i++) {
-        for (var e = 0; e < PHOTO_EXTS.length; e++) {
-          out.push(GH_RAW_BASE + base + '-' + i + PHOTO_EXTS[e]);
-        }
-      }
-      return out;
-    }
-    function probeImageUrl(url) {
-      return new Promise(function (resolve) {
-        if (!url) {
-          resolve(null);
-          return;
-        }
-        var img = new Image();
-        var done = false;
-        function finish(v) {
-          if (done) return;
-          done = true;
-          resolve(v);
-        }
-        img.onload = function () {
-          finish(url);
-        };
-        img.onerror = function () {
-          finish(null);
-        };
-        setTimeout(function () {
-          finish(null);
-        }, 4000);
-        img.src = url;
-      });
-    }
-    /**
-     * Только реально существующие файлы:
-     * base-1.jpg / base-1.png / … затем base-2… Пока слот не находится — дальше не ищем.
-     */
-    async function resolvePhotosFromBase(photoBase) {
-      var base = String(photoBase || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
-      if (!base) return [];
-      var found = [];
-      for (var i = 1; i <= 5; i++) {
-        var hit = null;
-        for (var e = 0; e < PHOTO_EXTS.length; e++) {
-          var url = GH_RAW_BASE + base + '-' + i + PHOTO_EXTS[e];
-          hit = await probeImageUrl(url);
-          if (hit) break;
-        }
-        if (!hit) break;
-        found.push(hit);
-      }
-      return found;
-    }
-    async function filterExistingPhotoUrls(urls) {
-      if (!urls || !urls.length) return [];
-      var out = [];
-      for (var i = 0; i < urls.length; i++) {
-        var ok = await probeImageUrl(urls[i]);
-        if (ok) out.push(ok);
+      for (var i = 0; i < cnt; i++) {
+        out.push(GH_RAW_BASE + base + '-' + (i + 1) + PHOTO_SLOT_EXT[i]);
       }
       return out;
     }
@@ -2738,12 +2698,13 @@
             if (server.description) local.description = server.description;
             if (server.shareName) local.shareName = server.shareName;
             local.photoBase = server.photoBase || local.photoBase || '';
+            local.photoCount = clampPhotoCount(
+              server.photoCount != null ? server.photoCount : (local.photoCount != null ? local.photoCount : 3)
+            );
             if (local.photoBase) {
-              local.photos = await resolvePhotosFromBase(local.photoBase);
+              local.photos = photosFromGithubBase(local.photoBase, local.photoCount);
             } else if (server.photos && server.photos.length) {
-              local.photos = await filterExistingPhotoUrls(server.photos.slice());
-            } else {
-              local.photos = [];
+              local.photos = server.photos.slice(0, local.photoCount);
             }
             if (Array.isArray(server.events)) local.events = server.events.slice();
             else local.events = [];
@@ -2764,10 +2725,11 @@
             local.visible = true;
           } else {
             var pb = server.photoBase || '';
+            var pc = clampPhotoCount(server.photoCount != null ? server.photoCount : 3);
             var resolvedPhotos = [];
-            if (pb) resolvedPhotos = await resolvePhotosFromBase(pb);
+            if (pb) resolvedPhotos = photosFromGithubBase(pb, pc);
             else if (server.photos && server.photos.length) {
-              resolvedPhotos = await filterExistingPhotoUrls(server.photos.slice());
+              resolvedPhotos = server.photos.slice(0, pc);
             }
             products.push({
               id: Number(server.id),
@@ -2780,6 +2742,7 @@
               photos: resolvedPhotos,
               events: Array.isArray(server.events) ? server.events.slice() : [],
               photoBase: pb,
+              photoCount: pc,
               printChoice: !!(
                 server.printChoice === true ||
                 server.printChoice === 1 ||
@@ -2801,15 +2764,6 @@
         for (var j = 0; j < products.length; j++) {
           var pid = Number(products[j].id);
           products[j].visible = !!visibleIds[pid];
-          /* статичные товары без photoBase — убрать битые слоты */
-          if (
-            visibleIds[pid] &&
-            !products[j].photoBase &&
-            products[j].photos &&
-            products[j].photos.length
-          ) {
-            products[j].photos = await filterExistingPhotoUrls(products[j].photos.slice());
-          }
         }
         cart = cart.map(function (item) {
           var p = products.find(function (x) { return x.id === item.id; });
@@ -4944,25 +4898,24 @@
 
     function updateApmPreview() {
       var base = (document.getElementById('apm-photobase') || {}).value || '';
+      var cntEl = document.getElementById('apm-photo-count');
+      var cnt = clampPhotoCount(cntEl ? cntEl.value : 3);
       var box = document.getElementById('apm-preview');
       if (!box) return;
       if (!base) {
         box.innerHTML = '';
         return;
       }
-      box.innerHTML = '<div class="apm-hint">Проверяю фото…</div>';
-      resolvePhotosFromBase(base).then(function (urls) {
-        if (!box) return;
-        if (!urls.length) {
-          box.innerHTML = '<div class="apm-hint">Файлов не найдено (нужны …-1.jpg / .png / …)</div>';
-          return;
-        }
-        box.innerHTML = urls
-          .map(function (u) {
-            return '<img src="' + u + '" alt="" loading="lazy" />';
-          })
-          .join('');
-      });
+      var urls = photosFromGithubBase(base, cnt);
+      box.innerHTML = urls
+        .map(function (u) {
+          return (
+            '<img src="' +
+            u +
+            '" alt="" loading="lazy" onerror="this.style.opacity=0.2" />'
+          );
+        })
+        .join('');
     }
 
     function rgbToHex(r, g, b) {
@@ -5113,13 +5066,9 @@
         });
       }
       if (base) {
-        resolvePhotosFromBase(base).then(function (urls) {
-          if (urls && urls.length) runOnUrl(urls[0]);
-          else {
-            var prev = document.querySelector('#apm-preview img');
-            runOnUrl(prev && prev.src ? prev.src : '');
-          }
-        });
+        var cntEl = document.getElementById('apm-photo-count');
+        var urls = photosFromGithubBase(base, cntEl ? cntEl.value : 1);
+        runOnUrl(urls[0] || '');
       } else {
         var prev2 = document.querySelector('#apm-preview img');
         runOnUrl(prev2 && prev2.src ? prev2.src : '');
@@ -5182,6 +5131,12 @@
       if (elEx) elEx.value = p && p.printMultiExtra != null ? p.printMultiExtra : 300;
       document.getElementById('apm-desc').value = p ? (p.description || '') : '';
       document.getElementById('apm-photobase').value = p ? p.photoBase || '' : '';
+      var pcEl = document.getElementById('apm-photo-count');
+      if (pcEl) {
+        pcEl.value = String(
+          clampPhotoCount(p && p.photoCount != null ? p.photoCount : 3)
+        );
+      }
       updateApmPreview();
       modal.classList.add('open');
       modal.setAttribute('aria-hidden', 'false');
@@ -5199,6 +5154,9 @@
       if (!user || !user.id) return;
       var idRaw = document.getElementById('apm-id').value;
       var photoBase = document.getElementById('apm-photobase').value.trim();
+      var photoCount = clampPhotoCount(
+        (document.getElementById('apm-photo-count') || {}).value
+      );
       var printOn = !!(document.getElementById('apm-print-choice') || {}).checked;
       var multiOnly = !!(document.getElementById('apm-print-multi-only') || {}).checked;
       var payload = {
@@ -5210,9 +5168,8 @@
         category: document.getElementById('apm-category').value,
         description: document.getElementById('apm-desc').value.trim(),
         photoBase: photoBase,
-        photos: photoBase
-          ? await resolvePhotosFromBase(photoBase)
-          : [],
+        photoCount: photoCount,
+        photos: photoBase ? photosFromGithubBase(photoBase, photoCount) : [],
         events: (function () {
           var ev = (document.getElementById('apm-event') || {}).value || '';
           return ev ? [ev] : [];
@@ -5503,6 +5460,10 @@
     if (apmPhoto) {
       apmPhoto.addEventListener('input', updateApmPreview);
       apmPhoto.addEventListener('change', updateApmPreview);
+    }
+    var apmPhotoCount = document.getElementById('apm-photo-count');
+    if (apmPhotoCount) {
+      apmPhotoCount.addEventListener('change', updateApmPreview);
     }
 
     var apmModal = document.getElementById('admin-prod-modal');
