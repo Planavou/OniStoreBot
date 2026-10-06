@@ -826,6 +826,7 @@
       border: 1px solid rgba(0,0,0,0.12); flex-shrink: 0;
     }
     .print-swatch .sub { font-size: 11px; font-weight: 500; color: var(--hint); }
+    .print-swatch:active { transform: scale(0.98); }
     .detail-actions { display: flex; flex-direction: column; gap: 10px; }
     .detail-add-btn {
       width: 100%; padding: 14px; border-radius: 14px; border: none;
@@ -834,6 +835,10 @@
     .detail-buy-now {
       width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid var(--button);
       background: transparent; color: var(--button); font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+    .detail-add-btn:disabled,
+    .detail-buy-now:disabled {
+      opacity: 0.45; cursor: not-allowed;
     }
     .share-btn {
       width: 100%; padding: 14px; border-radius: 14px; border: 1.5px solid var(--button);
@@ -2677,6 +2682,21 @@
             else if (server.photoBase) local.photos = photosFromGithubBase(server.photoBase);
             if (Array.isArray(server.events)) local.events = server.events.slice();
             else local.events = [];
+            local.photoBase = server.photoBase || local.photoBase || '';
+            local.printChoice = !!(
+              server.printChoice === true ||
+              server.printChoice === 1 ||
+              server.printChoice === '1'
+            );
+            local.printMultiOnly = !!(
+              server.printMultiOnly === true ||
+              server.printMultiOnly === 1 ||
+              server.printMultiOnly === '1'
+            );
+            if (server.printColorSingle) local.printColorSingle = server.printColorSingle;
+            if (server.printColorMultiFrom) local.printColorMultiFrom = server.printColorMultiFrom;
+            if (server.printColorMultiTo) local.printColorMultiTo = server.printColorMultiTo;
+            if (server.printMultiExtra != null) local.printMultiExtra = Number(server.printMultiExtra) || 0;
             local.visible = true;
           } else {
             products.push({
@@ -2691,6 +2711,21 @@
                 ? server.photos.slice()
                 : photosFromGithubBase(server.photoBase),
               events: Array.isArray(server.events) ? server.events.slice() : [],
+              photoBase: server.photoBase || '',
+              printChoice: !!(
+                server.printChoice === true ||
+                server.printChoice === 1 ||
+                server.printChoice === '1'
+              ),
+              printMultiOnly: !!(
+                server.printMultiOnly === true ||
+                server.printMultiOnly === 1 ||
+                server.printMultiOnly === '1'
+              ),
+              printColorSingle: server.printColorSingle || '',
+              printColorMultiFrom: server.printColorMultiFrom || '',
+              printColorMultiTo: server.printColorMultiTo || '',
+              printMultiExtra: Number(server.printMultiExtra) || 0,
               visible: true,
             });
           }
@@ -2702,8 +2737,16 @@
         cart = cart.map(function (item) {
           var p = products.find(function (x) { return x.id === item.id; });
           if (p) {
-            item.price = p.price;
-            item.name = p.name;
+            var pt = item.printType || '';
+            if (pt && productHasPrintChoice(p)) {
+              item.price = priceForPrint(p, pt);
+              var lab = printLabelRu(pt);
+              item.name = p.name + (lab ? ' (' + lab + ')' : '');
+            } else {
+              item.price = p.price;
+              item.name = p.name;
+              item.printType = '';
+            }
             item.photo = (p.photos && p.photos[0]) || '';
           }
           return item;
@@ -3348,9 +3391,11 @@
       pushRecent(id);
       currentSlide = 0;
       document.getElementById('detail-name').textContent = currentProduct.name;
-      selectedPrintType = 'single';
+      /* пока не выбрали режим — ждём клик по квадрату (кроме «только многоцвет») */
+      selectedPrintType = '';
       setupDetailPrintChoice(currentProduct);
       updateDetailPriceDisplay();
+      updateDetailActionButtons();
       var s = stockLabel(currentProduct.stock);
       var stockEl = document.getElementById('detail-stock');
       stockEl.textContent = s.text;
@@ -3590,18 +3635,44 @@
     document.getElementById('back-btn').addEventListener('click', goBackInApp);
     document.querySelectorAll('.print-swatch').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        selectedPrintType = btn.dataset.print === 'multi' ? 'multi' : 'single';
+        if (!currentProduct || !productHasPrintChoice(currentProduct)) return;
+        if (productPrintMultiOnly(currentProduct)) {
+          selectedPrintType = 'multi';
+        } else {
+          selectedPrintType = btn.dataset.print === 'multi' ? 'multi' : 'single';
+        }
         document.querySelectorAll('.print-swatch').forEach(function (b) {
-          b.classList.toggle('active', b === btn);
+          b.classList.toggle('active', b.dataset.print === selectedPrintType);
         });
         updateDetailPriceDisplay();
+        updateDetailActionButtons();
+        hapticLight();
       });
     });
     document.getElementById('detail-add-btn').addEventListener('click', function () {
-      if (currentProduct) addToCart(currentProduct.id);
+      if (!currentProduct) return;
+      if (
+        productHasPrintChoice(currentProduct) &&
+        !productPrintMultiOnly(currentProduct) &&
+        selectedPrintType !== 'single' &&
+        selectedPrintType !== 'multi'
+      ) {
+        if (tg.showAlert) tg.showAlert('Выберите тип печати');
+        return;
+      }
+      addToCart(currentProduct.id);
     });
     document.getElementById('detail-buy-now').addEventListener('click', function () {
       if (!currentProduct) return;
+      if (
+        productHasPrintChoice(currentProduct) &&
+        !productPrintMultiOnly(currentProduct) &&
+        selectedPrintType !== 'single' &&
+        selectedPrintType !== 'multi'
+      ) {
+        if (tg.showAlert) tg.showAlert('Выберите тип печати');
+        return;
+      }
       hapticLight();
       addToCart(currentProduct.id, { goCart: true });
     });
@@ -3737,11 +3808,16 @@
       if (!productHasPrintChoice(p)) {
         box.classList.remove('show');
         selectedPrintType = '';
+        updateDetailActionButtons();
         return;
       }
       var multiOnly = productPrintMultiOnly(p);
       box.classList.add('show');
-      selectedPrintType = multiOnly ? 'multi' : (selectedPrintType === 'multi' ? 'multi' : 'single');
+      if (multiOnly) {
+        selectedPrintType = 'multi';
+      } else if (selectedPrintType !== 'single' && selectedPrintType !== 'multi') {
+        selectedPrintType = '';
+      }
       var c1 = p.printColorSingle || '#22c55e';
       var mf = p.printColorMultiFrom || c1;
       var mt = p.printColorMultiTo || '#9ca3af';
@@ -3764,21 +3840,58 @@
       var swM = document.getElementById('print-swatch-multi');
       if (swS) {
         swS.style.display = multiOnly ? 'none' : '';
-        swS.classList.toggle('active', !multiOnly && selectedPrintType === 'single');
+        swS.classList.toggle('active', selectedPrintType === 'single');
       }
       if (swM) {
-        swM.classList.toggle('active', selectedPrintType === 'multi' || multiOnly);
-        if (multiOnly) {
-          var t = swM.querySelector('span:not(.sq):not(.sub)');
-          /* подпись оставляем «Многоцветная» */
-        }
+        swM.style.display = '';
+        swM.classList.toggle('active', selectedPrintType === 'multi');
       }
+      var plabel = box.querySelector('.plabel');
+      if (plabel) {
+        plabel.textContent = multiOnly
+          ? 'Печать'
+          : selectedPrintType
+            ? 'Печать'
+            : 'Выберите печать';
+      }
+      updateDetailActionButtons();
     }
     function updateDetailPriceDisplay() {
       if (!currentProduct) return;
-      var price = priceForPrint(currentProduct, selectedPrintType || 'single');
-      document.getElementById('detail-price').textContent =
-        price.toLocaleString('ru-RU') + ' ₽';
+      var el = document.getElementById('detail-price');
+      if (!el) return;
+      if (
+        productHasPrintChoice(currentProduct) &&
+        !productPrintMultiOnly(currentProduct) &&
+        selectedPrintType !== 'single' &&
+        selectedPrintType !== 'multi'
+      ) {
+        el.textContent =
+          (Number(currentProduct.price) || 0).toLocaleString('ru-RU') + ' ₽';
+        return;
+      }
+      var price = priceForPrint(
+        currentProduct,
+        selectedPrintType === 'multi' ? 'multi' : 'single'
+      );
+      el.textContent = price.toLocaleString('ru-RU') + ' ₽';
+    }
+    function updateDetailActionButtons() {
+      var needPick =
+        currentProduct &&
+        productHasPrintChoice(currentProduct) &&
+        !productPrintMultiOnly(currentProduct) &&
+        selectedPrintType !== 'single' &&
+        selectedPrintType !== 'multi';
+      var addBtn = document.getElementById('detail-add-btn');
+      var buyBtn = document.getElementById('detail-buy-now');
+      if (addBtn) {
+        addBtn.disabled = !!needPick;
+        addBtn.textContent = needPick ? 'Сначала выберите печать' : 'В корзину';
+      }
+      if (buyBtn) {
+        buyBtn.disabled = !!needPick;
+      }
     }
     function doAddToCart(product, printType) {
       printType = productHasPrintChoice(product)
