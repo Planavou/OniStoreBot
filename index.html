@@ -1437,6 +1437,7 @@
             <button class="cat-btn active" data-category="all" type="button">Все</button>
             <button class="cat-btn" data-category="busts" type="button">Бюсты</button>
             <button class="cat-btn" data-category="figures" type="button">Фигурки</button>
+            <button class="cat-btn" data-category="accessories" type="button">Аксессуары</button>
           </div>
         </div>
         <div>
@@ -2651,14 +2652,72 @@
     }
 
     var GH_RAW_BASE = 'https://raw.githubusercontent.com/Planavou/OniStoreBot/main/';
+    var PHOTO_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+    /** Кандидаты для превью в админке (все варианты имён). */
     function photosFromGithubBase(photoBase) {
       var base = String(photoBase || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
       if (!base) return [];
-      return [
-        GH_RAW_BASE + base + '-1.jpg',
-        GH_RAW_BASE + base + '-2.png',
-        GH_RAW_BASE + base + '-3.gif',
-      ];
+      var out = [];
+      for (var i = 1; i <= 5; i++) {
+        for (var e = 0; e < PHOTO_EXTS.length; e++) {
+          out.push(GH_RAW_BASE + base + '-' + i + PHOTO_EXTS[e]);
+        }
+      }
+      return out;
+    }
+    function probeImageUrl(url) {
+      return new Promise(function (resolve) {
+        if (!url) {
+          resolve(null);
+          return;
+        }
+        var img = new Image();
+        var done = false;
+        function finish(v) {
+          if (done) return;
+          done = true;
+          resolve(v);
+        }
+        img.onload = function () {
+          finish(url);
+        };
+        img.onerror = function () {
+          finish(null);
+        };
+        setTimeout(function () {
+          finish(null);
+        }, 4000);
+        img.src = url;
+      });
+    }
+    /**
+     * Только реально существующие файлы:
+     * base-1.jpg / base-1.png / … затем base-2… Пока слот не находится — дальше не ищем.
+     */
+    async function resolvePhotosFromBase(photoBase) {
+      var base = String(photoBase || '').trim().replace(/^\/+/, '').replace(/\/+$/, '');
+      if (!base) return [];
+      var found = [];
+      for (var i = 1; i <= 5; i++) {
+        var hit = null;
+        for (var e = 0; e < PHOTO_EXTS.length; e++) {
+          var url = GH_RAW_BASE + base + '-' + i + PHOTO_EXTS[e];
+          hit = await probeImageUrl(url);
+          if (hit) break;
+        }
+        if (!hit) break;
+        found.push(hit);
+      }
+      return found;
+    }
+    async function filterExistingPhotoUrls(urls) {
+      if (!urls || !urls.length) return [];
+      var out = [];
+      for (var i = 0; i < urls.length; i++) {
+        var ok = await probeImageUrl(urls[i]);
+        if (ok) out.push(ok);
+      }
+      return out;
     }
 
     async function syncFromServer() {
@@ -2678,11 +2737,16 @@
             if (server.category) local.category = server.category;
             if (server.description) local.description = server.description;
             if (server.shareName) local.shareName = server.shareName;
-            if (server.photos && server.photos.length) local.photos = server.photos.slice();
-            else if (server.photoBase) local.photos = photosFromGithubBase(server.photoBase);
+            local.photoBase = server.photoBase || local.photoBase || '';
+            if (local.photoBase) {
+              local.photos = await resolvePhotosFromBase(local.photoBase);
+            } else if (server.photos && server.photos.length) {
+              local.photos = await filterExistingPhotoUrls(server.photos.slice());
+            } else {
+              local.photos = [];
+            }
             if (Array.isArray(server.events)) local.events = server.events.slice();
             else local.events = [];
-            local.photoBase = server.photoBase || local.photoBase || '';
             local.printChoice = !!(
               server.printChoice === true ||
               server.printChoice === 1 ||
@@ -2699,6 +2763,12 @@
             if (server.printMultiExtra != null) local.printMultiExtra = Number(server.printMultiExtra) || 0;
             local.visible = true;
           } else {
+            var pb = server.photoBase || '';
+            var resolvedPhotos = [];
+            if (pb) resolvedPhotos = await resolvePhotosFromBase(pb);
+            else if (server.photos && server.photos.length) {
+              resolvedPhotos = await filterExistingPhotoUrls(server.photos.slice());
+            }
             products.push({
               id: Number(server.id),
               name: server.name || ('Товар ' + server.id),
@@ -2707,11 +2777,9 @@
               stock: Number(server.stock) || 0,
               category: server.category || 'figures',
               description: server.description || '',
-              photos: (server.photos && server.photos.length)
-                ? server.photos.slice()
-                : photosFromGithubBase(server.photoBase),
+              photos: resolvedPhotos,
               events: Array.isArray(server.events) ? server.events.slice() : [],
-              photoBase: server.photoBase || '',
+              photoBase: pb,
               printChoice: !!(
                 server.printChoice === true ||
                 server.printChoice === 1 ||
@@ -2733,6 +2801,15 @@
         for (var j = 0; j < products.length; j++) {
           var pid = Number(products[j].id);
           products[j].visible = !!visibleIds[pid];
+          /* статичные товары без photoBase — убрать битые слоты */
+          if (
+            visibleIds[pid] &&
+            !products[j].photoBase &&
+            products[j].photos &&
+            products[j].photos.length
+          ) {
+            products[j].photos = await filterExistingPhotoUrls(products[j].photos.slice());
+          }
         }
         cart = cart.map(function (item) {
           var p = products.find(function (x) { return x.id === item.id; });
@@ -3104,13 +3181,25 @@
       return !!(p && Array.isArray(p.events) && p.events.length > 0);
     }
 
+    function isAccessoryCategory(cat) {
+      return (
+        cat === 'accessories' ||
+        cat === 'keychains' ||
+        cat === 'pumpkins' ||
+        cat === 'other'
+      );
+    }
+    function productMatchesCategory(p, cat) {
+      if (!cat || cat === 'all') return true;
+      if (cat === 'accessories') return isAccessoryCategory(p.category);
+      return p.category === cat;
+    }
     function getFilteredProducts() {
       var list = products.filter(function (p) {
         if (!isProductVisible(p)) return false;
         /* товары только для ивента — не в общем каталоге */
         if (isEventOnlyProduct(p)) return false;
-        var matchCategory;
-        matchCategory = currentCategory === 'all' || p.category === currentCategory;
+        var matchCategory = productMatchesCategory(p, currentCategory);
         var matchSearch = !searchQuery || p.name.toLowerCase().indexOf(searchQuery) !== -1;
         return matchCategory && matchSearch;
       });
@@ -3125,18 +3214,38 @@
       return list;
     }
     function updateCategoryCounts() {
-      var all = 0, figures = 0, busts = 0;
+      var all = 0, figures = 0, busts = 0, accessories = 0;
       for (var i = 0; i < products.length; i++) {
         if (!isProductVisible(products[i])) continue;
         if (isEventOnlyProduct(products[i])) continue;
         all++;
-        if (products[i].category === 'figures') figures++;
-        else if (products[i].category === 'busts') busts++;
+        var c = products[i].category;
+        if (c === 'figures') figures++;
+        else if (c === 'busts') busts++;
+        else if (isAccessoryCategory(c)) accessories++;
       }
       document.querySelectorAll('.cat-btn').forEach(function (btn) {
         var cat = btn.dataset.category;
-        var label = cat === 'all' ? 'Все' : cat === 'figures' ? 'Фигурки' : 'Бюсты';
-        var n = cat === 'all' ? all : cat === 'figures' ? figures : busts;
+        var label =
+          cat === 'all'
+            ? 'Все'
+            : cat === 'figures'
+              ? 'Фигурки'
+              : cat === 'busts'
+                ? 'Бюсты'
+                : cat === 'accessories'
+                  ? 'Аксессуары'
+                  : cat;
+        var n =
+          cat === 'all'
+            ? all
+            : cat === 'figures'
+              ? figures
+              : cat === 'busts'
+                ? busts
+                : cat === 'accessories'
+                  ? accessories
+                  : 0;
         btn.innerHTML = label + ' <span class="cat-count">' + n + '</span>';
       });
     }
@@ -4835,18 +4944,25 @@
 
     function updateApmPreview() {
       var base = (document.getElementById('apm-photobase') || {}).value || '';
-      var urls = photosFromGithubBase(base);
       var box = document.getElementById('apm-preview');
       if (!box) return;
-      if (!urls.length) {
+      if (!base) {
         box.innerHTML = '';
         return;
       }
-      box.innerHTML = urls
-        .map(function (u) {
-          return '<img src="' + u + '" alt="" loading="lazy" onerror="this.style.opacity=0.25" />';
-        })
-        .join('');
+      box.innerHTML = '<div class="apm-hint">Проверяю фото…</div>';
+      resolvePhotosFromBase(base).then(function (urls) {
+        if (!box) return;
+        if (!urls.length) {
+          box.innerHTML = '<div class="apm-hint">Файлов не найдено (нужны …-1.jpg / .png / …)</div>';
+          return;
+        }
+        box.innerHTML = urls
+          .map(function (u) {
+            return '<img src="' + u + '" alt="" loading="lazy" />';
+          })
+          .join('');
+      });
     }
 
     function rgbToHex(r, g, b) {
@@ -4958,45 +5074,56 @@
 
     function applyPrintColorsFromPhoto() {
       var base = (document.getElementById('apm-photobase') || {}).value || '';
-      var urls = photosFromGithubBase(base);
-      if (!urls.length) {
-        /* fallback: первое фото из превью / текущего товара */
-        var prev = document.querySelector('#apm-preview img');
-        if (prev && prev.src) urls = [prev.src];
-      }
-      if (!urls.length) {
-        if (tg.showAlert) tg.showAlert('Сначала укажите путь фото');
-        return;
-      }
       var btn = document.getElementById('apm-print-from-photo');
       if (btn) {
         btn.disabled = true;
         btn.textContent = 'Анализирую…';
       }
-      extractDominantColorsFromImageUrl(urls[0], function (colors, err) {
+      function finishBtn() {
         if (btn) {
           btn.disabled = false;
           btn.textContent = '🎨 Подобрать цвета с фото';
         }
-        if (err || !colors || !colors.length) {
-          if (tg.showAlert) {
-            tg.showAlert(
-              err ||
-                'Не вышло. Можно выставить цвета вручную. Если фото с GitHub — нужен CORS.'
-            );
-          }
+      }
+      function runOnUrl(url) {
+        if (!url) {
+          finishBtn();
+          if (tg.showAlert) tg.showAlert('Сначала укажите путь фото');
           return;
         }
-        var elS = document.getElementById('apm-print-single');
-        var elMf = document.getElementById('apm-print-multi-from');
-        var elMt = document.getElementById('apm-print-multi-to');
-        if (elS) elS.value = colors[0];
-        if (elMf) elMf.value = colors[0];
-        if (elMt) elMt.value = colors[1] || colors[0];
-        /* если есть 3-й цвет — делаем градиент от 1-го к 3-му (часто выразительнее) */
-        if (colors[2] && elMt) elMt.value = colors[2];
-        hapticSuccess();
-      });
+        extractDominantColorsFromImageUrl(url, function (colors, err) {
+          finishBtn();
+          if (err || !colors || !colors.length) {
+            if (tg.showAlert) {
+              tg.showAlert(
+                err ||
+                  'Не вышло. Можно выставить цвета вручную. Если фото с GitHub — нужен CORS.'
+              );
+            }
+            return;
+          }
+          var elS = document.getElementById('apm-print-single');
+          var elMf = document.getElementById('apm-print-multi-from');
+          var elMt = document.getElementById('apm-print-multi-to');
+          if (elS) elS.value = colors[0];
+          if (elMf) elMf.value = colors[0];
+          if (elMt) elMt.value = colors[1] || colors[0];
+          if (colors[2] && elMt) elMt.value = colors[2];
+          hapticSuccess();
+        });
+      }
+      if (base) {
+        resolvePhotosFromBase(base).then(function (urls) {
+          if (urls && urls.length) runOnUrl(urls[0]);
+          else {
+            var prev = document.querySelector('#apm-preview img');
+            runOnUrl(prev && prev.src ? prev.src : '');
+          }
+        });
+      } else {
+        var prev2 = document.querySelector('#apm-preview img');
+        runOnUrl(prev2 && prev2.src ? prev2.src : '');
+      }
     }
 
     function openAdminProductEditor(id) {
@@ -5083,7 +5210,9 @@
         category: document.getElementById('apm-category').value,
         description: document.getElementById('apm-desc').value.trim(),
         photoBase: photoBase,
-        photos: photosFromGithubBase(photoBase),
+        photos: photoBase
+          ? await resolvePhotosFromBase(photoBase)
+          : [],
         events: (function () {
           var ev = (document.getElementById('apm-event') || {}).value || '';
           return ev ? [ev] : [];
