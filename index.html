@@ -1326,12 +1326,24 @@
     }
     .oni-hint { font-size: 12px; color: var(--hint); line-height: 1.4; }
     .oni-earn { font-size: 13px; color: #34c759; font-weight: 600; }
+    /* fixed — sticky в Telegram/MAX «плыл» при скролле */
     .total-bar {
-      position: sticky; bottom: 72px; left: 0; right: 0; background: var(--secondary);
-      padding: 16px;
-      margin-top: 8px;
-      display: none; justify-content: space-between; align-items: center;
-      box-shadow: 0 -6px 24px rgba(0,0,0,0.1); z-index: 50; border-top: 1px solid var(--border);
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+      background: var(--secondary);
+      padding: 14px 16px;
+      margin: 0;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 -6px 24px rgba(0,0,0,0.12);
+      z-index: 110;
+      border-top: 1px solid var(--border);
+    }
+    #cart-page.page.active {
+      padding-bottom: 120px;
     }
     .total-bar .label { font-size: 13px; color: var(--hint); }
     .total-bar .amount { font-size: 22px; font-weight: 700; }
@@ -1394,15 +1406,9 @@
       color: #f2f2f7;
     }
     body.platform-max .total-bar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: calc(56px + env(safe-area-inset-bottom, 0px));
-      margin: 0;
       background: #1c1c1e !important;
       border-top: 1px solid #2c2c2e;
       box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.45);
-      z-index: 110;
     }
     body.platform-max .bottom-nav {
       background: #1c1c1e !important;
@@ -1426,7 +1432,7 @@
     <h1 id="page-title">ONI Store</h1>
     <div class="header-actions">
       <button type="button" class="header-icon-btn" id="header-support-btn" aria-label="Поддержка" title="Поддержка">
-        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v2.2c-1.2.4-2 1.5-2 2.8v1c0 1.7 1.3 3 3 3h1v-6a5 5 0 0 1 10 0v6h1c1.7 0 3-1.3 3-3v-1c0-1.3-.8-2.4-2-2.8V10a7 7 0 0 0-7-7zm-3 9v6H8c-.6 0-1-.4-1-1v-1c0-.6.4-1 1-1h1zm8 0h1c.6 0 1 .4 1 1v1c0 .6-.4 1-1 1h-1v-6zm-5 9c1.7 0 3.1-1.1 3.7-2.6-.5.1-1.1.2-1.7.2h-4c-.6 0-1.2-.1-1.7-.2.6 1.5 2 2.6 3.7 2.6z"/></svg>
       </button>
       <button type="button" class="header-icon-btn" id="header-cart-btn" aria-label="Корзина">
         <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
@@ -1461,7 +1467,7 @@
     <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
   </button>
   <button class="support-fab" id="support-fab" type="button" aria-label="Поддержка">
-    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-7 7v2.2c-1.2.4-2 1.5-2 2.8v1c0 1.7 1.3 3 3 3h1v-6a5 5 0 0 1 10 0v6h1c1.7 0 3-1.3 3-3v-1c0-1.3-.8-2.4-2-2.8V10a7 7 0 0 0-7-7zm-3 9v6H8c-.6 0-1-.4-1-1v-1c0-.6.4-1 1-1h1zm8 0h1c.6 0 1 .4 1 1v1c0 .6-.4 1-1 1h-1v-6zm-5 9c1.7 0 3.1-1.1 3.7-2.6-.5.1-1.1.2-1.7.2h-4c-.6 0-1.2-.1-1.7-.2.6 1.5 2 2.6 3.7 2.6z"/></svg>
   </button>
   <button class="cart-fab" id="cart-fab" type="button" aria-label="Корзина">
     <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
