@@ -1260,15 +1260,23 @@
       width: 34px; height: 34px; border-radius: 50%; border: none;
       background: var(--button); color: white; font-size: 18px; cursor: pointer;
     }
-    .delivery-block { padding: 16px; border-top: 1px solid var(--border); }
+    .delivery-block {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      position: relative;
+      z-index: 1;
+    }
     .delivery-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
     .delivery-option {
       display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px;
       border: 1.5px solid var(--border); margin-bottom: 10px; cursor: pointer;
+      background: var(--secondary);
     }
     .delivery-option.active {
       border-color: var(--button);
-      background: color-mix(in srgb, var(--button) 8%, transparent);
+      background: var(--secondary);
+      box-shadow: inset 0 0 0 1px var(--button);
     }
     .delivery-option input { accent-color: var(--button); width: 18px; height: 18px; }
     .delivery-option .text { flex: 1; font-size: 14px; }
@@ -1277,12 +1285,13 @@
     .ozon-fields.show { display: flex; }
     .ozon-fields .note {
       font-size: 13px; color: var(--hint); line-height: 1.45;
-      background: color-mix(in srgb, var(--button) 8%, transparent);
+      background: var(--secondary);
       padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--border);
     }
     .ozon-fields input {
       width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border);
-      background: var(--bg); color: var(--text); font-size: 15px; outline: none;
+      background: var(--secondary); color: var(--text); font-size: 15px; outline: none;
     }
     .map-btn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -1343,7 +1352,7 @@
       border-top: 1px solid var(--border);
     }
     #cart-page.page.active {
-      padding-bottom: 120px;
+      padding-bottom: 160px;
     }
     .total-bar .label { font-size: 13px; color: var(--hint); }
     .total-bar .amount { font-size: 22px; font-weight: 700; }
@@ -4612,28 +4621,17 @@
           paymentId: result.paymentId || '',
           createdAt: Date.now()
         });
-        // корзину НЕ очищаем
+        /* корзину очищаем — повторная оплата через «ожидает оплаты» */
+        doClearCart();
 
-        var payMsg =
-          'Заказ №' + result.orderNumber +
-          '\nСумма: ' + Number(result.total).toLocaleString('ru-RU') + ' ₽';
-        if (Number(result.coinsSpent) > 0) {
-          payMsg += '\n' + COIN_NAME + ': −' + result.coinsSpent + ' ' + COIN_UNIT;
+        /* сразу на ЮKassa — без лишнего «Ок» */
+        var payUrl = result.confirmationUrl;
+        try {
+          if (tg.openLink) tg.openLink(payUrl);
+          else window.open(payUrl, '_blank');
+        } catch (eOpen) {
+          try { window.open(payUrl, '_blank'); } catch (e2) {}
         }
-        if (Number(result.expectedEarn) > 0) {
-          payMsg +=
-            '\nКэшбек после оплаты: +' + result.expectedEarn + ' ' + COIN_UNIT;
-        }
-        payMsg += '\n\nОткроется ЮKassa.\nКорзина сохранена — оплату можно открыть снова из корзины.';
-
-        tg.showPopup({
-          title: 'Переход к оплате',
-          message: payMsg,
-          buttons: [{ type: 'ok' }]
-        }, function () {
-          if (tg.openLink) tg.openLink(result.confirmationUrl);
-          else window.open(result.confirmationUrl, '_blank');
-        });
       } else {
         if (result && result.error === 'oni_balance') {
           fetchOniBalance();
