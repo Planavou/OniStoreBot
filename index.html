@@ -928,8 +928,9 @@
       display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
     }
     .admin-stat {
-      background: color-mix(in srgb, var(--bg) 60%, transparent);
+      background: var(--secondary);
       border-radius: 12px; padding: 10px 12px;
+      border: 1px solid var(--border);
     }
     .admin-stat .v { font-size: 20px; font-weight: 700; line-height: 1.2; }
     .admin-stat .l { font-size: 11px; color: var(--hint); margin-top: 2px; }
@@ -1343,13 +1344,13 @@
       bottom: auto;
       background: var(--secondary);
       padding: 14px 16px;
-      margin: 16px 0 24px;
+      margin: 16px 12px 24px;
       display: none;
       justify-content: space-between;
       align-items: center;
-      box-shadow: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
       z-index: 1;
-      border-top: 1px solid var(--border);
+      border: 1px solid var(--border);
       border-radius: 16px;
     }
     #cart-page.page.active {
@@ -1454,7 +1455,7 @@
     <h1 id="page-title">ONI Store</h1>
     <div class="header-actions">
       <button type="button" class="header-icon-btn" id="header-support-btn" aria-label="Поддержка" title="Поддержка">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C7.03 3 3 6.58 3 11c0 2.39 1.19 4.53 3.07 5.98L5 21l4.45-1.87C10.28 19.37 11.12 19.5 12 19.5c4.97 0 9-3.58 9-8.5S16.97 3 12 3zm1 13h-2v-2h2v2zm0-3.5h-2V7h2v5.5z"/></svg>
       </button>
       <button type="button" class="header-icon-btn" id="header-cart-btn" aria-label="Корзина">
         <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
@@ -1489,7 +1490,7 @@
     <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
   </button>
   <button class="support-fab" id="support-fab" type="button" aria-label="Поддержка">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C7.03 3 3 6.58 3 11c0 2.39 1.19 4.53 3.07 5.98L5 21l4.45-1.87C10.28 19.37 11.12 19.5 12 19.5c4.97 0 9-3.58 9-8.5S16.97 3 12 3zm1 13h-2v-2h2v2zm0-3.5h-2V7h2v5.5z"/></svg>
   </button>
   <button class="cart-fab" id="cart-fab" type="button" aria-label="Корзина">
     <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
@@ -4872,7 +4873,11 @@
 
     async function loadAdminStats() {
       var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
-      if (!user || !user.id) return;
+      var el = function (id) { return document.getElementById(id); };
+      if (!user || !user.id) {
+        if (el('st-online')) el('st-online').textContent = '—';
+        return;
+      }
       try {
         var res = await fetch(API_URL + '/admin/stats', {
           method: 'POST',
@@ -4880,24 +4885,26 @@
           body: JSON.stringify({ userId: user.id })
         });
         var data = await res.json();
-        if (!data || !data.ok) return;
-        var el = function (id) { return document.getElementById(id); };
-        if (el('st-online')) el('st-online').textContent = data.onlineNow != null ? data.onlineNow : '—';
-        if (el('st-today-opens')) el('st-today-opens').textContent = data.todayOpens != null ? data.todayOpens : '—';
-        if (el('st-unique-today')) el('st-unique-today').textContent = data.uniqueToday != null ? data.uniqueToday : '—';
-        if (el('st-total-opens')) el('st-total-opens').textContent = data.totalOpens != null ? data.totalOpens : '—';
-        if (el('st-orders-total')) el('st-orders-total').textContent = data.orders && data.orders.total != null ? data.orders.total : '—';
+        if (!data || !data.ok) {
+          if (el('st-online')) el('st-online').textContent = 'err';
+          return;
+        }
+        if (el('st-online')) el('st-online').textContent = data.onlineNow != null ? data.onlineNow : '0';
+        if (el('st-today-opens')) el('st-today-opens').textContent = data.todayOpens != null ? data.todayOpens : '0';
+        if (el('st-unique-today')) el('st-unique-today').textContent = data.uniqueToday != null ? data.uniqueToday : '0';
+        if (el('st-total-opens')) el('st-total-opens').textContent = data.totalOpens != null ? data.totalOpens : '0';
+        if (el('st-orders-total')) el('st-orders-total').textContent = data.orders && data.orders.total != null ? data.orders.total : '0';
         var platEl = el('st-by-platform');
-        if (platEl && data.byPlatform) {
-          var tg = data.byPlatform.telegram || {};
-          var mx = data.byPlatform.max || {};
+        if (platEl) {
+          var pTg = (data.byPlatform && data.byPlatform.telegram) || {};
+          var pMx = (data.byPlatform && data.byPlatform.max) || {};
           platEl.innerHTML =
-            '<span>TG · откр. ' + (tg.todayOpens || 0) +
-            ' · уник. ' + (tg.uniqueToday || 0) +
-            ' · онлайн ' + (tg.onlineNow || 0) + '</span>' +
-            '<span>MAX · откр. ' + (mx.todayOpens || 0) +
-            ' · уник. ' + (mx.uniqueToday || 0) +
-            ' · онлайн ' + (mx.onlineNow || 0) + '</span>';
+            '<span>TG · откр. ' + (pTg.todayOpens || 0) +
+            ' · уник. ' + (pTg.uniqueToday || 0) +
+            ' · онлайн ' + (pTg.onlineNow || 0) + '</span>' +
+            '<span>MAX · откр. ' + (pMx.todayOpens || 0) +
+            ' · уник. ' + (pMx.uniqueToday || 0) +
+            ' · онлайн ' + (pMx.onlineNow || 0) + '</span>';
         }
         var mini = el('st-orders-by-status');
         if (mini && data.orders) {
@@ -4911,7 +4918,9 @@
           if (o.done) parts.push('<span>Готово ' + o.done + '</span>');
           mini.innerHTML = parts.join('') || '<span style="opacity:.6">Пока пусто</span>';
         }
-      } catch (e) {}
+      } catch (e) {
+        if (el('st-online')) el('st-online').textContent = 'err';
+      }
     }
 
     async function loadAdminOrders(opts) {
