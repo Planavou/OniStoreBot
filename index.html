@@ -1336,25 +1336,29 @@
     }
     .oni-hint { font-size: 12px; color: var(--hint); line-height: 1.4; }
     .oni-earn { font-size: 13px; color: #34c759; font-weight: 600; }
-    /* в потоке страницы — не перекрывает поля и не «плывёт» */
     .total-bar {
-      position: relative;
-      left: auto;
-      right: auto;
-      bottom: auto;
+      position: sticky;
+      bottom: 72px;
+      left: 0;
+      right: 0;
       background: var(--secondary);
-      padding: 14px 16px;
-      margin: 16px 12px 24px;
+      padding: 16px;
+      margin-top: 8px;
       display: none;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-      z-index: 1;
-      border: 1px solid var(--border);
-      border-radius: 16px;
+      box-shadow: 0 -6px 24px rgba(0,0,0,0.1);
+      z-index: 50;
+      border-top: 1px solid var(--border);
     }
-    #cart-page.page.active {
-      padding-bottom: 24px;
+    /* MAX: планка в потоке, без sticky-глюков */
+    body.platform-max .total-bar {
+      position: relative;
+      bottom: auto;
+      margin: 16px 12px 24px;
+      border-radius: 16px;
+      border: 1px solid #2c2c2e;
+      box-shadow: none;
     }
     .total-bar .label { font-size: 13px; color: var(--hint); }
     .total-bar .amount { font-size: 22px; font-weight: 700; }
@@ -3292,10 +3296,18 @@
       }
       var activePage = document.querySelector('.page.active');
       activePage = activePage ? activePage.id : '';
-      /* На корзине своя кнопка «Оплатить» — MainButton не дублируем */
+      /* В MAX системная кнопка часто дублирует UI — скрываем */
+      if (PLATFORM === 'max') {
+        try { tg.MainButton.hide(); } catch (e) {}
+        return;
+      }
       if (activePage === 'product-page' && currentProduct) {
         tg.MainButton.setText('В корзину');
         tg.MainButton.show();
+      } else if (activePage === 'cart' && cart.length > 0) {
+        tg.MainButton.setText('Оплатить');
+        if (!document.getElementById('checkout-btn').disabled) tg.MainButton.show();
+        else tg.MainButton.hide();
       } else {
         try { tg.MainButton.hide(); } catch (e) {}
       }
@@ -4652,10 +4664,9 @@
           paymentId: result.paymentId || '',
           createdAt: Date.now()
         });
-        /* корзину очищаем — повторная оплата через «ожидает оплаты» */
-        doClearCart();
+        /* корзину НЕ очищаем — как раньше; повторная оплата из pending */
 
-        /* сразу на ЮKassa — без лишнего «Ок» */
+        /* сразу на ЮKassa */
         var payUrl = result.confirmationUrl;
         try {
           if (tg.openLink) tg.openLink(payUrl);
