@@ -45,31 +45,6 @@
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
     }
-    /* Корзина: непрозрачные блоки поверх тыкв */
-    body.event-halloween .delivery-block,
-    body.event-halloween .oni-block,
-    body.event-halloween .promo-block.show,
-    body.event-halloween .delivery-option,
-    body.event-halloween .ozon-fields .note,
-    body.event-halloween .ozon-fields input,
-    body.event-halloween .oni-row input,
-    body.event-halloween .promo-row input {
-      background-image: none !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
-    body.event-halloween .delivery-block,
-    body.event-halloween .oni-block,
-    body.event-halloween .promo-block.show {
-      background-color: var(--secondary) !important;
-    }
-    body.event-halloween .delivery-option,
-    body.event-halloween .ozon-fields .note,
-    body.event-halloween .ozon-fields input,
-    body.event-halloween .oni-row input,
-    body.event-halloween .promo-row input {
-      background-color: var(--bg) !important;
-    }
     /* Паутина по углам карточек */
     body.event-halloween .product,
     body.event-halloween .profile-card,
@@ -952,9 +927,8 @@
       display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
     }
     .admin-stat {
-      background: var(--secondary);
+      background: color-mix(in srgb, var(--bg) 60%, transparent);
       border-radius: 12px; padding: 10px 12px;
-      border: 1px solid var(--border);
     }
     .admin-stat .v { font-size: 20px; font-weight: 700; line-height: 1.2; }
     .admin-stat .l { font-size: 11px; color: var(--hint); margin-top: 2px; }
@@ -1285,25 +1259,15 @@
       width: 34px; height: 34px; border-radius: 50%; border: none;
       background: var(--button); color: white; font-size: 18px; cursor: pointer;
     }
-    .delivery-block {
-      padding: 16px;
-      border-top: 1px solid var(--border);
-      background: var(--secondary);
-      position: relative;
-      z-index: 2;
-      isolation: isolate;
-    }
+    .delivery-block { padding: 16px; border-top: 1px solid var(--border); }
     .delivery-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
     .delivery-option {
       display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px;
       border: 1.5px solid var(--border); margin-bottom: 10px; cursor: pointer;
-      background: var(--bg);
-      opacity: 1;
     }
     .delivery-option.active {
       border-color: var(--button);
-      background: var(--bg);
-      box-shadow: inset 0 0 0 1.5px var(--button);
+      background: color-mix(in srgb, var(--button) 8%, transparent);
     }
     .delivery-option input { accent-color: var(--button); width: 18px; height: 18px; }
     .delivery-option .text { flex: 1; font-size: 14px; }
@@ -1312,15 +1276,12 @@
     .ozon-fields.show { display: flex; }
     .ozon-fields .note {
       font-size: 13px; color: var(--hint); line-height: 1.45;
-      background: var(--bg);
+      background: color-mix(in srgb, var(--button) 8%, transparent);
       padding: 12px 14px; border-radius: 12px;
-      border: 1px solid var(--border);
-      opacity: 1;
     }
     .ozon-fields input {
       width: 100%; padding: 14px; border-radius: 12px; border: 1.5px solid var(--border);
       background: var(--bg); color: var(--text); font-size: 15px; outline: none;
-      opacity: 1;
     }
     .map-btn {
       display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -1347,8 +1308,6 @@
       display: none; margin: 0 16px 16px; padding: 14px; border-radius: 14px;
       border: 1.5px solid var(--border); background: var(--secondary);
       flex-direction: column; gap: 10px;
-      isolation: isolate;
-      opacity: 1;
     }
     .oni-block.show { display: flex; }
     .oni-title { font-size: 15px; font-weight: 700; }
@@ -1366,39 +1325,15 @@
     }
     .oni-hint { font-size: 12px; color: var(--hint); line-height: 1.4; }
     .oni-earn { font-size: 13px; color: #34c759; font-weight: 600; }
-    /* приклеена снизу над bottom-nav */
     .total-bar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: calc(58px + env(safe-area-inset-bottom, 0px));
-      background: var(--secondary);
-      padding: 14px 16px;
-      margin: 0;
-      display: none;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 -6px 24px rgba(0,0,0,0.12);
-      z-index: 110;
-      border-top: 1px solid var(--border);
+      position: sticky; bottom: 72px; left: 0; right: 0; background: var(--secondary);
+      padding: 16px;
+      margin-top: 8px;
+      display: none; justify-content: space-between; align-items: center;
+      box-shadow: 0 -6px 24px rgba(0,0,0,0.1); z-index: 50; border-top: 1px solid var(--border);
     }
-    #cart.page.active {
-      padding-bottom: 160px;
-    }
-
     .total-bar .label { font-size: 13px; color: var(--hint); }
     .total-bar .amount { font-size: 22px; font-weight: 700; }
-    .oplatform {
-      display: inline-block;
-      margin-left: 6px;
-      padding: 2px 8px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      vertical-align: middle;
-      background: rgba(59, 130, 246, 0.2);
-      color: #60a5fa;
-    }
     .checkout-btn {
       background: var(--button); color: var(--button-text); border: none;
       padding: 14px 26px; border-radius: 14px; font-weight: 600; font-size: 15px; cursor: pointer;
@@ -1407,7 +1342,6 @@
     .empty { text-align: center; padding: 90px 24px; color: var(--hint); font-size: 16px; }
     .page { display: none; }
     .page.active { display: block; }
-
   </style>
 </head>
 <body>
@@ -1415,7 +1349,7 @@
     <h1 id="page-title">ONI Store</h1>
     <div class="header-actions">
       <button type="button" class="header-icon-btn" id="header-support-btn" aria-label="Поддержка" title="Поддержка">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C7.03 3 3 6.58 3 11c0 2.39 1.19 4.53 3.07 5.98L5 21l4.45-1.87C10.28 19.37 11.12 19.5 12 19.5c4.97 0 9-3.58 9-8.5S16.97 3 12 3zm1 13h-2v-2h2v2zm0-3.5h-2V7h2v5.5z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
       </button>
       <button type="button" class="header-icon-btn" id="header-cart-btn" aria-label="Корзина">
         <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
@@ -1450,7 +1384,7 @@
     <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
   </button>
   <button class="support-fab" id="support-fab" type="button" aria-label="Поддержка">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C7.03 3 3 6.58 3 11c0 2.39 1.19 4.53 3.07 5.98L5 21l4.45-1.87C10.28 19.37 11.12 19.5 12 19.5c4.97 0 9-3.58 9-8.5S16.97 3 12 3zm1 13h-2v-2h2v2zm0-3.5h-2V7h2v5.5z"/></svg>
+    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.48.48 0 0 0-.48-.41h-3.84a.48.48 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.74 8.87a.48.48 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.48.48 0 0 0-.12-.61l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
   </button>
   <button class="cart-fab" id="cart-fab" type="button" aria-label="Корзина">
     <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1.003 1.003 0 0 0 20 4H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
@@ -1564,12 +1498,6 @@
         <div class="admin-stat"><div class="v" id="st-today-opens">—</div><div class="l">Открытий сегодня</div></div>
         <div class="admin-stat"><div class="v" id="st-unique-today">—</div><div class="l">Уникальных сегодня</div></div>
         <div class="admin-stat"><div class="v" id="st-total-opens">—</div><div class="l">Открытий всего</div></div>
-        <div class="admin-stat wide">
-          <div class="l" style="margin-bottom:8px;">Сегодня по платформам</div>
-          <div class="admin-orders-mini" id="st-by-platform">
-            <span>TG: —</span><span>MAX: —</span>
-          </div>
-        </div>
         <div class="admin-stat wide">
           <div class="v" id="st-orders-total">—</div>
           <div class="l">Заказов в базе</div>
@@ -1826,33 +1754,13 @@
     </div>
   </div>
   <script>
-    const tg = window.Telegram && window.Telegram.WebApp
-      ? window.Telegram.WebApp
-      : {
-          ready: function () {},
-          expand: function () {},
-          close: function () {},
-          enableClosingConfirmation: function () {},
-          disableClosingConfirmation: function () {},
-          initData: '',
-          initDataUnsafe: {},
-          MainButton: { show: function () {}, hide: function () {}, setText: function () {}, onClick: function () {}, offClick: function () {} },
-          BackButton: { show: function () {}, hide: function () {}, onClick: function () {}, offClick: function () {} },
-          HapticFeedback: { impactOccurred: function () {}, notificationOccurred: function () {}, selectionChanged: function () {} },
-          showAlert: function (msg) { alert(msg); },
-          showPopup: function (opts, cb) {
-            var ok = true;
-            try { ok = window.confirm((opts && opts.message) || ''); } catch (e) {}
-            if (typeof cb === 'function') cb(ok ? 'ok' : 'cancel');
-          },
-          openLink: function (url) { window.open(url, '_blank'); },
-          openTelegramLink: function (url) { window.open(url, '_blank'); }
-        };
-    try { tg.ready(); } catch (e) {}
-    try { tg.expand(); } catch (e) {}
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
     try { tg.enableClosingConfirmation(); } catch (e) {}
 
     const API_URL = 'https://wandering-truth-5089onistoreapi.eramor-068.workers.dev';
+
     /* ========== ШАБЛОН ИВЕНТА ==========
        Конфиги тем лежат здесь. Вкл/выкл — с сервера (KV) или кнопками в админке.
        Баланс на сервере всегда ONI; в UI — EVENT.coin
@@ -2083,17 +1991,6 @@
     const DELIVERY_PRICE = 500;
     const BOT_USERNAME = 'IamOniStore_bot';
     const APP_NAME = 'Shop';
-
-    function supportLink() {
-      return SUPPORT_LINK;
-    }
-    function productShareLink(productId) {
-      return 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=product_' + productId;
-    }
-    function refShareLink(userId) {
-      return 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=ref_' + userId;
-    }
-
     const PROMO_USED_KEY = 'promo_used_server';
     const MAKE_WARNED_KEY = 'make_order_warned_session';
     const PENDING_ORDER_KEY = 'pending_yookassa_order';
@@ -2686,7 +2583,7 @@
     function getRefLink() {
       var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
       if (!user || !user.id) return '';
-      return refShareLink(user.id);
+      return 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=ref_' + user.id;
     }
 
     function isServerPromo(code) {
@@ -3168,15 +3065,12 @@
       var activePage = document.querySelector('.page.active');
       activePage = activePage ? activePage.id : '';
       if (activePage === 'product-page' && currentProduct) {
-        tg.MainButton.setText('В корзину');
-        tg.MainButton.show();
+        tg.MainButton.setText('В корзину'); tg.MainButton.show();
       } else if (activePage === 'cart' && cart.length > 0) {
         tg.MainButton.setText('Оплатить');
         if (!document.getElementById('checkout-btn').disabled) tg.MainButton.show();
         else tg.MainButton.hide();
-      } else {
-        try { tg.MainButton.hide(); } catch (e) {}
-      }
+      } else tg.MainButton.hide();
     }
 
     document.querySelectorAll('.bottom-nav .nav-btn').forEach(function (btn) {
@@ -3214,14 +3108,14 @@
       // открываем чат с ботом и закрываем Mini App, чтобы не оставаться «внутри магазина»
       try {
         if (tg && typeof tg.openTelegramLink === 'function') {
-          tg.openTelegramLink(supportLink());
+          tg.openTelegramLink(SUPPORT_LINK);
         } else if (tg && typeof tg.openLink === 'function') {
-          tg.openLink(supportLink());
+          tg.openLink(SUPPORT_LINK);
         } else {
-          window.open(supportLink(), '_blank');
+          window.open(SUPPORT_LINK, '_blank');
         }
       } catch (e) {
-        try { window.open(supportLink(), '_blank'); } catch (e2) {}
+        try { window.open(SUPPORT_LINK, '_blank'); } catch (e2) {}
       }
       setTimeout(function () {
         try { if (tg && typeof tg.close === 'function') tg.close(); } catch (e3) {}
@@ -3359,7 +3253,7 @@
       var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
       if (!user || !user.id) {
         btn.disabled = true;
-        btn.textContent = 'Откройте магазин из Telegram';
+        btn.textContent = 'Открой из Telegram';
         if (resEl) resEl.textContent = '';
         return;
       }
@@ -3848,7 +3742,7 @@
     function shareProduct() {
       if (!currentProduct) return;
       hapticLight();
-      var deepLink = productShareLink(Number(currentProduct.id));
+      var deepLink = 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=product_' + Number(currentProduct.id);
       var text = (currentProduct.shareName || currentProduct.name) + ' — ' + currentProduct.price.toLocaleString('ru-RU') + ' ₽\nСмотри в ONI Store 👇';
       var shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(deepLink) + '&text=' + encodeURIComponent(text);
       try {
@@ -4475,7 +4369,6 @@
             recipientName: document.getElementById('recipient-name').value.trim(),
             recipientPhone: document.getElementById('recipient-phone').value.trim(),
             recipientAddress: document.getElementById('ozon-address').value.trim(),
-            platform: 'telegram',
             user: user ? {
               id: user.id,
               first_name: user.first_name,
@@ -4530,16 +4423,28 @@
           paymentId: result.paymentId || '',
           createdAt: Date.now()
         });
-        /* корзину НЕ очищаем — как раньше; повторная оплата из pending */
+        // корзину НЕ очищаем
 
-        /* сразу на ЮKassa */
-        var payUrl = result.confirmationUrl;
-        try {
-          if (tg.openLink) tg.openLink(payUrl);
-          else window.open(payUrl, '_blank');
-        } catch (eOpen) {
-          try { window.open(payUrl, '_blank'); } catch (e2) {}
+        var payMsg =
+          'Заказ №' + result.orderNumber +
+          '\nСумма: ' + Number(result.total).toLocaleString('ru-RU') + ' ₽';
+        if (Number(result.coinsSpent) > 0) {
+          payMsg += '\n' + COIN_NAME + ': −' + result.coinsSpent + ' ' + COIN_UNIT;
         }
+        if (Number(result.expectedEarn) > 0) {
+          payMsg +=
+            '\nКэшбек после оплаты: +' + result.expectedEarn + ' ' + COIN_UNIT;
+        }
+        payMsg += '\n\nОткроется ЮKassa.\nКорзина сохранена — оплату можно открыть снова из корзины.';
+
+        tg.showPopup({
+          title: 'Переход к оплате',
+          message: payMsg,
+          buttons: [{ type: 'ok' }]
+        }, function () {
+          if (tg.openLink) tg.openLink(result.confirmationUrl);
+          else window.open(result.confirmationUrl, '_blank');
+        });
       } else {
         if (result && result.error === 'oni_balance') {
           fetchOniBalance();
@@ -4627,7 +4532,6 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId: user && user.id != null ? String(user.id) : 'anon',
-            platform: 'telegram',
           }),
         }).catch(function () {});
       } catch (e2) {}
@@ -4640,7 +4544,7 @@
         fetch(API_URL + '/stats/open', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: String(user.id), heartbeat: true, platform: 'telegram' }),
+          body: JSON.stringify({ userId: String(user.id), heartbeat: true }),
         }).catch(function () {});
       } catch (e) {}
     }
@@ -4693,9 +4597,8 @@
           : 'Самовывоз Москва';
       var st = o.status || '';
       var label = statusLabelForOrder(o);
-      var platformTag = (String(o.platform || '').toLowerCase() === 'max') ? ' <span class="oplatform">(MAX)</span>' : '';
       var html = '<div class="order-card" data-order="' + o.orderNumber + '">';
-      html += '<div class="oh"><div><div class="onum">Заказ №' + o.orderNumber + platformTag + '</div>';
+      html += '<div class="oh"><div><div class="onum">Заказ №' + o.orderNumber + '</div>';
       html += '<div class="odate">' + formatOrderDate(o.paidAt || o.createdAt) + '</div></div>';
       html += '<span class="order-status ' + st + '">' + label + '</span></div>';
       html += '<div class="oitems">' + items.replace(/\n/g, '<br>') + '</div>';
@@ -4750,11 +4653,7 @@
 
     async function loadAdminStats() {
       var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
-      var el = function (id) { return document.getElementById(id); };
-      if (!user || !user.id) {
-        if (el('st-online')) el('st-online').textContent = '—';
-        return;
-      }
+      if (!user || !user.id) return;
       try {
         var res = await fetch(API_URL + '/admin/stats', {
           method: 'POST',
@@ -4762,27 +4661,13 @@
           body: JSON.stringify({ userId: user.id })
         });
         var data = await res.json();
-        if (!data || !data.ok) {
-          if (el('st-online')) el('st-online').textContent = 'err';
-          return;
-        }
-        if (el('st-online')) el('st-online').textContent = data.onlineNow != null ? data.onlineNow : '0';
-        if (el('st-today-opens')) el('st-today-opens').textContent = data.todayOpens != null ? data.todayOpens : '0';
-        if (el('st-unique-today')) el('st-unique-today').textContent = data.uniqueToday != null ? data.uniqueToday : '0';
-        if (el('st-total-opens')) el('st-total-opens').textContent = data.totalOpens != null ? data.totalOpens : '0';
-        if (el('st-orders-total')) el('st-orders-total').textContent = data.orders && data.orders.total != null ? data.orders.total : '0';
-        var platEl = el('st-by-platform');
-        if (platEl) {
-          var pTg = (data.byPlatform && data.byPlatform.telegram) || {};
-          var pMx = (data.byPlatform && data.byPlatform.max) || {};
-          platEl.innerHTML =
-            '<span>TG · откр. ' + (pTg.todayOpens || 0) +
-            ' · уник. ' + (pTg.uniqueToday || 0) +
-            ' · онлайн ' + (pTg.onlineNow || 0) + '</span>' +
-            '<span>MAX · откр. ' + (pMx.todayOpens || 0) +
-            ' · уник. ' + (pMx.uniqueToday || 0) +
-            ' · онлайн ' + (pMx.onlineNow || 0) + '</span>';
-        }
+        if (!data || !data.ok) return;
+        var el = function (id) { return document.getElementById(id); };
+        if (el('st-online')) el('st-online').textContent = data.onlineNow != null ? data.onlineNow : '—';
+        if (el('st-today-opens')) el('st-today-opens').textContent = data.todayOpens != null ? data.todayOpens : '—';
+        if (el('st-unique-today')) el('st-unique-today').textContent = data.uniqueToday != null ? data.uniqueToday : '—';
+        if (el('st-total-opens')) el('st-total-opens').textContent = data.totalOpens != null ? data.totalOpens : '—';
+        if (el('st-orders-total')) el('st-orders-total').textContent = data.orders && data.orders.total != null ? data.orders.total : '—';
         var mini = el('st-orders-by-status');
         if (mini && data.orders) {
           var o = data.orders;
@@ -4795,9 +4680,7 @@
           if (o.done) parts.push('<span>Готово ' + o.done + '</span>');
           mini.innerHTML = parts.join('') || '<span style="opacity:.6">Пока пусто</span>';
         }
-      } catch (e) {
-        if (el('st-online')) el('st-online').textContent = 'err';
-      }
+      } catch (e) {}
     }
 
     async function loadAdminOrders(opts) {
