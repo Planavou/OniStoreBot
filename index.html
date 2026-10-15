@@ -1325,12 +1325,24 @@
     }
     .oni-hint { font-size: 12px; color: var(--hint); line-height: 1.4; }
     .oni-earn { font-size: 13px; color: #34c759; font-weight: 600; }
+    /* приклеена снизу над нижним меню */
     .total-bar {
-      position: sticky; bottom: 72px; left: 0; right: 0; background: var(--secondary);
-      padding: 16px;
-      margin-top: 8px;
-      display: none; justify-content: space-between; align-items: center;
-      box-shadow: 0 -6px 24px rgba(0,0,0,0.1); z-index: 50; border-top: 1px solid var(--border);
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: calc(58px + env(safe-area-inset-bottom, 0px));
+      background: var(--secondary);
+      padding: 14px 16px;
+      margin: 0;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 -6px 24px rgba(0,0,0,0.12);
+      z-index: 110;
+      border-top: 1px solid var(--border);
+    }
+    #cart.page.active {
+      padding-bottom: 160px;
     }
     .total-bar .label { font-size: 13px; color: var(--hint); }
     .total-bar .amount { font-size: 22px; font-weight: 700; }
