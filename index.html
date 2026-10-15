@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Магазин</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://st.max.ru/js/max-web-app.js"></script>
   <style>
     :root {
       --bg: var(--tg-theme-bg-color, #ffffff);
@@ -1387,21 +1386,6 @@
       padding-bottom: 160px;
     }
 
-    /* MAX: в потоке — fixed там часто наезжает */
-    body.platform-max .total-bar {
-      position: relative;
-      left: auto;
-      right: auto;
-      bottom: auto;
-      margin: 16px 12px 24px;
-      border-radius: 16px;
-      border: 1px solid #2c2c2e;
-      box-shadow: none;
-      z-index: 1;
-    }
-    body.platform-max #cart.page.active {
-      padding-bottom: 24px;
-    }
     .total-bar .label { font-size: 13px; color: var(--hint); }
     .total-bar .amount { font-size: 22px; font-weight: 700; }
     .oplatform {
@@ -1424,76 +1408,6 @@
     .page { display: none; }
     .page.active { display: block; }
 
-    /* ===== MAX: стабильная вёрстка (нативная шапка + нет tg-theme) ===== */
-    body.platform-max {
-      --bg: #121212;
-      --text: #f2f2f7;
-      --hint: #8e8e93;
-      --button: #3b82f6;
-      --button-text: #ffffff;
-      --secondary: #1c1c1e;
-      --border: #2c2c2e;
-      padding-bottom: 120px;
-      /* паттерн слабее — меньше «плывёт» через блоки */
-      background-color: #121212;
-    }
-    body.platform-max.event-halloween {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' opacity='0.07'%3E%3Cg transform='translate(18 22)'%3E%3Cellipse cx='22' cy='28' rx='20' ry='18' fill='%23ff8c1a'/%3E%3Cellipse cx='10' cy='28' rx='11' ry='16' fill='%23e67700'/%3E%3Cellipse cx='34' cy='28' rx='11' ry='16' fill='%23e67700'/%3E%3Cpath d='M20 8 Q22 0 24 8' stroke='%232d6a1e' stroke-width='3' stroke-linecap='round'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-    }
-    body.platform-max header,
-    body.platform-max .bottom-nav,
-    body.platform-max .total-bar,
-    body.platform-max .oni-block,
-    body.platform-max .promo-block,
-    body.platform-max .delivery-block,
-    body.platform-max .product,
-    body.platform-max .profile-card,
-    body.platform-max .cart-item {
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
-    body.platform-max .oni-block,
-    body.platform-max .delivery-block,
-    body.platform-max .promo-block.show {
-      background: #1c1c1e !important;
-      border-color: #2c2c2e;
-    }
-    body.platform-max .delivery-option {
-      background: #1c1c1e;
-      border-color: #3a3a3c;
-    }
-    body.platform-max .delivery-option.active {
-      background: rgba(59, 130, 246, 0.18);
-      border-color: #3b82f6;
-    }
-    body.platform-max .promo-row input,
-    body.platform-max .oni-row input,
-    body.platform-max .ozon-fields input {
-      background: #2c2c2e !important;
-      border-color: #3a3a3c;
-      color: #f2f2f7;
-    }
-    body.platform-max .total-bar {
-      background: #1c1c1e !important;
-      border-top: 1px solid #2c2c2e;
-      border-radius: 16px;
-      margin: 16px 12px 24px;
-    }
-    body.platform-max .bottom-nav {
-      background: #1c1c1e !important;
-      border-top-color: #2c2c2e;
-      z-index: 120;
-    }
-    body.platform-max header {
-      background: #1c1c1e !important;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    /* место под фиксированный total-bar + nav */
-    body.platform-max #cart.page.active {
-      padding-bottom: 24px;
-    }
   </style>
 </head>
 <body>
@@ -1912,108 +1826,33 @@
     </div>
   </div>
   <script>
-    /* ===== Платформа: Telegram или MAX ===== */
-    var PLATFORM = 'web';
-    if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) {
-      PLATFORM = 'telegram';
-    } else if (window.WebApp && (window.WebApp.initData || window.WebApp.initDataUnsafe)) {
-      PLATFORM = 'max';
-    } else if (window.Telegram && window.Telegram.WebApp) {
-      PLATFORM = 'telegram';
-    }
-
-    function buildPlatformHost() {
-      if (PLATFORM === 'telegram' && window.Telegram && window.Telegram.WebApp) {
-        return window.Telegram.WebApp;
-      }
-      if (PLATFORM === 'max' && window.WebApp) {
-        var m = window.WebApp;
-        var noop = function () {};
-        var mb = m.MainButton || {
-          show: noop, hide: noop, setText: noop, onClick: noop, offClick: noop,
-          setParams: noop, isVisible: false, text: ''
-        };
-        var bb = m.BackButton || {
-          show: noop, hide: noop, onClick: noop, offClick: noop, isVisible: false
-        };
-        var hf = m.HapticFeedback || {
-          impactOccurred: noop, notificationOccurred: noop, selectionChanged: noop
-        };
-        return {
-          ready: typeof m.ready === 'function' ? function () { try { m.ready(); } catch (e) {} } : noop,
-          expand: typeof m.expand === 'function' ? function () { try { m.expand(); } catch (e) {} } : noop,
-          close: typeof m.close === 'function' ? function () { try { m.close(); } catch (e) {} } : noop,
-          enableClosingConfirmation: typeof m.enableClosingConfirmation === 'function'
-            ? function () { try { m.enableClosingConfirmation(); } catch (e) {} } : noop,
-          disableClosingConfirmation: typeof m.disableClosingConfirmation === 'function'
-            ? function () { try { m.disableClosingConfirmation(); } catch (e) {} } : noop,
-          initData: m.initData || '',
-          initDataUnsafe: m.initDataUnsafe || {},
-          MainButton: mb,
-          BackButton: bb,
-          HapticFeedback: hf,
-          showAlert: typeof m.showAlert === 'function'
-            ? function (msg) { try { m.showAlert(msg); } catch (e) { alert(msg); } }
-            : function (msg) { alert(msg); },
+    const tg = window.Telegram && window.Telegram.WebApp
+      ? window.Telegram.WebApp
+      : {
+          ready: function () {},
+          expand: function () {},
+          close: function () {},
+          enableClosingConfirmation: function () {},
+          disableClosingConfirmation: function () {},
+          initData: '',
+          initDataUnsafe: {},
+          MainButton: { show: function () {}, hide: function () {}, setText: function () {}, onClick: function () {}, offClick: function () {} },
+          BackButton: { show: function () {}, hide: function () {}, onClick: function () {}, offClick: function () {} },
+          HapticFeedback: { impactOccurred: function () {}, notificationOccurred: function () {}, selectionChanged: function () {} },
+          showAlert: function (msg) { alert(msg); },
           showPopup: function (opts, cb) {
-            if (typeof m.showPopup === 'function') {
-              try { return m.showPopup(opts, cb); } catch (e) {}
-            }
-            var msg = (opts && opts.message) || '';
             var ok = true;
-            try { ok = window.confirm(msg); } catch (e2) { ok = true; }
+            try { ok = window.confirm((opts && opts.message) || ''); } catch (e) {}
             if (typeof cb === 'function') cb(ok ? 'ok' : 'cancel');
           },
-          openLink: typeof m.openLink === 'function'
-            ? function (url) { try { m.openLink(url); } catch (e) { window.open(url, '_blank'); } }
-            : function (url) { window.open(url, '_blank'); },
-          openTelegramLink: typeof m.openMaxLink === 'function'
-            ? function (url) { try { m.openMaxLink(url); } catch (e) { window.open(url, '_blank'); } }
-            : (typeof m.openLink === 'function'
-              ? function (url) { try { m.openLink(url); } catch (e) { window.open(url, '_blank'); } }
-              : function (url) { window.open(url, '_blank'); }),
-          platform: m.platform || 'unknown',
-          version: m.version || ''
+          openLink: function (url) { window.open(url, '_blank'); },
+          openTelegramLink: function (url) { window.open(url, '_blank'); }
         };
-      }
-      /* браузер без оболочки */
-      var noop2 = function () {};
-      return {
-        ready: noop2, expand: noop2, close: noop2,
-        enableClosingConfirmation: noop2, disableClosingConfirmation: noop2,
-        initData: '',
-        initDataUnsafe: {},
-        MainButton: { show: noop2, hide: noop2, setText: noop2, onClick: noop2, offClick: noop2 },
-        BackButton: { show: noop2, hide: noop2, onClick: noop2, offClick: noop2 },
-        HapticFeedback: { impactOccurred: noop2, notificationOccurred: noop2, selectionChanged: noop2 },
-        showAlert: function (msg) { alert(msg); },
-        showPopup: function (opts, cb) {
-          var msg = (opts && opts.message) || '';
-          var ok = true;
-          try { ok = window.confirm(msg); } catch (e) { ok = true; }
-          if (typeof cb === 'function') cb(ok ? 'ok' : 'cancel');
-        },
-        openLink: function (url) { window.open(url, '_blank'); },
-        openTelegramLink: function (url) { window.open(url, '_blank'); },
-        platform: 'web',
-        version: ''
-      };
-    }
-
-    const tg = buildPlatformHost();
     try { tg.ready(); } catch (e) {}
     try { tg.expand(); } catch (e) {}
     try { tg.enableClosingConfirmation(); } catch (e) {}
-    try {
-      document.body.classList.toggle('platform-max', PLATFORM === 'max');
-      document.body.classList.toggle('platform-telegram', PLATFORM === 'telegram');
-    } catch (e) {}
 
     const API_URL = 'https://wandering-truth-5089onistoreapi.eramor-068.workers.dev';
-    /* Для MAX: ссылка на бота/мини-апп из кабинета (заполни после привязки URL) */
-    const MAX_BOT_LINK = 'https://max.ru/se14672074_bot';
-    const MAX_APP_URL = 'https://max.ru/se14672074_bot';
-
     /* ========== ШАБЛОН ИВЕНТА ==========
        Конфиги тем лежат здесь. Вкл/выкл — с сервера (KV) или кнопками в админке.
        Баланс на сервере всегда ONI; в UI — EVENT.coin
@@ -2246,23 +2085,13 @@
     const APP_NAME = 'Shop';
 
     function supportLink() {
-      if (PLATFORM === 'max' && MAX_BOT_LINK) return MAX_BOT_LINK;
       return SUPPORT_LINK;
     }
     function productShareLink(productId) {
-      if (PLATFORM === 'max' && MAX_APP_URL) {
-        return MAX_APP_URL + (MAX_APP_URL.indexOf('?') >= 0 ? '&' : '?') + 'startapp=product_' + productId;
-      }
       return 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=product_' + productId;
     }
     function refShareLink(userId) {
-      if (PLATFORM === 'max' && MAX_APP_URL) {
-        return MAX_APP_URL + (MAX_APP_URL.indexOf('?') >= 0 ? '&' : '?') + 'startapp=ref_' + userId;
-      }
       return 'https://t.me/' + BOT_USERNAME + '/' + APP_NAME + '?startapp=ref_' + userId;
-    }
-    function openPlatformMessage() {
-      return PLATFORM === 'max' ? 'Открой магазин из MAX' : 'Открой из Telegram';
     }
 
     const PROMO_USED_KEY = 'promo_used_server';
@@ -3338,11 +3167,6 @@
       }
       var activePage = document.querySelector('.page.active');
       activePage = activePage ? activePage.id : '';
-      /* В MAX системная кнопка часто дублирует UI — скрываем */
-      if (PLATFORM === 'max') {
-        try { tg.MainButton.hide(); } catch (e) {}
-        return;
-      }
       if (activePage === 'product-page' && currentProduct) {
         tg.MainButton.setText('В корзину');
         tg.MainButton.show();
@@ -3535,7 +3359,7 @@
       var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
       if (!user || !user.id) {
         btn.disabled = true;
-        btn.textContent = openPlatformMessage();
+        btn.textContent = 'Откройте магазин из Telegram';
         if (resEl) resEl.textContent = '';
         return;
       }
@@ -3577,7 +3401,7 @@
       var display = document.getElementById('event-spin-display');
       var user = tg.initDataUnsafe && tg.initDataUnsafe.user;
       if (!user || !user.id) {
-        if (tg.showAlert) tg.showAlert(openPlatformMessage());
+        if (tg.showAlert) tg.showAlert('Откройте магазин из Telegram');
         return;
       }
       eventSpinBusy = true;
@@ -4442,7 +4266,7 @@
           updateTotal();
         } else if (data.error === 'need_user') {
           appliedPromo = false; appliedPromoCode = ''; appliedPromoPercent = 0;
-          status.textContent = openPlatformMessage();
+          status.textContent = 'Откройте магазин из Telegram';
           status.className = 'promo-status err';
           updateTotal();
         } else if (data.error === 'limit') {
@@ -4651,7 +4475,7 @@
             recipientName: document.getElementById('recipient-name').value.trim(),
             recipientPhone: document.getElementById('recipient-phone').value.trim(),
             recipientAddress: document.getElementById('ozon-address').value.trim(),
-            platform: PLATFORM,
+            platform: 'telegram',
             user: user ? {
               id: user.id,
               first_name: user.first_name,
@@ -4753,7 +4577,7 @@
     document.getElementById('ref-copy-btn').addEventListener('click', function () {
       var link = getRefLink();
       if (!link) {
-        if (tg.showAlert) tg.showAlert(PLATFORM === 'max' ? 'Открой магазин из MAX, чтобы получить ссылку' : 'Откройте магазин из Telegram, чтобы получить реферальную ссылку');
+        if (tg.showAlert) tg.showAlert('Откройте магазин из Telegram, чтобы получить реферальную ссылку');
         return;
       }
       var text = 'Загляни в ONI Store — фигурки под покраску 👇\n' + link;
@@ -4803,7 +4627,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             userId: user && user.id != null ? String(user.id) : 'anon',
-            platform: PLATFORM,
+            platform: 'telegram',
           }),
         }).catch(function () {});
       } catch (e2) {}
@@ -4816,7 +4640,7 @@
         fetch(API_URL + '/stats/open', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: String(user.id), heartbeat: true, platform: PLATFORM }),
+          body: JSON.stringify({ userId: String(user.id), heartbeat: true, platform: 'telegram' }),
         }).catch(function () {});
       } catch (e) {}
     }
